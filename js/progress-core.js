@@ -80,7 +80,7 @@ export function normalizeRepository(value = "") {
 
 export function getCommitReviewState(latestSha, reviewedSha) {
   if (!latestSha) return "unknown";
-  if (!reviewedSha) return "unreviewed";
+  if (!reviewedSha) return "new";
   return latestSha === reviewedSha ? "reviewed" : "new";
 }
 
