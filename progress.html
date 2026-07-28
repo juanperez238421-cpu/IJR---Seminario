@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tablero docente para registrar metas, evaluación y commits de los proyectos de Seminario de Programación.">
+  <title>Seguimiento de estudiantes | Seminario de Programación</title>
+  <link rel="stylesheet" href="css/progress.css">
+  <script type="module" src="js/progress.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Saltar al contenido</a>
+
+  <header class="dashboard-header">
+    <div class="shell header-layout">
+      <div>
+        <p class="eyebrow">Instituto Jorge Robledo · Grado 11</p>
+        <h1>Seguimiento de Seminario</h1>
+        <p class="header-copy">
+          Consulta commits públicos de GitHub, registra competencias, define la siguiente meta y conserva la evaluación en este navegador.
+        </p>
+      </div>
+      <nav class="header-actions" aria-label="Navegación principal">
+        <a class="button secondary" href="index.html">Proyecto de referencia</a>
+        <a class="button secondary" href="https://github.com/juanperez238421-cpu/IJR---Seminario" target="_blank" rel="noopener noreferrer">Repositorio</a>
+        <button class="button primary" id="syncAllButton" type="button">Sincronizar GitHub</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="mainContent" class="shell dashboard-main">
+    <section aria-labelledby="summaryTitle">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Estado general</p>
+          <h2 id="summaryTitle">Panel docente</h2>
+        </div>
+        <div class="sync-copy">
+          <span id="syncMessage">Actualización automática cada 10 minutos mientras la página esté abierta.</span>
+          <small id="lastUpdated"></small>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <article class="summary-card">
+          <span>Estudiantes</span>
+          <strong id="summaryStudents">0</strong>
+          <small>registros activos</small>
+        </article>
+        <article class="summary-card attention">
+          <span>Commits nuevos</span>
+          <strong id="summaryNewCommits">0</strong>
+          <small>pendientes de revisión</small>
+        </article>
+        <article class="summary-card">
+          <span>Promedio evaluado</span>
+          <strong id="summaryAverage">—</strong>
+          <small>escala de 0,0 a 5,0</small>
+        </article>
+        <article class="summary-card">
+          <span>Metas completadas</span>
+          <strong id="summaryMilestones">0%</strong>
+          <small>avance del grupo</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="pathways" aria-labelledby="pathwaysTitle">
+      <div class="section-heading compact">
+        <div>
+          <p class="section-kicker">Rutas diferenciadas</p>
+          <h2 id="pathwaysTitle">Metas según el nivel actual</h2>
+        </div>
+      </div>
+      <div class="pathway-grid">
+        <article class="pathway-card core-path">
+          <span class="pathway-number">Ruta 1</span>
+          <h3>Consolidación funcional</h3>
+          <p>Para quienes aún tienen ejercicios aislados o flujos incompletos.</p>
+          <ol>
+            <li>Elegir un solo proyecto principal.</li>
+            <li>Conectar HTML, eventos, funciones y DOM.</li>
+            <li>Agregar validación y persistencia.</li>
+            <li>Documentar y entregar commits verificables.</li>
+          </ol>
+        </article>
+        <article class="pathway-card css-path">
+          <span class="pathway-number">Ruta 2 · estudiante de referencia</span>
+          <h3>Especialización CSS</h3>
+          <p>Para el proyecto funcional más avanzado, sin detener su mejora técnica.</p>
+          <ol>
+            <li>Jerarquía visual y variables CSS.</li>
+            <li>Grid, Flexbox y diseño responsive.</li>
+            <li>Estados hover, focus, error y disabled.</li>
+            <li>Componentes reutilizables y accesibilidad.</li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="Seguimiento individual">
+      <div class="student-column">
+        <div class="section-heading compact">
+          <div>
+            <p class="section-kicker">Proyectos y commits</p>
+            <h2>Estudiantes</h2>
+          </div>
+          <button class="button secondary" id="addStudentButton" type="button">Agregar estudiante</button>
+        </div>
+
+        <section class="toolbar" aria-label="Filtros del seguimiento">
+          <label class="field grow">
+            <span>Buscar</span>
+            <input id="studentSearch" type="search" placeholder="Nombre, usuario, repo o proyecto" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Grupo</span>
+            <select id="groupFilter">
+              <option value="all">Todos los grupos</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Estado</span>
+            <select id="statusFilter">
+              <option value="all">Todos los estados</option>
+              <option value="new-commit">Commit nuevo</option>
+              <option value="starting">Inicio</option>
+              <option value="developing">En desarrollo</option>
+              <option value="advanced">Avanzado</option>
+              <option value="complete">Completo</option>
+              <option value="paused">En pausa</option>
+            </select>
+          </label>
+        </section>
+
+        <div class="student-list" id="studentList" aria-live="polite"></div>
+        <p class="empty-state" id="emptyStudentState" hidden>No hay estudiantes que coincidan con los filtros.</p>
+      </div>
+
+      <aside class="evaluation-column" id="evaluationPanel" aria-labelledby="evaluationTitle">
+        <section class="evaluation-card">
+          <div class="evaluation-header">
+            <div>
+              <p class="section-kicker">Entrevista y calificación</p>
+              <h2 id="selectedStudentName">Selecciona un estudiante</h2>
+              <p id="selectedStudentMeta"></p>
+            </div>
+            <span class="track-badge" id="selectedTrack">Ruta</span>
+          </div>
+
+          <div class="repo-context">
+            <a id="selectedRepoLink" href="#" target="_blank" rel="noopener noreferrer">Repositorio</a>
+            <p id="selectedCommit">Aún no se ha sincronizado el último commit.</p>
+          </div>
+
+          <form id="evaluationForm">
+            <fieldset>
+              <legend>Criterios de evaluación</legend>
+              <p class="field-help">Registra cada componente en escala de 0,0 a 5,0. La nota aparece cuando todos estén completos.</p>
+              <div id="criteriaFields" class="criteria-fields"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Competencias y metas verificables</legend>
+              <div id="milestoneFields" class="milestone-fields"></div>
+            </fieldset>
+
+            <label class="field">
+              <span>Siguiente meta concreta</span>
+              <textarea id="nextGoalInput" rows="4" maxlength="500"></textarea>
+            </label>
+
+            <label class="field">
+              <span>Observaciones de la entrevista</span>
+              <textarea id="notesInput" rows="5" maxlength="1000" placeholder="Qué explicó, qué modificó en vivo y qué necesita reforzar."></textarea>
+            </label>
+
+            <label class="field">
+              <span>Estado administrativo</span>
+              <select id="studentStatusInput">
+                <option value="active">Activo</option>
+                <option value="paused">En pausa</option>
+              </select>
+            </label>
+
+            <div class="evaluation-actions">
+              <button class="button primary" id="saveEvaluationButton" type="submit">Guardar evaluación</button>
+              <button class="button secondary" id="markReviewedButton" type="button">Marcar commit revisado</button>
+              <button class="button danger" id="deleteStudentButton" type="button">Eliminar registro</button>
+            </div>
+          </form>
+        </section>
+      </aside>
+    </section>
+
+    <section class="data-tools" aria-labelledby="dataToolsTitle">
+      <div>
+        <p class="section-kicker">Respaldo docente</p>
+        <h2 id="dataToolsTitle">Guardar o trasladar el seguimiento</h2>
+        <p>Las notas y observaciones se conservan con <code>localStorage</code>. Exporta el JSON para respaldarlas o moverlas a otro computador.</p>
+      </div>
+      <div class="data-actions">
+        <button class="button secondary" id="exportButton" type="button">Exportar JSON</button>
+        <label class="button secondary file-button">
+          Importar JSON
+          <input id="importInput" type="file" accept="application/json" hidden>
+        </label>
+        <button class="button danger" id="resetDataButton" type="button">Restablecer muestra</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="dashboard-footer">
+    <div class="shell footer-layout">
+      <p><strong>Alcance técnico:</strong> el tablero consulta repositorios públicos mediante la API de GitHub y actualiza cada 10 minutos mientras está abierto. La evaluación docente permanece local hasta exportarla.</p>
+      <p>Referencia: Robledo Market Lab · Seminario de Programación 2026.</p>
+    </div>
+  </footer>
+
+  <dialog id="addStudentDialog" class="student-dialog">
+    <form id="addStudentForm" method="dialog">
+      <div class="dialog-heading">
+        <div>
+          <p class="section-kicker">Nuevo seguimiento</p>
+          <h2>Agregar estudiante</h2>
+        </div>
+        <button class="icon-button" id="closeStudentDialog" type="button" aria-label="Cerrar">×</button>
+      </div>
+
+      <label class="field">
+        <span>Nombre</span>
+        <input name="name" type="text" minlength="2" maxlength="100" required>
+      </label>
+      <label class="field">
+        <span>Grupo</span>
+        <input name="group" type="text" placeholder="11°A" maxlength="20" required>
+      </label>
+      <label class="field">
+        <span>Repositorio público</span>
+        <input name="repository" type="text" placeholder="usuario/proyecto" required>
+      </label>
+      <label class="field">
+        <span>Proyecto principal</span>
+        <input name="project" type="text" maxlength="140" required>
+      </label>
+      <label class="field">
+        <span>Ruta</span>
+        <select name="track">
+          <option value="core">Consolidación funcional</option>
+          <option value="css">Especialización CSS</option>
+        </select>
+      </label>
+
+      <button class="button primary full" type="submit">Crear registro</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="progressToast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
