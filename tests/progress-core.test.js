@@ -48,8 +48,9 @@ test("normaliza URLs y nombres de repositorio", () => {
   );
 });
 
-test("detecta un commit nuevo frente al último revisado", () => {
+test("detecta commits pendientes y revisados", () => {
   assert.equal(getCommitReviewState("abc123", "abc123"), "reviewed");
   assert.equal(getCommitReviewState("def456", "abc123"), "new");
-  assert.equal(getCommitReviewState("def456", null), "unreviewed");
+  assert.equal(getCommitReviewState("def456", null), "new");
+  assert.equal(getCommitReviewState(null, null), "unknown");
 });
