@@ -1,11 +1,12 @@
 {
   "name": "robledo-market-senior",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Proyecto de referencia y tablero de seguimiento para Seminario de Programación.",
+  "description": "Proyecto de referencia, evaluación, asistencia y monitoreo automático para Seminario de Programación.",
   "scripts": {
     "start": "python -m http.server 8000",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "monitor": "node scripts/monitor-students.mjs"
   }
 }
