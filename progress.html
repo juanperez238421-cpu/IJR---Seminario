@@ -6,7 +6,7 @@
   <meta name="description" content="Tablero docente para registrar metas, evaluación y commits de los proyectos de Seminario de Programación.">
   <title>Seguimiento de estudiantes | Seminario de Programación</title>
   <link rel="stylesheet" href="css/progress.css">
-  <script type="module" src="js/progress.js"></script>
+  <script type="module" src="js/progress-roster-bootstrap.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Saltar al contenido</a>
@@ -21,6 +21,7 @@
         </p>
       </div>
       <nav class="header-actions" aria-label="Navegación principal">
+        <a class="button secondary" href="monitor.html">Monitoreo y asistencia</a>
         <a class="button secondary" href="index.html">Proyecto de referencia</a>
         <a class="button secondary" href="https://github.com/juanperez238421-cpu/IJR---Seminario" target="_blank" rel="noopener noreferrer">Repositorio</a>
         <button class="button primary" id="syncAllButton" type="button">Sincronizar GitHub</button>
@@ -36,7 +37,7 @@
           <h2 id="summaryTitle">Panel docente</h2>
         </div>
         <div class="sync-copy">
-          <span id="syncMessage">Actualización automática cada 10 minutos mientras la página esté abierta.</span>
+          <span id="syncMessage">El listado oficial se carga desde data/students.json; los repositorios se consultan al abrir la página.</span>
           <small id="lastUpdated"></small>
         </div>
       </div>
@@ -212,7 +213,7 @@
 
   <footer class="dashboard-footer">
     <div class="shell footer-layout">
-      <p><strong>Alcance técnico:</strong> el tablero consulta repositorios públicos mediante la API de GitHub y actualiza cada 10 minutos mientras está abierto. La evaluación docente permanece local hasta exportarla.</p>
+      <p><strong>Alcance técnico:</strong> el listado oficial y la línea base automática se cargan desde el repositorio central. La evaluación docente permanece local hasta exportarla.</p>
       <p>Referencia: Robledo Market Lab · Seminario de Programación 2026.</p>
     </div>
   </footer>
@@ -233,7 +234,7 @@
       </label>
       <label class="field">
         <span>Grupo</span>
-        <input name="group" type="text" placeholder="11°A" maxlength="20" required>
+        <input name="group" type="text" placeholder="11-A" maxlength="20" required>
       </label>
       <label class="field">
         <span>Repositorio público</span>
