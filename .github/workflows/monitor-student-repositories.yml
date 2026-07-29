@@ -1,0 +1,57 @@
+name: Monitor student repositories
+
+on:
+  schedule:
+    # 07:00 y 19:00 en Colombia (UTC-5)
+    - cron: "0 0,12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monitor-student-repositories
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check student repositories
+        id: monitor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/monitor-students.mjs
+
+      - name: Commit monitoring record
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/monitor/latest.json data/monitor/history.json data/monitor/summary.md
+          if git diff --cached --quiet; then
+            echo "No monitoring files changed."
+            exit 0
+          fi
+          git commit -m "chore(monitor): update student repository snapshot"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Write workflow summary
+        run: |
+          echo "## Seminario repository monitor" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Repositories checked: ${{ steps.monitor.outputs.checked }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- New commits detected: ${{ steps.monitor.outputs.updates }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Errors: ${{ steps.monitor.outputs.errors }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Next scheduled execution: approximately 12 hours." >> "$GITHUB_STEP_SUMMARY"
