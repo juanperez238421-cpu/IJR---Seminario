@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-28T23:00:00.000Z",
+  "generatedAt": "2026-07-29T14:01:33.701Z",
   "intervalHours": 12,
   "timezone": "America/Bogota",
   "summary": {
@@ -24,8 +24,8 @@
       "project": "Sistema de pedidos Delivery",
       "track": "core",
       "nextGoal": "Convertir Delivery en una interfaz HTML con eventos, validaciones y resultados visibles sin depender de prompt().",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
-      "previousSha": null,
+      "checkedAt": "2026-07-29T14:01:33.701Z",
+      "previousSha": "0245023324037e02b318d4aaa014caf5725f8552",
       "latestCommit": {
         "sha": "0245023324037e02b318d4aaa014caf5725f8552",
         "shortSha": "0245023",
@@ -34,7 +34,7 @@
         "date": "2026-07-08T19:40:47Z",
         "url": "https://github.com/jp0705git/SeminarioProgramacion2/commit/0245023324037e02b318d4aaa014caf5725f8552"
       },
-      "changeState": "baseline",
+      "changeState": "unchanged",
       "error": null
     },
     {
@@ -49,7 +49,7 @@
       "project": "Proyecto inicial por consolidar",
       "track": "core",
       "nextGoal": "Vincular su cuenta de GitHub y completar un proyecto con HTML, JavaScript, eventos, DOM y una validación.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
+      "checkedAt": "2026-07-29T14:01:33.701Z",
       "previousSha": null,
       "latestCommit": null,
       "changeState": "pending",
@@ -67,8 +67,8 @@
       "project": "Carrito de restaurante",
       "track": "css",
       "nextGoal": "Finalizar el recibo y avanzar a CSS responsive, jerarquía visual, estados de interacción y componentes reutilizables.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
-      "previousSha": null,
+      "checkedAt": "2026-07-29T14:01:33.701Z",
+      "previousSha": "aa78f2883714e0883e33810707c07305503417e5",
       "latestCommit": {
         "sha": "aa78f2883714e0883e33810707c07305503417e5",
         "shortSha": "aa78f28",
@@ -77,7 +77,7 @@
         "date": "2026-07-08T19:42:17Z",
         "url": "https://github.com/jrod917/Carrito/commit/aa78f2883714e0883e33810707c07305503417e5"
       },
-      "changeState": "baseline",
+      "changeState": "unchanged",
       "error": null
     },
     {
@@ -92,8 +92,8 @@
       "project": "Cajero automático didáctico",
       "track": "core",
       "nextGoal": "Corregir la autenticación y completar un flujo funcional de ingreso, consulta de saldo y retiro validado.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
-      "previousSha": null,
+      "checkedAt": "2026-07-29T14:01:33.701Z",
+      "previousSha": "2b4300f11504c6f3de6cb59f53ecb5c949ddc539",
       "latestCommit": {
         "sha": "2b4300f11504c6f3de6cb59f53ecb5c949ddc539",
         "shortSha": "2b4300f",
@@ -102,7 +102,7 @@
         "date": "2026-05-13T19:58:32Z",
         "url": "https://github.com/Pedropae07/practice_seminario/commit/2b4300f11504c6f3de6cb59f53ecb5c949ddc539"
       },
-      "changeState": "baseline",
+      "changeState": "unchanged",
       "error": null
     },
     {
@@ -117,7 +117,7 @@
       "project": "Formulario multipágina con persistencia",
       "track": "core",
       "nextGoal": "Vincular su repositorio y construir un formulario de dos páginas con validaciones, DOM y localStorage.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
+      "checkedAt": "2026-07-29T14:01:33.701Z",
       "previousSha": null,
       "latestCommit": null,
       "changeState": "pending",
@@ -135,8 +135,8 @@
       "project": "Registro de actividades",
       "track": "core",
       "nextGoal": "Ampliar el formulario, agregar validaciones y dejar evidencia individual mediante commits propios.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
-      "previousSha": null,
+      "checkedAt": "2026-07-29T14:01:33.701Z",
+      "previousSha": "5b8125d0959565b10e438ae662e0686efdaee372",
       "latestCommit": {
         "sha": "5b8125d0959565b10e438ae662e0686efdaee372",
         "shortSha": "5b8125d",
@@ -145,7 +145,7 @@
         "date": "2026-07-08T19:45:38Z",
         "url": "https://github.com/pablitojarita2008-oss/pablitoSeminario/commit/5b8125d0959565b10e438ae662e0686efdaee372"
       },
-      "changeState": "baseline",
+      "changeState": "unchanged",
       "error": null
     },
     {
@@ -160,7 +160,7 @@
       "project": "Sistema de pedidos con validaciones",
       "track": "core",
       "nextGoal": "Vincular su repositorio y completar catálogo, selección, cálculo de total y validación de entradas.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
+      "checkedAt": "2026-07-29T14:01:33.701Z",
       "previousSha": null,
       "latestCommit": null,
       "changeState": "pending",
@@ -178,7 +178,7 @@
       "project": "Cajero automático básico",
       "track": "core",
       "nextGoal": "Vincular su repositorio y completar autenticación, saldo, operación y mensajes visibles en la página.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
+      "checkedAt": "2026-07-29T14:01:33.701Z",
       "previousSha": null,
       "latestCommit": null,
       "changeState": "pending",
@@ -196,7 +196,7 @@
       "project": "Registro de actividades y resumen",
       "track": "core",
       "nextGoal": "Vincular su repositorio y crear un registro con validación, resumen editable y persistencia local.",
-      "checkedAt": "2026-07-28T23:00:00.000Z",
+      "checkedAt": "2026-07-29T14:01:33.701Z",
       "previousSha": null,
       "latestCommit": null,
       "changeState": "pending",
