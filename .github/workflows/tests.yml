@@ -21,5 +21,11 @@ jobs:
         with:
           node-version: 20
 
+      - name: Check JavaScript syntax
+        run: |
+          node --check scripts/monitor-students.mjs
+          node --check js/monitor.js
+          node --check js/progress-roster-bootstrap.js
+
       - name: Run tests
         run: npm test
