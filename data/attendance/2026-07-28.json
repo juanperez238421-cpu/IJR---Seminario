@@ -1,0 +1,25 @@
+{
+  "date": "2026-07-28",
+  "subject": "SEMINARIO PROGRAMACIÓN",
+  "school": "Instituto Jorge Robledo",
+  "timezone": "America/Bogota",
+  "statusLegend": ["pending", "present", "late", "absent", "excused"],
+  "updatedAt": null,
+  "groups": {
+    "11-A": [
+      { "studentId": "11a-01-arango-juan-pablo", "rosterNumber": 1, "name": "ARANGO GIRALDO JUAN PABLO", "status": "pending", "note": "" },
+      { "studentId": "11a-12-mazo-jeronimo", "rosterNumber": 12, "name": "MAZO LOPEZ JERONIMO", "status": "pending", "note": "" },
+      { "studentId": "11a-16-rodriguez-jeronimo", "rosterNumber": 16, "name": "RODRIGUEZ PEÑA JERONIMO", "status": "pending", "note": "" }
+    ],
+    "11-B": [
+      { "studentId": "11b-01-arbelaez-pedro-pablo", "rosterNumber": 1, "name": "ARBELAEZ ESCOBAR PEDRO PABLO", "status": "pending", "note": "" },
+      { "studentId": "11b-06-chavarriaga-samuel", "rosterNumber": 6, "name": "CHAVARRIAGA AVENDAÑO SAMUEL", "status": "pending", "note": "" },
+      { "studentId": "11b-12-jaramillo-pablo", "rosterNumber": 12, "name": "JARAMILLO PALACIO PABLO", "status": "pending", "note": "" },
+      { "studentId": "11b-20-rico-alejandro", "rosterNumber": 20, "name": "RICO PARAMO ALEJANDRO", "status": "pending", "note": "" }
+    ],
+    "11-C": [
+      { "studentId": "11c-07-gonzalez-tomas", "rosterNumber": 7, "name": "GONZALEZ GIRALDO TOMAS", "status": "pending", "note": "" },
+      { "studentId": "11c-19-rincon-alejandro", "rosterNumber": 19, "name": "RINCON TORRES ALEJANDRO", "status": "pending", "note": "" }
+    ]
+  }
+}
