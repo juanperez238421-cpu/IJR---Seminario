@@ -80,7 +80,7 @@ jobs:
             -show_entries format=duration -of default=noprint_wrappers=1 "$LOW_VIDEO"
 
       - name: Clear media before final render
-        run: rm -rf media
+        run: sudo rm -rf media
 
       - name: Final high-quality render -pqh
         run: |
