@@ -61,8 +61,8 @@ jobs:
       - name: Protocol validation render -pql
         run: |
           docker run --rm --user 0:0 \
-            -e PATH="/manim/.ci-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             -v "$PWD:/manim" \
+            -v "$PWD/.ci-bin/xdg-open:/usr/bin/xdg-open:ro" \
             manimcommunity/manim:stable \
             manim -pql manim/html-two-pages/two_html_pages_manim.py HTMLTwoPagesCourse \
               --format=mp4 --disable_caching --progress_bar none
@@ -80,8 +80,8 @@ jobs:
       - name: Final high-quality render -pqh
         run: |
           docker run --rm --user 0:0 \
-            -e PATH="/manim/.ci-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
             -v "$PWD:/manim" \
+            -v "$PWD/.ci-bin/xdg-open:/usr/bin/xdg-open:ro" \
             manimcommunity/manim:stable \
             manim -pqh manim/html-two-pages/two_html_pages_manim.py HTMLTwoPagesCourse \
               --format=mp4 --disable_caching --progress_bar none
