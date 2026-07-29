@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro del estudiante</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="card form-card" aria-labelledby="form-title">
+      <p class="eyebrow">Página 1 de 2</p>
+      <h1 id="form-title">Registro del estudiante</h1>
+      <p class="intro">
+        Completa los datos. El formulario abrirá una segunda página que los
+        leerá, validará y mostrará.
+      </p>
+
+      <form action="resultado.html" method="get">
+        <div class="field-group">
+          <label for="nombre">Nombre completo</label>
+          <input
+            id="nombre"
+            name="nombre"
+            type="text"
+            placeholder="Ejemplo: Ana Torres"
+            autocomplete="name"
+            required
+          >
+        </div>
+
+        <div class="field-group">
+          <label for="edad">Edad</label>
+          <input
+            id="edad"
+            name="edad"
+            type="number"
+            min="5"
+            max="100"
+            placeholder="Ejemplo: 14"
+            required
+          >
+        </div>
+
+        <div class="field-group">
+          <label for="curso">Curso</label>
+          <input
+            id="curso"
+            name="curso"
+            type="text"
+            placeholder="Ejemplo: 8-B"
+            required
+          >
+        </div>
+
+        <div class="field-group">
+          <label for="tema">Tema favorito</label>
+          <select id="tema" name="tema" required>
+            <option value="" selected disabled>Selecciona una opción</option>
+            <option value="HTML y CSS">HTML y CSS</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="Diseño web">Diseño web</option>
+            <option value="Análisis de datos">Análisis de datos</option>
+          </select>
+        </div>
+
+        <button type="submit">Procesar información</button>
+      </form>
+
+      <p class="privacy-note">
+        Este ejemplo usa <strong>GET</strong> para que el flujo sea visible en
+        la URL. No envíes contraseñas ni información sensible.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
