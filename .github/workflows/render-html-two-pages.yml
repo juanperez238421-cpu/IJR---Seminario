@@ -7,6 +7,12 @@ on:
     paths:
       - "manim/html-two-pages/**"
       - ".github/workflows/render-html-two-pages.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "manim/html-two-pages/**"
+      - ".github/workflows/render-html-two-pages.yml"
   workflow_dispatch:
 
 permissions:
