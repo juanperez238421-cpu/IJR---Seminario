@@ -29,7 +29,15 @@ jobs:
 
       - name: Restore Manim source
         run: |
-          base64 --decode manim/html-two-pages/two_html_pages_manim.py.gz.b64 | gunzip > manim/html-two-pages/two_html_pages_manim.py
+          cat manim/html-two-pages/source.part00 \
+              manim/html-two-pages/source.part01 \
+              manim/html-two-pages/source.part02 \
+              manim/html-two-pages/source.part03 \
+              manim/html-two-pages/source.part04 \
+              > manim/html-two-pages/source.b64
+          echo "a952adc92998146edff015c6e7594f6084c811978a97d59e7c525d1d656bb5ac  manim/html-two-pages/source.b64" | sha256sum --check
+          base64 --decode manim/html-two-pages/source.b64 | gunzip > manim/html-two-pages/two_html_pages_manim.py
+          echo "4551acf13fa1202fc9d2bc4535be69d1032b751a443fdb30afe271bfe44c6173  manim/html-two-pages/two_html_pages_manim.py" | sha256sum --check
           test -s manim/html-two-pages/two_html_pages_manim.py
 
       - name: Validate source files
