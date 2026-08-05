@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Validate published seminar dashboard
 
 on:
   push:
@@ -8,32 +8,27 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  validate:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+      - name: Validate dashboard source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s monitor.html
+          test -s data/students.json
+          test -s data/monitor/latest.json
+          python -m json.tool data/students.json >/dev/null
+          python -m json.tool data/monitor/latest.json >/dev/null
+          echo "Dashboard source files are valid."
+          echo "Published URL: https://juanperez238421-cpu.github.io/IJR---Seminario/monitor.html"
 
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Explain hosting target
+        run: |
+          echo "The public dashboard is hosted in juanperez238421-cpu/juanperez238421-cpu.github.io."
+          echo "This repository remains the source of roster and monitoring data."
