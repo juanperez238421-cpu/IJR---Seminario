@@ -125,6 +125,7 @@
         self.wait(PAUSE_FINAL)
 
         closing = self.text("SEMILLERO DE PROGRAMACIÓN · APRENDER, CONSTRUIR Y COMPARTIR", 35, BOLD)
+        self.fit(closing, 14.0, 0.72)
         self.play(*[FadeOut(mob) for mob in list(self.mobjects)], run_time=RUN_NORMAL)
         self.play(FadeIn(closing), run_time=RUN_SLOW)
         self.wait(PAUSE_FINAL)
