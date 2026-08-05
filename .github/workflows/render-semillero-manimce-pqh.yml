@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - render/semillero-levels-pqh-20260805
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
