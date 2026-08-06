@@ -1,0 +1,139 @@
+    def mobility(self) -> None:
+        self.set_header(
+            7,
+            "¿CÓMO SE AVANZA ENTRE LOS NIVELES?",
+            "El avance depende de evidencias observables, no únicamente del tiempo de permanencia.",
+        )
+        badges = VGroup(
+            self.numbered_badge(1, "BÁSICO", 3.65),
+            self.numbered_badge(2, "INTERMEDIO", 3.65),
+            self.numbered_badge(3, "ALTO", 3.65),
+        ).arrange(RIGHT, buff=0.78).move_to(UP * 1.55)
+        arrows = VGroup(
+            Arrow(badges[0].get_right(), badges[1].get_left(), buff=0.08, color=BLACK_LINE),
+            Arrow(badges[1].get_right(), badges[2].get_left(), buff=0.08, color=BLACK_LINE),
+        )
+        criteria = VGroup(
+            self.step_card("A", "FUNCIONAMIENTO", "El producto ejecuta la tarea esperada."),
+            self.step_card("B", "COMPRENSIÓN", "Explica las decisiones principales."),
+            self.step_card("C", "AUTONOMÍA", "Corrige, prueba y continúa con menor ayuda."),
+        ).arrange(RIGHT, buff=0.34).move_to(DOWN * 0.40)
+        message = self.statement_panel(
+            "Avanzar significa demostrar mayor autonomía y asumir un reto nuevo.",
+            12.4,
+            1.02,
+            26,
+        ).to_edge(DOWN, buff=0.22)
+
+        self.play(FadeIn(badges), run_time=RUN_SLOW)
+        self.play(LaggedStart(*[GrowArrow(a) for a in arrows], lag_ratio=0.22), run_time=RUN_NORMAL)
+        self.play(LaggedStart(*[FadeIn(card) for card in criteria], lag_ratio=0.14), run_time=RUN_SLOW)
+        self.play(FadeIn(message), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+
+    def third_period_projects(self) -> None:
+        self.set_header(
+            8,
+            "TERCER PERIODO: DESARROLLO DE PROYECTOS",
+            "Los aprendizajes se aplicarán en proyectos individuales o grupales de diferentes temáticas.",
+        )
+        items = (
+            ("01", "DESARROLLO WEB", "Sitios, portafolios, formularios y servicios escolares."),
+            ("02", "DATOS", "Análisis, tableros, visualización y decisiones."),
+            ("03", "AUTOMATIZACIÓN", "Scripts que organizan, calculan o reducen tareas."),
+            ("04", "JUEGOS", "Retos educativos y evaluación interactiva."),
+            ("05", "SIMULACIÓN", "Modelos matemáticos, físicos o estadísticos."),
+            ("06", "DISEÑO 3D", "Prototipos, impresión 3D y tecnología aplicada."),
+        )
+        cards = VGroup(*[self.step_card(*item, width=6.65) for item in items])
+        left = VGroup(*cards[:3]).arrange(DOWN, buff=0.22)
+        right = VGroup(*cards[3:]).arrange(DOWN, buff=0.22)
+        grid = VGroup(left, right).arrange(RIGHT, buff=0.38, aligned_edge=UP).move_to(DOWN * 0.05)
+        footer = self.statement_panel(
+            "Problema  →  diseño  →  prototipo  →  pruebas  →  presentación",
+            12.8,
+            1.02,
+            25,
+        ).to_edge(DOWN, buff=0.16)
+
+        self.play(LaggedStart(*[FadeIn(card) for card in cards], lag_ratio=0.10), run_time=RUN_SLOW * 1.8)
+        self.play(FadeIn(footer), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+
+    def individual_and_group(self) -> None:
+        self.set_header(
+            9,
+            "PROYECTOS INDIVIDUALES Y PROYECTOS GRUPALES",
+            "La modalidad se elegirá según el alcance del reto, los intereses y las responsabilidades necesarias.",
+        )
+        individual = self.panel(
+            "PROYECTO INDIVIDUAL",
+            ("Un responsable principal", "Alcance concentrado", "Ritmo personal", "Evidencia de autonomía"),
+            width=6.45,
+            title_size=27,
+            body_size=22,
+        )
+        group = self.panel(
+            "PROYECTO GRUPAL",
+            ("Roles definidos", "Integración de competencias", "Coordinación con GitHub", "Aporte verificable de cada integrante"),
+            width=6.45,
+            title_size=27,
+            body_size=22,
+        )
+        panels = VGroup(individual, group).arrange(RIGHT, buff=0.45).move_to(UP * 0.42)
+        common = self.statement_panel(
+            "Condiciones comunes: problema definido, prototipo funcional, pruebas y presentación final.",
+            13.1,
+            1.06,
+            24,
+        ).to_edge(DOWN, buff=0.28)
+
+        self.play(FadeIn(individual), run_time=RUN_NORMAL)
+        self.play(FadeIn(group), run_time=RUN_NORMAL)
+        self.play(FadeIn(common), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+
+    def final_route(self) -> None:
+        self.set_header(
+            10,
+            "UNA COMUNIDAD, TRES RUTAS DE DESARROLLO",
+            "Cada nivel tiene una función diferente, pero todos conducen hacia proyectos con propósito.",
+        )
+        cards = VGroup(
+            self.panel("NIVEL 1 · BÁSICO", ("COMPRENDER", "Primera evidencia funcional"), width=4.35, title_size=24, body_size=23),
+            self.panel("NIVEL 2 · INTERMEDIO", ("CONECTAR", "Proceso completo y probado"), width=4.35, title_size=24, body_size=23),
+            self.panel("NIVEL 3 · ALTO", ("DISEÑAR", "Solución autónoma y documentada"), width=4.35, title_size=24, body_size=23),
+        ).arrange(RIGHT, buff=0.36).move_to(UP * 0.55)
+        route = self.statement_panel(
+            "Diagnóstico  →  ruta personalizada  →  evidencia  →  proyecto",
+            12.6,
+            1.06,
+            27,
+        ).to_edge(DOWN, buff=0.88)
+        note = self.text(
+            "El objetivo no es que todos hagan lo mismo, sino que todos puedan avanzar.",
+            25,
+            BOLD,
+        ).to_edge(DOWN, buff=0.28)
+
+        self.play(LaggedStart(*[FadeIn(card) for card in cards], lag_ratio=0.18), run_time=RUN_SLOW)
+        self.play(FadeIn(route), run_time=RUN_NORMAL)
+        self.play(FadeIn(note), run_time=RUN_NORMAL)
+        self.wait(PAUSE_FINAL)
+
+        closing = self.text("SEMILLERO DE PROGRAMACIÓN · APRENDER, CONSTRUIR Y COMPARTIR", 35, BOLD)
+        self.fit(closing, 14.0, 0.72)
+        self.play(*[FadeOut(mob) for mob in list(self.mobjects)], run_time=RUN_NORMAL)
+        self.play(FadeIn(closing), run_time=RUN_SLOW)
+        self.wait(PAUSE_FINAL)
+        self.play(FadeOut(closing), run_time=RUN_NORMAL)
+
+
+SemilleroTresNiveles = SemilleroProgramacionTresNiveles
+
+
+if __name__ == "__main__":
+    print("Semillero three-level ManimCE scene validated.")

@@ -1,0 +1,170 @@
+        )
+        num = self.text(f"{number:02d}", 22, BOLD).move_to(num_box)
+        name = self.text(label, 26, BOLD)
+        row = VGroup(VGroup(num_box, num), name).arrange(RIGHT, buff=0.24)
+        row.move_to(box)
+        return VGroup(box, row)
+
+    def step_card(self, number: str, title: str, body: str, width: float = 4.35) -> VGroup:
+        badge = RoundedRectangle(
+            width=0.56,
+            height=0.48,
+            corner_radius=0.09,
+            stroke_color=BLACK_LINE,
+            stroke_width=1.5,
+            fill_color=VERY_LIGHT_GRAY,
+            fill_opacity=1.0,
+        )
+        badge_text = self.text(number, 19, BOLD).move_to(badge)
+        heading = self.text(title, 21, BOLD)
+        body_text = self.text(body, 18)
+        content = VGroup(VGroup(VGroup(badge, badge_text), heading).arrange(RIGHT, buff=0.14), body_text)
+        content.arrange(DOWN, aligned_edge=LEFT, buff=0.10)
+        box = RoundedRectangle(
+            width=width,
+            height=1.12,
+            corner_radius=0.12,
+            stroke_color=BLACK_LINE,
+            stroke_width=1.6,
+            fill_color=WHITE_FILL,
+            fill_opacity=1.0,
+        )
+        self.fit(content, width - 0.42, 0.90)
+        content.move_to(box).align_to(box, LEFT).shift(RIGHT * 0.21)
+        return VGroup(box, content)
+
+    def code_window(self, lines: Sequence[str], width: float = 6.0, height: float = 3.3) -> VGroup:
+        window = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.12,
+            stroke_color=BLACK_LINE,
+            stroke_width=2.0,
+            fill_color=PAPER_GRAY,
+            fill_opacity=1.0,
+        )
+        bar = Rectangle(
+            width=width,
+            height=0.44,
+            stroke_color=BLACK_LINE,
+            stroke_width=1.4,
+            fill_color=VERY_LIGHT_GRAY,
+            fill_opacity=1.0,
+        ).align_to(window, UP)
+        dots = VGroup(*[
+            Circle(radius=0.05, stroke_color=BLACK_LINE, stroke_width=1.0)
+            for _ in range(3)
+        ]).arrange(RIGHT, buff=0.09)
+        dots.move_to(bar.get_left() + RIGHT * 0.31)
+        code = VGroup(*[
+            self.text(line, 18, font="DejaVu Sans Mono") for line in lines
+        ]).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
+        self.fit(code, width - 0.58, height - 0.78)
+        code.move_to(window).align_to(window, LEFT).shift(RIGHT * 0.29 + DOWN * 0.18)
+        return VGroup(window, bar, dots, code)
+
+    def set_header(self, number: int, title: str, subtitle: str) -> None:
+        badge = RoundedRectangle(
+            width=0.72,
+            height=0.52,
+            corner_radius=0.10,
+            stroke_color=BLACK_LINE,
+            stroke_width=2.0,
+            fill_color=WHITE_FILL,
+            fill_opacity=1.0,
+        )
+        badge_text = self.text(f"{number:02d}", 23, BOLD).move_to(badge)
+        title_text = self.text(title, 32, BOLD)
+        self.fit(title_text, SAFE_WIDTH - 1.15, 0.58)
+        row = VGroup(VGroup(badge, badge_text), title_text).arrange(RIGHT, buff=0.25)
+        row.to_edge(UP, buff=0.16).to_edge(LEFT, buff=0.48)
+
+        rule = Line(LEFT * 7.48, RIGHT * 7.48, color=LIGHT_GRAY, stroke_width=2)
+        rule.next_to(row, DOWN, buff=0.07)
+
+        words = subtitle.split()
+        if len(subtitle) > 96:
+            middle = len(words) // 2
+            split = min(
+                range(max(1, middle - 5), min(len(words), middle + 6)),
+                key=lambda i: abs(len(" ".join(words[:i])) - len(" ".join(words[i:]))),
+            )
+            subtitle_mob = VGroup(
+                self.text(" ".join(words[:split]), 19),
+                self.text(" ".join(words[split:]), 19),
+            ).arrange(DOWN, aligned_edge=LEFT, buff=0.04)
+        else:
+            subtitle_mob = self.text(subtitle, 20)
+        self.fit(subtitle_mob, 14.25, 0.72)
+        subtitle_mob.next_to(rule, DOWN, buff=0.08).align_to(row, LEFT)
+
+        new_header = VGroup(row, rule)
+        outgoing = [m for m in (self.header_group, self.subtitle_group) if m is not None]
+        if outgoing:
+            self.play(*[FadeOut(m) for m in outgoing], run_time=RUN_QUICK)
+            self.remove(*outgoing)
+        self.header_group = new_header
+        self.subtitle_group = subtitle_mob
+        self.play(FadeIn(new_header), FadeIn(subtitle_mob), run_time=RUN_QUICK)
+
+    def clear_stage(self, keep_header: bool = True) -> None:
+        keep_ids: set[int] = set()
+        if keep_header:
+            for persistent in (self.header_group, self.subtitle_group):
+                if persistent is not None:
+                    keep_ids.update(id(member) for member in persistent.get_family())
+        removable = [mob for mob in self.mobjects if id(mob) not in keep_ids]
+        if removable:
+            self.play(*[FadeOut(mob) for mob in removable], run_time=RUN_NORMAL)
+            self.remove(*removable)
+        self.wait(0.10)
+
+    # ------------------------------------------------------------------
+    # Main sequence
+    # ------------------------------------------------------------------
+    def construct(self) -> None:
+        self.opening()
+        self.why_three_levels()
+        self.personalized_route()
+        self.basic_level()
+        self.intermediate_level()
+        self.high_level()
+        self.mobility()
+        self.third_period_projects()
+        self.individual_and_group()
+        self.final_route()
+
+    def opening(self) -> None:
+        title = self.text("SEMILLERO DE PROGRAMACIÓN", 50, BOLD)
+        subtitle = self.text("NUEVA ORGANIZACIÓN EN TRES NIVELES", 29, BOLD)
+        badges = VGroup(
+            self.numbered_badge(1, "BÁSICO", 3.75),
+            self.numbered_badge(2, "INTERMEDIO", 3.75),
+            self.numbered_badge(3, "ALTO", 3.75),
+        ).arrange(RIGHT, buff=0.48)
+        stack = VGroup(title, subtitle, badges).arrange(DOWN, buff=0.48).move_to(UP * 0.30)
+        note = self.statement_panel(
+            "Una ruta flexible, personalizada y orientada a proyectos.",
+            11.5,
+            1.00,
+            26,
+        ).to_edge(DOWN, buff=0.62)
+        footer = self.text("Instituto Jorge Robledo · Tercer periodo 2026", 20)
+        footer.to_edge(DOWN, buff=0.22)
+
+        self.play(FadeIn(title), run_time=RUN_SLOW)
+        self.play(FadeIn(subtitle), run_time=RUN_NORMAL)
+        self.play(LaggedStart(*[FadeIn(b) for b in badges], lag_ratio=0.18), run_time=RUN_SLOW)
+        self.play(FadeIn(note), FadeIn(footer), run_time=RUN_NORMAL)
+        self.wait(PAUSE_FINAL)
+        self.play(*[FadeOut(m) for m in (title, subtitle, badges, note, footer)], run_time=RUN_NORMAL)
+
+    def why_three_levels(self) -> None:
+        self.set_header(
+            2,
+            "¿POR QUÉ ORGANIZAR EL SEMILLERO EN TRES NIVELES?",
+            "Los estudiantes no parten del mismo punto ni necesitan el mismo tipo de acompañamiento.",
+        )
+        cards = VGroup(
+            self.panel("PUNTO DE PARTIDA", ("Primera experiencia", "Conceptos aún nuevos", "Necesita guía directa"), width=4.35),
+            self.panel("PROCESO EN CURSO", ("Ya escribe código", "Conecta componentes", "Necesita retos guiados"), width=4.35),

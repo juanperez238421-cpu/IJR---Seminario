@@ -1,0 +1,188 @@
+name: Render Semillero Levels ManimCE PQH V2
+
+on:
+  push:
+    branches:
+      - render/semillero-levels-pqh-20260805
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout render branch
+        uses: actions/checkout@v4
+
+      - name: Reconstruct and validate exact Python source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .render_chunks/semillero_part_*.pyfrag > semillero_programacion_tres_niveles_manimce.py
+          echo "1380bfe9a349262df4111ca45211a42020b1ac5edac037529729d6e7fe9484f9  semillero_programacion_tres_niveles_manimce.py" | sha256sum -c -
+          python -m py_compile semillero_programacion_tres_niveles_manimce.py
+          grep -n '^class SemilleroProgramacionTresNiveles(Scene):' semillero_programacion_tres_niveles_manimce.py
+          if grep -n 'camera\.frame\|MovingCameraScene' semillero_programacion_tres_niveles_manimce.py; then
+            echo 'Unexpected moving-camera code found.' >&2
+            exit 1
+          fi
+
+      - name: Pull official ManimCE 0.20.1 image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull manimcommunity/manim:v0.20.1
+
+      - name: Prepare writable directories
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p media delivery qa
+          chmod -R u+rwx media delivery qa
+
+      - name: Complete native QA render with literal -pql
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp/manim-home \
+            -e LESSON_TIME_SCALE=0.12 \
+            -v "$PWD:/manim" \
+            -w /manim \
+            --entrypoint bash \
+            manimcommunity/manim:v0.20.1 \
+            -c '
+              set -euo pipefail
+              mkdir -p /tmp/manim-bin
+              printf "#!/usr/bin/env bash\nexit 0\n" > /tmp/manim-bin/xdg-open
+              chmod +x /tmp/manim-bin/xdg-open
+              export PATH="/tmp/manim-bin:$PATH"
+              manim -pql \
+                semillero_programacion_tres_niveles_manimce.py \
+                SemilleroProgramacionTresNiveles \
+                --format=mp4 \
+                --renderer=cairo \
+                --disable_caching
+            ' 2>&1 | tee render_pql.log
+
+      - name: Final native render with literal -pqh
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp/manim-home \
+            -e LESSON_TIME_SCALE=1.0 \
+            -v "$PWD:/manim" \
+            -w /manim \
+            --entrypoint bash \
+            manimcommunity/manim:v0.20.1 \
+            -c '
+              set -euo pipefail
+              mkdir -p /tmp/manim-bin
+              printf "#!/usr/bin/env bash\nexit 0\n" > /tmp/manim-bin/xdg-open
+              chmod +x /tmp/manim-bin/xdg-open
+              export PATH="/tmp/manim-bin:$PATH"
+              manim -pqh \
+                semillero_programacion_tres_niveles_manimce.py \
+                SemilleroProgramacionTresNiveles \
+                --format=mp4 \
+                --renderer=cairo \
+                --disable_caching
+            ' 2>&1 | tee render_pqh.log
+
+      - name: Inventory and select final MP4 robustly
+        shell: bash
+        run: |
+          set -euo pipefail
+          find media -type f -name '*.mp4' -printf '%T@ %s %p\n' | sort -nr | tee mp4_inventory.txt
+
+          VIDEO="$(find media -type f -name 'SemilleroProgramacionTresNiveles.mp4' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+          if [ -z "$VIDEO" ]; then
+            VIDEO="$(find media -type f -name '*.mp4' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+          fi
+
+          test -n "$VIDEO"
+          test -s "$VIDEO"
+          printf '%s\n' "$VIDEO" | tee final_video_path.txt
+          ls -lh "$VIDEO"
+
+      - name: Verify codec, dimensions, decoding and QA frames
+        shell: bash
+        run: |
+          set -euo pipefail
+          VIDEO="$(cat final_video_path.txt)"
+          test -s "$VIDEO"
+
+          if ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+
+          ffprobe -v error \
+            -show_entries stream=codec_name,width,height,r_frame_rate,pix_fmt \
+            -show_entries format=duration,size \
+            -of default=noprint_wrappers=1 \
+            "$VIDEO" | tee ffprobe.txt
+
+          grep -q '^codec_name=h264$' ffprobe.txt
+          grep -q '^width=1920$' ffprobe.txt
+          grep -q '^height=1080$' ffprobe.txt
+          grep -q '^r_frame_rate=30/1$' ffprobe.txt
+          grep -q '^pix_fmt=yuv420p$' ffprobe.txt
+
+          ffmpeg -v error -i "$VIDEO" -f null -
+          ffmpeg -y -ss 00:00:05 -i "$VIDEO" -frames:v 1 qa/frame_05s.png
+          ffmpeg -y -ss 00:00:30 -i "$VIDEO" -frames:v 1 qa/frame_30s.png
+          ffmpeg -y -sseof -5 -i "$VIDEO" -frames:v 1 qa/frame_final.png
+          test -s qa/frame_05s.png
+          test -s qa/frame_30s.png
+          test -s qa/frame_final.png
+
+      - name: Stage verified reproducible delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          VIDEO="$(cat final_video_path.txt)"
+          cp "$VIDEO" delivery/Semillero_Tres_Niveles_ManimCE_PQH_1080p30.mp4
+          cp semillero_programacion_tres_niveles_manimce.py delivery/
+          cp render_pql.log render_pqh.log ffprobe.txt mp4_inventory.txt final_video_path.txt delivery/
+          cp qa/frame_05s.png qa/frame_30s.png qa/frame_final.png delivery/
+
+          cat > delivery/RENDER_INFO.txt <<'EOF'
+          Scene: SemilleroProgramacionTresNiveles
+          Source: semillero_programacion_tres_niveles_manimce.py
+          ManimCE: 0.20.1
+          Renderer: Cairo
+          Resolution: 1920 x 1080
+          FPS: 30
+          Preview command:
+          manim -pql semillero_programacion_tres_niveles_manimce.py SemilleroProgramacionTresNiveles --format=mp4 --renderer=cairo --disable_caching
+          Final command:
+          manim -pqh semillero_programacion_tres_niveles_manimce.py SemilleroProgramacionTresNiveles --format=mp4 --renderer=cairo --disable_caching
+          Stability controls:
+          - Static Scene class
+          - No camera.frame animation
+          - No MovingCameraScene
+          - No external frame interpolation or slideshow renderer
+          EOF
+
+          sha256sum delivery/* > delivery/SHA256SUMS.txt
+          test -s delivery/Semillero_Tres_Niveles_ManimCE_PQH_1080p30.mp4
+          test -s delivery/SHA256SUMS.txt
+
+      - name: Upload verified native ManimCE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Semillero_Tres_Niveles_ManimCE_PQH_V2
+          path: delivery/
+          if-no-files-found: error
+          retention-days: 7
