@@ -1,0 +1,132 @@
+urn parts.scale(scale)
+
+    def boat(self, scale: float = 1.0, label: str | None = None) -> VGroup:
+        hull = Polygon(LEFT*0.90, RIGHT*0.90, RIGHT*0.62+DOWN*0.32, LEFT*0.62+DOWN*0.32,
+                       stroke_color=BLACK_LINE, stroke_width=2.0, fill_color=WHITE, fill_opacity=1)
+        mast = Line(ORIGIN+UP*0.05, ORIGIN+UP*1.15, color=BLACK_LINE, stroke_width=1.7)
+        sail = Polygon(ORIGIN+UP*1.10, ORIGIN+UP*0.25, RIGHT*0.70+UP*0.25,
+                       stroke_color=BLACK_LINE, stroke_width=1.7, fill_color=VERY_LIGHT_GRAY, fill_opacity=1)
+        waves = VGroup(*[
+            Arc(radius=0.27, start_angle=0, angle=PI, stroke_color=MID_GRAY, stroke_width=1.4)
+            for _ in range(4)
+        ]).arrange(RIGHT, buff=-0.08).next_to(hull, DOWN, buff=0.05)
+        parts = VGroup(hull, mast, sail, waves)
+        if label:
+            parts = VGroup(parts, self.text(label, 18, BOLD).next_to(parts, DOWN, buff=0.15))
+        return parts.scale(scale)
+
+    def arrow_with_label(self, start: np.ndarray, end: np.ndarray, label: str, label_shift=UP*0.18) -> VGroup:
+        arrow = Arrow(start, end, buff=0.12, color=BLACK_LINE, stroke_width=2.0, max_tip_length_to_length_ratio=0.14)
+        text = self.text(label, 16, MEDIUM).move_to((start + end)/2 + label_shift)
+        return VGroup(arrow, text)
+
+    # ------------------------------------------------------------------
+    # Lesson orchestration
+    # ------------------------------------------------------------------
+    def construct(self) -> None:
+        self.opening()
+        self.scene_real_object()
+        self.scene_blueprint_instances()
+        self.scene_encapsulation()
+        self.scene_inheritance()
+        self.scene_polymorphism()
+        self.scene_composition()
+        self.scene_project_thinking()
+        self.standard_closing("MODEL THE WORLD. GIVE EACH OBJECT A RESPONSIBILITY.")
+
+    def opening(self) -> None:
+        # Retain the V9 message, but make the hierarchy more readable.
+        self.standard_opening(
+            "SEMINAR - GRADE 11",
+            "OBJECT-ORIENTED PROGRAMMING",
+            "AS A LIVING SYSTEM",
+            "Do not memorize boxes. Watch objects own state, perform actions, and cooperate.",
+        )
+
+    # ------------------------------------------------------------------
+    # 01 — real object
+    # ------------------------------------------------------------------
+    def scene_real_object(self) -> None:
+        self.set_header(
+            1,
+            "START WITH A REAL OBJECT",
+            "OOP begins with two questions: what does this object know, and what can this object do?",
+        )
+
+        bot = self.robot(scale=1.22, label="Atlas").move_to(LEFT*2.65 + DOWN*0.35)
+        state_title = self.text("WHAT DOES IT KNOW?", 23, BOLD)
+        state = VGroup(
+            self.pill("name = Atlas", 2.10),
+            self.pill("energy = 90", 2.10),
+            self.pill("position = 1", 2.10),
+        ).arrange(DOWN, buff=0.22)
+        state_block = VGroup(state_title, state).arrange(DOWN, buff=0.28).move_to(RIGHT*2.65 + UP*0.75)
+
+        behavior_title = self.text("WHAT CAN IT DO?", 23, BOLD)
+        behavior = VGroup(self.pill("move()", 1.65), self.pill("recharge()", 1.95)).arrange(RIGHT, buff=0.24)
+        behavior_block = VGroup(behavior_title, behavior).arrange(DOWN, buff=0.28).move_to(RIGHT*2.65 + DOWN*1.65)
+
+        arrows = VGroup(
+            Arrow(bot.get_right()+UP*0.55, state.get_left()+LEFT*0.18+UP*0.55, buff=0.05, color=LIGHT_GRAY, stroke_width=2),
+            Arrow(bot.get_right()+DOWN*0.42, behavior.get_left()+LEFT*0.18, buff=0.05, color=LIGHT_GRAY, stroke_width=2),
+        )
+        layout = VGroup(bot, state_block, behavior_block, arrows)
+        self.assert_content_safe(layout, "scene_01 real object")
+
+        self.play(FadeIn(bot, shift=UP*0.12), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(Create(arrows[0]), FadeIn(state_title), run_time=RUN_NORMAL)
+        self.play(LaggedStart(*[FadeIn(p, shift=RIGHT*0.10) for p in state], lag_ratio=0.16), run_time=RUN_SLOW)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(Create(arrows[1]), FadeIn(behavior_title), run_time=RUN_NORMAL)
+        self.play(LaggedStart(*[FadeIn(p, shift=UP*0.08) for p in behavior], lag_ratio=0.22), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+
+        move_tag = behavior[0].copy().scale(1.08)
+        move_tag.move_to(behavior[0])
+        self.play(Transform(behavior[0], move_tag), bot.animate.shift(RIGHT*0.42), run_time=RUN_SLOW)
+        self.wait(PAUSE_READ)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 02 — blueprint -> independent objects
+    # ------------------------------------------------------------------
+    def scene_blueprint_instances(self) -> None:
+        self.set_header(
+            2,
+            "ONE BLUEPRINT -> MANY INDEPENDENT OBJECTS",
+            "The class is shared, but every object receives its own state and can change independently.",
+        )
+
+        blueprint_box = RoundedRectangle(width=3.55, height=4.45, corner_radius=0.14,
+                                         stroke_color=BLACK_LINE, stroke_width=1.8, fill_color=WHITE, fill_opacity=1)
+        bp_title = self.text("Robot blueprint", 25, BOLD).next_to(blueprint_box.get_top(), DOWN, buff=0.25)
+        bp_robot = self.robot(scale=0.72).move_to(blueprint_box.get_center()+UP*0.10)
+        bp_method = self.pill("move()", 1.40).next_to(bp_robot, DOWN, buff=0.28)
+        blueprint = VGroup(blueprint_box, bp_title, bp_robot, bp_method).move_to(LEFT*4.70 + DOWN*0.35)
+
+        names = [("explorer", "energy = 90", "position = 0"),
+                 ("courier", "energy = 75", "position = 5"),
+                 ("scout", "energy = 85", "position = 2")]
+        instances = VGroup()
+        for title, energy, pos in names:
+            r = self.robot(scale=0.63)
+            labels = VGroup(self.text(title, 19, BOLD), self.text(energy, 15), self.text(pos, 15)).arrange(DOWN, buff=0.04)
+            labels.next_to(r, DOWN, buff=0.10)
+            instances.add(VGroup(r, labels))
+        instances.arrange(RIGHT, buff=0.68).move_to(RIGHT*2.10 + DOWN*0.48)
+
+        class_message = self.pill("same method call: move()", 3.25, 0.54, 18).move_to(RIGHT*2.10 + UP*2.05)
+        class_arrows = VGroup(*[
+            Arrow(class_message.get_bottom(), inst.get_top(), buff=0.16, color=LIGHT_GRAY, stroke_width=1.7)
+            for inst in instances
+        ])
+        note = self.text("Same blueprint. Separate state. Independent lives.", 24, BOLD).to_edge(DOWN, buff=0.36)
+
+        layout = VGroup(blueprint, instances, class_message, class_arrows, note)
+        self.assert_content_safe(VGroup(blueprint, instances, class_message, class_arrows), "scene_02 blueprint")
+        self.assert_within_frame(note, "scene_02 note", margin=0.20)
+
+        self.play(FadeIn(blueprint, shift=RIGHT*0.12), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+       
