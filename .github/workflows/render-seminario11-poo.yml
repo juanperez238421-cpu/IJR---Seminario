@@ -1,4 +1,4 @@
-name: Render Seminar 11 OOP Immersive V9 Final
+name: Render Seminar 11 OOP Immersive V10 Final
 
 on:
   push:
@@ -21,6 +21,7 @@ jobs:
         run: |
           python -m py_compile renders/seminar11_oop_immersive_v8_payload.py
           python -m py_compile renders/seminar11_oop_immersive_v9_overlay.py
+          python -m py_compile renders/seminar11_oop_immersive_v10_overlay.py
 
       - name: Pull pinned ManimCE image
         run: docker pull manimcommunity/manim:v0.20.1
@@ -41,7 +42,7 @@ jobs:
               printf "#!/usr/bin/env sh\nexit 0\n" > /tmp/fakebin/xdg-open
               chmod +x /tmp/fakebin/xdg-open
               export PATH="/tmp/fakebin:$PATH"
-              manim -pql renders/seminar11_oop_immersive_v9_overlay.py Seminar11OOPImmersiveV9 --format=mp4 --disable_caching
+              manim -pql renders/seminar11_oop_immersive_v10_overlay.py Seminar11OOPImmersiveV10 --format=mp4 --disable_caching
             '
 
       - name: Render final literal -pqh
@@ -60,29 +61,31 @@ jobs:
               printf "#!/usr/bin/env sh\nexit 0\n" > /tmp/fakebin/xdg-open
               chmod +x /tmp/fakebin/xdg-open
               export PATH="/tmp/fakebin:$PATH"
-              manim -pqh renders/seminar11_oop_immersive_v9_overlay.py Seminar11OOPImmersiveV9 --format=mp4 --disable_caching
+              manim -pqh renders/seminar11_oop_immersive_v10_overlay.py Seminar11OOPImmersiveV10 --format=mp4 --disable_caching
             '
 
       - name: Collect and validate deliverable
         run: |
           set -euo pipefail
           mkdir -p delivery
-          VIDEO="$(find media -type f -path '*1080p30*' -name 'Seminar11OOPImmersiveV9.mp4' | head -n 1)"
+          VIDEO="$(find media -type f -path '*1080p30*' -name 'Seminar11OOPImmersiveV10.mp4' | head -n 1)"
           test -n "$VIDEO"
           test -s "$VIDEO"
-          cp "$VIDEO" delivery/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V9_pqh.mp4
+          cp "$VIDEO" delivery/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V10_pqh.mp4
           cp renders/seminar11_oop_immersive_v8_payload.py delivery/
           cp renders/seminar11_oop_immersive_v9_overlay.py delivery/
+          cp renders/seminar11_oop_immersive_v10_overlay.py delivery/
           test -s delivery/seminar11_oop_immersive_v8_EXPANDED.py
           python -m py_compile delivery/seminar11_oop_immersive_v8_EXPANDED.py
           python -m py_compile delivery/seminar11_oop_immersive_v9_overlay.py
-          sha256sum delivery/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V9_pqh.mp4 > delivery/SHA256.txt
+          python -m py_compile delivery/seminar11_oop_immersive_v10_overlay.py
+          sha256sum delivery/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V10_pqh.mp4 > delivery/SHA256.txt
           if command -v ffprobe >/dev/null 2>&1; then
             ffprobe -v error \
               -show_entries stream=codec_name,width,height,r_frame_rate,pix_fmt \
               -show_entries format=duration,size \
               -of default=noprint_wrappers=1 \
-              delivery/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V9_pqh.mp4 | tee delivery/FFPROBE.txt
+              delivery/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V10_pqh.mp4 | tee delivery/FFPROBE.txt
           else
             echo 'ffprobe unavailable on host; final probe will run after artifact download.' | tee delivery/FFPROBE.txt
           fi
@@ -91,7 +94,7 @@ jobs:
       - name: Upload rendered video and traceability files
         uses: actions/upload-artifact@v4
         with:
-          name: seminar11-oop-immersive-v9-final-pqh
+          name: seminar11-oop-immersive-v10-final-pqh
           path: delivery/
           if-no-files-found: error
           retention-days: 7
