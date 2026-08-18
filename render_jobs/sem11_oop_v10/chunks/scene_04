@@ -16,6 +16,36 @@ PS -> CODE", 23, BOLD)
         self.wait(PAUSE_FINAL)
         self.clear_stage()
 
+    def set_header(self, number: int, title: str, subtitle: str) -> None:
+        """Use clean fades between sections instead of glyph morphing.
+
+        V9/V10 QA showed that ReplacementTransform can briefly distort long
+        subtitles during a section change.  Fade the persistent header lane
+        out, rebuild it using the consolidated JP layout, then fade it in.
+        """
+        had_old = self.header_group is not None or self.subtitle_group is not None
+        if had_old:
+            old_items = [
+                item for item in (self.header_group, self.subtitle_group)
+                if item is not None
+            ]
+            if old_items:
+                self.play(*[FadeOut(item) for item in old_items], run_time=RUN_QUICK * 0.45)
+                self.remove(*old_items)
+            self.header_group = None
+            self.subtitle_group = None
+
+        super().set_header(number, title, subtitle)
+
+        if had_old:
+            self.header_group.set_opacity(0)
+            self.subtitle_group.set_opacity(0)
+            self.play(
+                self.header_group.animate.set_opacity(1),
+                self.subtitle_group.animate.set_opacity(1),
+                run_time=RUN_QUICK * 0.55,
+            )
+
 
 if __name__ == "__main__":
     Seminar11OOPImmersiveV10().render()
