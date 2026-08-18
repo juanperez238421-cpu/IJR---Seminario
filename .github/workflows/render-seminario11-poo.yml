@@ -49,7 +49,7 @@ jobs:
           sha256sum delivery/Seminario11_POO_Semester_Intro_pqh.mp4 > delivery/SHA256.txt
           ls -lh delivery
 
-      - name: Verify MP4 inside ManimCE container
+      - name: Verify MP4 decode with ffmpeg
         run: |
           docker run --rm \
             --user "$(id -u):$(id -g)" \
@@ -60,12 +60,8 @@ jobs:
             manimcommunity/manim:v0.20.1 \
             -c '
               set -euo pipefail
-              ffprobe -v error \
-                -select_streams v:0 \
-                -show_entries stream=codec_name,width,height,r_frame_rate,pix_fmt \
-                -show_entries format=duration,size \
-                -of default=noprint_wrappers=1 \
-                delivery/Seminario11_POO_Semester_Intro_pqh.mp4
+              test -s delivery/Seminario11_POO_Semester_Intro_pqh.mp4
+              ffmpeg -v error -i delivery/Seminario11_POO_Semester_Intro_pqh.mp4 -f null -
             '
 
       - name: Upload rendered video
