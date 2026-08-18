@@ -19,11 +19,15 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Static validation
+      - name: Assemble exact sources and static validation
         shell: bash
         run: |
           set -euo pipefail
           JOB=render_jobs/sem11_oop_v10
+          cat "$JOB"/chunks/scene_* > "$JOB/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V10.py"
+          cat "$JOB"/chunks/style_* > "$JOB/jp_classroom_style.py"
+          cmp -s "$JOB/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V10.py" <(cat "$JOB"/chunks/scene_*)
+          cmp -s "$JOB/jp_classroom_style.py" <(cat "$JOB"/chunks/style_*)
           python -m py_compile "$JOB/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V10.py" "$JOB/jp_classroom_style.py" "$JOB/check_manim_style.py"
           python "$JOB/check_manim_style.py" "$JOB/Seminar11_OOP_Immersive_EN_SENIOR_QA_FINAL_V10.py" | tee /tmp/style_qa.txt
           mkdir -p out
