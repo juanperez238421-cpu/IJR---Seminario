@@ -1,0 +1,114 @@
+  self.play(FadeIn(class_message), run_time=RUN_NORMAL)
+        for inst, arr in zip(instances, class_arrows):
+            self.play(TransformFromCopy(bp_robot, inst[0]), GrowArrow(arr), run_time=RUN_NORMAL)
+            self.play(FadeIn(inst[1], shift=UP*0.08), run_time=RUN_QUICK)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(instances[1].animate.shift(RIGHT*0.18), instances[2].animate.shift(LEFT*0.10), run_time=RUN_NORMAL)
+        self.play(FadeIn(note, shift=UP*0.08), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 03 — encapsulation
+    # ------------------------------------------------------------------
+    def scene_encapsulation(self) -> None:
+        self.set_header(
+            3,
+            "ENCAPSULATION: THE OBJECT OWNS ITS STATE",
+            "Instead of scattering related variables and functions everywhere, OOP places data and behavior behind one clear boundary.",
+        )
+
+        left_title = self.text("SCATTERED GLOBAL STATE", 22, BOLD)
+        globals_group = VGroup(
+            self.pill("robot_energy", 2.10),
+            self.pill("robot_position", 2.25),
+            self.pill("move_robot()", 2.15),
+            self.pill("charge_robot()", 2.35),
+        ).arrange_in_grid(rows=2, cols=2, buff=(0.42, 0.46))
+        left = VGroup(left_title, globals_group).arrange(DOWN, buff=0.38).move_to(LEFT*3.70 + DOWN*0.15)
+
+        enclosure = RoundedRectangle(width=5.00, height=4.55, corner_radius=0.14,
+                                     stroke_color=BLACK_LINE, stroke_width=2.0, fill_color=WHITE, fill_opacity=1)
+        enc_title = self.text("Robot object", 25, BOLD).next_to(enclosure.get_top(), DOWN, buff=0.23)
+        field_row = VGroup(self.pill("energy", 1.40), self.pill("position", 1.55)).arrange(RIGHT, buff=0.22)
+        bot = self.robot(scale=0.70)
+        method_row = VGroup(self.pill("move()", 1.35), self.pill("recharge()", 1.65)).arrange(RIGHT, buff=0.22)
+        right_content = VGroup(enc_title, field_row, bot, self.text("METHODS", 18, BOLD), method_row).arrange(DOWN, buff=0.18)
+        right_content.move_to(enclosure)
+        right = VGroup(enclosure, right_content).move_to(RIGHT*3.35 + DOWN*0.25)
+
+        bridge = Arrow(left.get_right()+RIGHT*0.18, right.get_left()+LEFT*0.18, buff=0.08, color=BLACK_LINE, stroke_width=2.3)
+        rule = self.text("Rule: methods change the object's internal state.", 24, BOLD).to_edge(DOWN, buff=0.36)
+        layout = VGroup(left, right, bridge)
+        self.assert_content_safe(layout, "scene_03 encapsulation")
+        self.assert_within_frame(rule, "scene_03 rule", margin=0.20)
+
+        self.play(FadeIn(left_title), run_time=RUN_QUICK)
+        self.play(LaggedStart(*[FadeIn(item, shift=UP*0.08) for item in globals_group], lag_ratio=0.12), run_time=RUN_SLOW)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(GrowArrow(bridge), Create(enclosure), FadeIn(enc_title), run_time=RUN_NORMAL)
+        self.play(TransformFromCopy(globals_group[0], field_row[0]), TransformFromCopy(globals_group[1], field_row[1]), run_time=RUN_NORMAL)
+        self.play(FadeIn(bot, shift=UP*0.10), run_time=RUN_NORMAL)
+        self.play(TransformFromCopy(globals_group[2], method_row[0]), TransformFromCopy(globals_group[3], method_row[1]), run_time=RUN_NORMAL)
+        self.play(FadeIn(right_content[3]), run_time=RUN_QUICK)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(rule, shift=UP*0.08), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 04 — inheritance
+    # ------------------------------------------------------------------
+    def scene_inheritance(self) -> None:
+        self.set_header(
+            4,
+            "INHERITANCE: REUSE A GENERAL IDEA",
+            "Shared state and behavior live in a parent model; child classes inherit them and add only what makes them different.",
+        )
+
+        parent_box = RoundedRectangle(width=4.20, height=4.60, corner_radius=0.14,
+                                      stroke_color=BLACK_LINE, stroke_width=1.9, fill_color=WHITE, fill_opacity=1)
+        parent_title = self.text("Vehicle", 28, BOLD)
+        shared = self.text("SHARED", 18, BOLD)
+        parent_fields = VGroup(self.pill("speed", 1.45), self.pill("position", 1.65), self.pill("move()", 1.45), self.pill("stop()", 1.45)).arrange_in_grid(rows=2, cols=2, buff=(0.26,0.30))
+        parent_content = VGroup(parent_title, shared, parent_fields).arrange(DOWN, buff=0.28).move_to(parent_box)
+        parent = VGroup(parent_box, parent_content).move_to(LEFT*4.60 + DOWN*0.25)
+
+        robot = self.robot(scale=0.72, label="Robot").move_to(RIGHT*0.75 + UP*0.45)
+        drone = self.drone(scale=1.00, label="Drone").move_to(RIGHT*4.20 + UP*0.45)
+        robot_extra = VGroup(
+            self.pill("speed", 1.25), self.pill("move()", 1.35),
+            self.pill("+ energy", 1.45), self.pill("+ recharge()", 1.75),
+        ).arrange_in_grid(rows=2, cols=2, buff=(0.16, 0.16)).next_to(robot, DOWN, buff=0.24)
+        drone_extra = VGroup(
+            self.pill("speed", 1.25), self.pill("move()", 1.35),
+            self.pill("+ altitude", 1.55), self.pill("+ take_off()", 1.75),
+        ).arrange_in_grid(rows=2, cols=2, buff=(0.16, 0.16)).next_to(drone, DOWN, buff=0.24)
+        arrows = VGroup(
+            Arrow(parent.get_right()+UP*0.65, robot.get_left()+LEFT*0.18, buff=0.10, color=BLACK_LINE, stroke_width=2.1),
+            Arrow(parent.get_right()+DOWN*0.10, drone.get_left()+LEFT*0.18, buff=0.10, color=BLACK_LINE, stroke_width=2.1),
+        )
+        note = self.text("Write common behavior once. Specialize only what changes.", 24, BOLD).to_edge(DOWN, buff=0.34)
+
+        layout = VGroup(parent, robot, drone, robot_extra, drone_extra, arrows)
+        self.assert_content_safe(layout, "scene_04 inheritance")
+        self.assert_within_frame(note, "scene_04 note", margin=0.20)
+
+        self.play(FadeIn(parent, shift=RIGHT*0.10), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(GrowArrow(arrows[0]), FadeIn(robot, shift=UP*0.08), run_time=RUN_NORMAL)
+        self.play(
+            TransformFromCopy(parent_fields[0], robot_extra[0]),
+            TransformFromCopy(parent_fields[2], robot_extra[1]),
+            run_time=RUN_NORMAL,
+        )
+        self.play(FadeIn(robot_extra[2], shift=UP*0.06), FadeIn(robot_extra[3], shift=UP*0.06), run_time=RUN_NORMAL)
+        self.play(GrowArrow(arrows[1]), FadeIn(drone, shift=UP*0.08), run_time=RUN_NORMAL)
+        self.play(
+            TransformFromCopy(parent_fields[0], drone_extra[0]),
+            TransformFromCopy(parent_fields[2], drone_extra[1]),
+            run_time=RUN_NORMAL,
+        )
+        self.play(FadeIn(drone_extra[2], shift=UP*0.06), FadeIn(drone_extra[3], shift=UP*0.06), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(note, shift
