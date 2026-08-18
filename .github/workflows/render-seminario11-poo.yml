@@ -35,20 +35,21 @@ jobs:
               printf "#!/usr/bin/env sh\nexit 0\n" > /tmp/fakebin/xdg-open
               chmod +x /tmp/fakebin/xdg-open
               export PATH="/tmp/fakebin:$PATH"
-              manim -pqh renders/seminario11_poo_semester_intro.py Seminario11POOIntro --format=mp4 --disable_caching
+              manim -pqh renders/seminario11_poo_semester_intro_v3.py Seminario11POOIntroV3 --format=mp4 --disable_caching
             '
 
       - name: Collect and validate deliverable
         run: |
           set -euo pipefail
           mkdir -p delivery
-          VIDEO="$(find media -type f -name 'Seminario11POOIntro.mp4' | head -n 1)"
+          VIDEO="$(find media -type f -name 'Seminario11POOIntroV3.mp4' | head -n 1)"
           test -n "$VIDEO"
           test -s "$VIDEO"
-          cp "$VIDEO" delivery/Seminario11_POO_Semester_Intro_pqh.mp4
+          cp "$VIDEO" delivery/Seminario11_POO_Semester_Intro_EN_QA_FINAL_pqh.mp4
           cp renders/seminario11_poo_semester_intro.py delivery/
-          sha256sum delivery/Seminario11_POO_Semester_Intro_pqh.mp4 > delivery/SHA256.txt
-          test -s delivery/Seminario11_POO_Semester_Intro_pqh.mp4
+          cp renders/seminario11_poo_semester_intro_v3.py delivery/
+          sha256sum delivery/Seminario11_POO_Semester_Intro_EN_QA_FINAL_pqh.mp4 > delivery/SHA256.txt
+          test -s delivery/Seminario11_POO_Semester_Intro_EN_QA_FINAL_pqh.mp4
           ls -lh delivery
 
       - name: Upload rendered video
