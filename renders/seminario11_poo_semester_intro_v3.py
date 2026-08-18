@@ -1,9 +1,18 @@
 from manim import *
-from renders.seminario11_poo_semester_intro import Seminario11POOIntro as BaseSeminario11POOIntro
+import importlib.util
+from pathlib import Path
+
+# Load the sibling base scene by absolute file path. Manim executes scene files as
+# standalone modules, so relying on `renders` being an importable package is unsafe.
+_BASE_PATH = Path(__file__).with_name("seminario11_poo_semester_intro.py")
+_SPEC = importlib.util.spec_from_file_location("seminario11_poo_base", _BASE_PATH)
+_BASE_MODULE = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_BASE_MODULE)
+BaseSeminario11POOIntro = _BASE_MODULE.Seminario11POOIntro
 
 
 class Seminario11POOIntroV3(BaseSeminario11POOIntro):
-    """QA overlay that fixes the code-panel line layout from V2."""
+    """Final QA overlay: explicit code-line positioning prevents visual overlap."""
 
     def code_to_object(self):
         head = self.section_header(
@@ -16,12 +25,11 @@ class Seminario11POOIntroV3(BaseSeminario11POOIntro):
         code_box = RoundedRectangle(
             width=7.45, height=5.05, corner_radius=0.15,
             stroke_color=BLACK, stroke_width=2,
-            fill_color=self.PAPER if hasattr(self, "PAPER") else "#F8F8F8",
-            fill_opacity=1,
+            fill_color="#F8F8F8", fill_opacity=1,
         ).move_to(LEFT * 3.75 + DOWN * 0.18)
 
         code_label = self.txt("PYTHON", 19, BOLD, "#787878")
-        code_label.move_to(code_box.get_top() + DOWN * 0.28 + RIGHT * (-2.85))
+        code_label.move_to(code_box.get_top() + DOWN * 0.28 + LEFT * 2.85)
 
         source_lines = {
             0: "class Robot:",
