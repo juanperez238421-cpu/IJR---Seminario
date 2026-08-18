@@ -1,0 +1,21 @@
+PS -> CODE", 23, BOLD)
+        route.to_edge(DOWN, buff=0.36)
+
+        layout = VGroup(scenario, question, cards, links)
+        self.assert_content_safe(layout, "scene_07 project thinking")
+        self.assert_within_frame(route, "scene_07 route", margin=0.20)
+
+        self.play(FadeIn(scenario, shift=UP*0.08), FadeIn(question), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(LaggedStart(*[FadeIn(card, shift=UP*0.10) for card in cards], lag_ratio=0.15), run_time=RUN_SLOW)
+        self.wait(PAUSE_READ)
+        for link in links:
+            self.play(GrowArrow(link[0]), FadeIn(link[1]), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(route, shift=UP*0.08), run_time=RUN_NORMAL)
+        self.wait(PAUSE_FINAL)
+        self.clear_stage()
+
+
+if __name__ == "__main__":
+    Seminar11OOPImmersiveV10().render()
