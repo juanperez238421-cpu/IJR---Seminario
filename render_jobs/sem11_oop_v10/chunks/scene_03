@@ -1,0 +1,122 @@
+=UP*0.08), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 05 — polymorphism
+    # ------------------------------------------------------------------
+    def scene_polymorphism(self) -> None:
+        self.set_header(
+            5,
+            "POLYMORPHISM: ONE MESSAGE, DIFFERENT MOTION",
+            "The caller sends the same move() message; each object decides how that behavior is implemented.",
+        )
+
+        message_label = self.text("ONE INTERFACE", 18, BOLD)
+        message = self.pill("move()", 2.00, 0.58, 23)
+        command = VGroup(message_label, message).arrange(DOWN, buff=0.14).move_to(UP*1.95)
+
+        robot = self.robot(scale=0.72, label="Robot").move_to(LEFT*4.45 + DOWN*0.35)
+        drone = self.drone(scale=1.00, label="Drone").move_to(DOWN*0.35)
+        boat = self.boat(scale=0.88, label="Boat").move_to(RIGHT*4.45 + DOWN*0.30)
+        objects = VGroup(robot, drone, boat)
+        implementations = VGroup(self.pill("roll", 1.20), self.pill("fly", 1.20), self.pill("sail", 1.20))
+        for tag, obj in zip(implementations, objects):
+            tag.next_to(obj, DOWN, buff=0.22)
+
+        arrows = VGroup(*[
+            Arrow(message.get_bottom(), obj.get_top(), buff=0.18, color=LIGHT_GRAY, stroke_width=1.8)
+            for obj in objects
+        ])
+        note = self.text("Same call. Different implementation. The caller stays simple.", 24, BOLD).to_edge(DOWN, buff=0.34)
+
+        layout = VGroup(command, objects, implementations, arrows)
+        self.assert_content_safe(layout, "scene_05 polymorphism")
+        self.assert_within_frame(note, "scene_05 note", margin=0.20)
+
+        self.play(FadeIn(command, shift=DOWN*0.08), run_time=RUN_NORMAL)
+        self.play(LaggedStart(*[FadeIn(o, shift=UP*0.10) for o in objects], lag_ratio=0.14), run_time=RUN_SLOW)
+        self.play(LaggedStart(*[GrowArrow(a) for a in arrows], lag_ratio=0.12), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+
+        # Different physical responses, all remaining in their local safe zones.
+        self.play(robot.animate.shift(RIGHT*0.60), FadeIn(implementations[0]), run_time=RUN_NORMAL)
+        self.play(drone.animate.shift(UP*0.42), FadeIn(implementations[1]), run_time=RUN_NORMAL)
+        self.play(boat.animate.shift(RIGHT*0.42), FadeIn(implementations[2]), run_time=RUN_NORMAL)
+        self.play(FadeIn(note, shift=UP*0.08), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 06 — composition
+    # ------------------------------------------------------------------
+    def scene_composition(self) -> None:
+        self.set_header(
+            6,
+            "COMPOSITION: OBJECTS COOPERATE TO CREATE A SYSTEM",
+            "A useful application emerges when small objects exchange messages while each one keeps a clear responsibility.",
+        )
+
+        system_box = RoundedRectangle(width=13.45, height=5.15, corner_radius=0.15,
+                                      stroke_color=BLACK_LINE, stroke_width=1.8, fill_color=WHITE, fill_opacity=1)
+        system_box.move_to(DOWN*0.35)
+        system_title = self.text("SMART WAREHOUSE", 24, BOLD).next_to(system_box.get_top(), DOWN, buff=0.20)
+
+        order = self.object_card("Order", "receives request", 2.35, 1.35).move_to(LEFT*5.20 + UP*0.55)
+        inventory = self.object_card("Inventory", "owns stock", 2.45, 1.35).move_to(LEFT*1.90 + UP*0.55)
+        bot = self.robot(scale=0.65, label="Robot").move_to(RIGHT*1.55 + DOWN*0.45)
+        sensor = self.object_card("Sensor", "reports position", 2.55, 1.35).move_to(RIGHT*5.15 + UP*0.55)
+        package = RoundedRectangle(width=1.25, height=0.78, corner_radius=0.08,
+                                   stroke_color=BLACK_LINE, stroke_width=1.6, fill_color=VERY_LIGHT_GRAY, fill_opacity=1)
+        pkg_text = self.text("PKG", 17, BOLD).move_to(package)
+        package_group = VGroup(package, pkg_text).move_to(RIGHT*4.95 + DOWN*1.55)
+
+        msg_1 = self.arrow_with_label(order.get_right(), inventory.get_left(), "reserve item")
+        msg_2 = self.arrow_with_label(inventory.get_right()+DOWN*0.15, bot.get_left()+UP*0.15, "stock = 2")
+        msg_3 = self.arrow_with_label(bot.get_right()+UP*0.05, sensor.get_left()+DOWN*0.10, "position = dock")
+        msg_4 = self.arrow_with_label(bot.get_right()+DOWN*0.45, package_group.get_left(), "move product", DOWN*0.18)
+        messages = VGroup(msg_1, msg_2, msg_3, msg_4)
+
+        system = VGroup(system_box, system_title, order, inventory, bot, sensor, package_group, messages)
+        self.assert_content_safe(system, "scene_06 composition")
+
+        self.play(Create(system_box), FadeIn(system_title), run_time=RUN_NORMAL)
+        self.play(FadeIn(order, shift=RIGHT*0.10), FadeIn(inventory, shift=RIGHT*0.10), run_time=RUN_NORMAL)
+        self.play(FadeIn(bot, shift=UP*0.10), FadeIn(sensor, shift=LEFT*0.10), FadeIn(package_group), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        for message in messages:
+            self.play(GrowArrow(message[0]), FadeIn(message[1], shift=UP*0.06), run_time=RUN_NORMAL)
+            self.wait(PAUSE_SHORT)
+        self.play(bot.animate.shift(RIGHT*0.55), package_group.animate.shift(RIGHT*0.40), run_time=RUN_SLOW)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 07 — project thinking
+    # ------------------------------------------------------------------
+    def scene_project_thinking(self) -> None:
+        self.set_header(
+            7,
+            "THINK IN OBJECTS BEFORE YOU WRITE CODE",
+            "A strong OOP project starts by identifying the things in the problem and assigning each one a clear responsibility.",
+        )
+
+        scenario = self.text("A smart garden reads soil moisture and turns on a pump when plants need water.", 25, BOLD)
+        scenario.move_to(UP*1.82)
+        question = self.text("What objects exist?", 21, MEDIUM).next_to(scenario, DOWN, buff=0.20)
+
+        cards = VGroup(
+            self.object_card("Garden", "stores configuration", 2.65, 1.55),
+            self.object_card("MoistureSensor", "reads moisture", 2.95, 1.55),
+            self.object_card("Pump", "moves water", 2.65, 1.55),
+            self.object_card("Controller", "decides what happens", 2.95, 1.55),
+        ).arrange(RIGHT, buff=0.28).move_to(DOWN*0.20)
+
+        links = VGroup(
+            self.arrow_with_label(cards[1].get_bottom()+DOWN*0.05, cards[3].get_bottom()+DOWN*0.05, "moisture data", DOWN*0.20),
+            self.arrow_with_label(cards[3].get_bottom()+DOWN*0.50, cards[2].get_bottom()+DOWN*0.50, "pump command", DOWN*0.20),
+        )
+        # Place these low but still above the protocol content floor.
+        links.shift(DOWN*0.55)
+
+        route = self.text("PROBLEM -> OBJECTS -> RESPONSIBILITIES -> RELATIONSHI
