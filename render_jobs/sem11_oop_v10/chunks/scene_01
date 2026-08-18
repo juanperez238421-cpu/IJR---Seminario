@@ -129,4 +129,3 @@ urn parts.scale(scale)
 
         self.play(FadeIn(blueprint, shift=RIGHT*0.12), run_time=RUN_NORMAL)
         self.wait(PAUSE_READ)
-       
