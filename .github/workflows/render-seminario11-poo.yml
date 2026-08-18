@@ -35,26 +35,27 @@ jobs:
               printf "#!/usr/bin/env sh\nexit 0\n" > /tmp/fakebin/xdg-open
               chmod +x /tmp/fakebin/xdg-open
               export PATH="/tmp/fakebin:$PATH"
-              manim -pqh renders/seminario11_oop_visual_concepts_v4.py Seminar11OOPVisualConcepts --format=mp4 --disable_caching
+              manim -pqh renders/seminario11_oop_visual_concepts_v5.py Seminar11OOPVisualConceptsV5 --format=mp4 --disable_caching
             '
 
       - name: Collect and validate deliverable
         run: |
           set -euo pipefail
           mkdir -p delivery
-          VIDEO="$(find media -type f -name 'Seminar11OOPVisualConcepts.mp4' | head -n 1)"
+          VIDEO="$(find media -type f -name 'Seminar11OOPVisualConceptsV5.mp4' | head -n 1)"
           test -n "$VIDEO"
           test -s "$VIDEO"
-          cp "$VIDEO" delivery/Seminar11_OOP_Visual_Concepts_EN_QA_FINAL_pqh.mp4
+          cp "$VIDEO" delivery/Seminar11_OOP_Visual_Concepts_EN_QA_FINAL_V5_pqh.mp4
           cp renders/seminario11_oop_visual_concepts_v4.py delivery/
-          sha256sum delivery/Seminar11_OOP_Visual_Concepts_EN_QA_FINAL_pqh.mp4 > delivery/SHA256.txt
-          test -s delivery/Seminar11_OOP_Visual_Concepts_EN_QA_FINAL_pqh.mp4
+          cp renders/seminario11_oop_visual_concepts_v5.py delivery/
+          sha256sum delivery/Seminar11_OOP_Visual_Concepts_EN_QA_FINAL_V5_pqh.mp4 > delivery/SHA256.txt
+          test -s delivery/Seminar11_OOP_Visual_Concepts_EN_QA_FINAL_V5_pqh.mp4
           ls -lh delivery
 
       - name: Upload rendered video
         uses: actions/upload-artifact@v4
         with:
-          name: seminar11-oop-visual-concepts-pqh
+          name: seminar11-oop-visual-concepts-v5-pqh
           path: delivery/
           if-no-files-found: error
           retention-days: 7
