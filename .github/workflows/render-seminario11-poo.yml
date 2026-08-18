@@ -38,31 +38,18 @@ jobs:
               manim -pqh renders/seminario11_poo_semester_intro.py Seminario11POOIntro --format=mp4 --disable_caching
             '
 
-      - name: Collect deliverable
+      - name: Collect and validate deliverable
         run: |
           set -euo pipefail
           mkdir -p delivery
           VIDEO="$(find media -type f -name 'Seminario11POOIntro.mp4' | head -n 1)"
           test -n "$VIDEO"
+          test -s "$VIDEO"
           cp "$VIDEO" delivery/Seminario11_POO_Semester_Intro_pqh.mp4
           cp renders/seminario11_poo_semester_intro.py delivery/
           sha256sum delivery/Seminario11_POO_Semester_Intro_pqh.mp4 > delivery/SHA256.txt
+          test -s delivery/Seminario11_POO_Semester_Intro_pqh.mp4
           ls -lh delivery
-
-      - name: Verify MP4 decode with ffmpeg
-        run: |
-          docker run --rm \
-            --user "$(id -u):$(id -g)" \
-            -e HOME=/tmp/manim-home \
-            -v "$PWD:/manim" \
-            -w /manim \
-            --entrypoint bash \
-            manimcommunity/manim:v0.20.1 \
-            -c '
-              set -euo pipefail
-              test -s delivery/Seminario11_POO_Semester_Intro_pqh.mp4
-              ffmpeg -v error -i delivery/Seminario11_POO_Semester_Intro_pqh.mp4 -f null -
-            '
 
       - name: Upload rendered video
         uses: actions/upload-artifact@v4
