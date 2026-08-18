@@ -1,0 +1,62 @@
+name: Render Seminario 11 POO Intro
+
+on:
+  push:
+    branches:
+      - render/seminario11-poo-intro-20260818
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pull pinned ManimCE image
+        run: docker pull manimcommunity/manim:v0.20.1
+
+      - name: Render final literal -pqh
+        run: |
+          docker run --rm \
+            -v "$PWD:/manim" \
+            -w /manim \
+            --entrypoint bash \
+            manimcommunity/manim:v0.20.1 \
+            -c '
+              set -euo pipefail
+              mkdir -p /tmp/fakebin
+              printf "#!/usr/bin/env sh\nexit 0\n" > /tmp/fakebin/xdg-open
+              chmod +x /tmp/fakebin/xdg-open
+              export PATH="/tmp/fakebin:$PATH"
+              manim -pqh renders/seminario11_poo_semester_intro.py Seminario11POOIntro --format=mp4 --disable_caching
+            '
+
+      - name: Collect deliverable
+        run: |
+          set -euo pipefail
+          mkdir -p delivery
+          VIDEO="$(find media -type f -name 'Seminario11POOIntro.mp4' | head -n 1)"
+          test -n "$VIDEO"
+          cp "$VIDEO" delivery/Seminario11_POO_Semester_Intro_pqh.mp4
+          cp renders/seminario11_poo_semester_intro.py delivery/
+          sha256sum delivery/Seminario11_POO_Semester_Intro_pqh.mp4 > delivery/SHA256.txt
+          ls -lh delivery
+
+      - name: Verify MP4
+        run: |
+          ffprobe -v error \
+            -select_streams v:0 \
+            -show_entries stream=codec_name,width,height,r_frame_rate,pix_fmt \
+            -show_entries format=duration,size \
+            -of default=noprint_wrappers=1 \
+            delivery/Seminario11_POO_Semester_Intro_pqh.mp4
+
+      - name: Upload rendered video
+        uses: actions/upload-artifact@v4
+        with:
+          name: seminario11-poo-intro-pqh
+          path: delivery/
+          if-no-files-found: error
+          retention-days: 7
