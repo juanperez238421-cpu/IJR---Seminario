@@ -1,0 +1,3 @@
+HouseExtrusion3D verified render request
+Date: 2026-08-18
+Protocol: py_compile -> literal -pql -> literal -pqh -> ffprobe -> full decode -> audit frames -> SHA-256
