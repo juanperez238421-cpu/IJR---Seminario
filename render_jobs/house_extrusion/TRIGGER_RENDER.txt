@@ -1,4 +1,4 @@
 HouseExtrusion3D
 Date: 2026-08-18
 Render: ManimCE literal -pql then literal -pqh
-Trigger revision: 3
+Trigger revision: 4
