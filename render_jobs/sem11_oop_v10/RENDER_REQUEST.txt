@@ -1,0 +1,4 @@
+Render request: Seminar11 OOP Immersive V10
+Date: 2026-08-18
+Target: ManimCE 0.20.1 literal -pql then literal -pqh
+QA: safe-frame assertions, 1920x1080, 30 fps, H.264/yuv420p, full decode, audit frames
