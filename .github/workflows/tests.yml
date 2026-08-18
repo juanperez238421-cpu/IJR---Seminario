@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   test:
@@ -15,28 +15,38 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Configure Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Check JavaScript syntax
         run: |
           node --check scripts/monitor-students.mjs
           node --check js/monitor.js
           node --check js/progress-roster-bootstrap.js
-
       - name: Run tests
         run: npm test
 
   render_house_extrusion:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'render-house-extrusion-20260818'
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[house-render-trigger]')
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Persist exact workflow run id
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p render_jobs/house_extrusion
+          printf '%s\n' "$GITHUB_RUN_ID" > render_jobs/house_extrusion/RUN_ID.txt
+          printf '%s\n' "$GITHUB_SHA" > render_jobs/house_extrusion/RUN_SHA.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add render_jobs/house_extrusion/RUN_ID.txt render_jobs/house_extrusion/RUN_SHA.txt
+          git commit -m 'Record HouseExtrusion3D render run id'
+          git push origin HEAD:main
 
       - name: Fetch exact Manim source and validate
         shell: bash
