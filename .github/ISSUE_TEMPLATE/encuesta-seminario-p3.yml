@@ -1,0 +1,84 @@
+name: Encuesta Seminario 11° — Tercer periodo
+description: Selección de temática y modalidad de trabajo para el proyecto del tercer periodo.
+title: "[Encuesta P3] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Seminario de Programación — 11°
+        Esta encuesta es únicamente para los estudiantes de grado 11° que participan en Seminario de Programación.
+
+        Puedes seleccionar **una o varias temáticas**. Después elige cuál sería tu **primera opción** y si prefieres trabajar **individualmente o en pareja**.
+
+  - type: input
+    id: student_name
+    attributes:
+      label: Nombre completo
+      placeholder: Escribe tu nombre y apellidos
+    validations:
+      required: true
+
+  - type: dropdown
+    id: group
+    attributes:
+      label: Grupo
+      options:
+        - 11-A
+        - 11-B
+        - 11-C
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: topics
+    attributes:
+      label: Temáticas que te interesan
+      description: Marca una o varias opciones.
+      options:
+        - label: Desarrollo web — HTML, CSS, JavaScript y aplicaciones web
+        - label: Ciencia de datos — Python, datos, gráficas y análisis
+        - label: Ciberseguridad defensiva — análisis de riesgos, logs y buenas prácticas
+        - label: Diseño 3D + programación — CAD, cálculos y automatización
+        - label: Robótica y automatización — sensores, decisiones y actuadores
+        - label: Otra propuesta propia
+    validations:
+      required: true
+
+  - type: dropdown
+    id: first_choice
+    attributes:
+      label: Primera opción
+      description: Si solo pudiéramos trabajar una temática, ¿cuál escogerías primero?
+      options:
+        - Desarrollo web
+        - Ciencia de datos
+        - Ciberseguridad defensiva
+        - Diseño 3D + programación
+        - Robótica y automatización
+        - Otra propuesta propia
+    validations:
+      required: true
+
+  - type: dropdown
+    id: work_mode
+    attributes:
+      label: Modalidad de trabajo
+      options:
+        - Individual
+        - En pareja
+    validations:
+      required: true
+
+  - type: input
+    id: partner
+    attributes:
+      label: Si escogiste pareja, escribe el nombre de tu compañero(a)
+      description: Déjalo vacío si trabajarás individualmente.
+      placeholder: Nombre del compañero(a)
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea de proyecto o comentario
+      description: Opcional. Puedes proponer aquí una idea concreta o explicar qué te gustaría construir.
+      placeholder: Ejemplo: una aplicación que...
