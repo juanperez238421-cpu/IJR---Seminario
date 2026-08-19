@@ -2,6 +2,16 @@
 
 Interactive course for **Seminario de Programación 11°** based on the complete `Basics T3.zip` guide package.
 
+## Production URLs
+
+The canonical classroom deployment is currently served by the shared academic Supabase project because GitHub Pages is not enabled for `IJR---Seminario`.
+
+- **Student course:** https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/
+- **Teacher / master gradebook:** https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/teacher.html
+- **Source repository:** https://github.com/juanperez238421-cpu/IJR---Seminario
+
+The Supabase production workflow smoke-tests the student HTML, teacher HTML and `data/course-index.json` before reporting `SEMINAR T3 HOST READY`. Do not distribute the legacy `github.io/IJR---Seminario/...` URLs unless GitHub Pages is explicitly enabled and its deployment is independently verified.
+
 ## Routes
 
 Both language routes contain the same 16-topic progression:
@@ -28,7 +38,7 @@ The original guide numbers remain traceable. Guides 13 and 14 are intentionally 
 
 ## Teacher
 
-`t3/teacher.html` uses the shared teacher-code session mechanism and the Seminar T3 dashboard RPC when the Supabase migration is deployed.
+`t3/teacher.html` uses the shared teacher-code session mechanism and the Seminar T3 dashboard RPC. The production Supabase backend contains the course RPC layer and the teacher page reads the live team/module records through that authenticated teacher session.
 
 ## Data and traceability
 
