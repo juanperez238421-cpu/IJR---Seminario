@@ -43,7 +43,7 @@ function renderRoadmap(){
     return `<section class="level-block">
       <div class="level-head"><div><span class="level-chip ${level}">${meta.label}</span><h3>${meta.label}</h3><p>${meta.copy}</p></div><strong>${mods.length} módulos</strong></div>
       <div class="module-grid">${mods.map(m=>{
-        const v=m[selectedLanguage],st=statusOf(m.id),record=attempt?.records?.[m.id],locked=attempt&&attempt.language!==selectedLanguage;
+        const v={title:m[selectedLanguage+'Title'],subtitle:m[selectedLanguage+'Subtitle']},st=statusOf(m.id),record=attempt?.records?.[m.id],locked=attempt&&attempt.language!==selectedLanguage;
         return `<article class="module-card">
           <div class="module-meta"><span class="module-number">${String(m.routeOrder).padStart(2,'0')} · guía ${m.guide}</span><span class="module-status ${st.cls}">${st.label}</span></div>
           <h4>${esc(v.title.replace(/^.*?·\s*/,''))}</h4><p>${esc(v.subtitle)}</p>
@@ -64,7 +64,7 @@ function setLanguage(lang){
   renderSummary();renderRoadmap();
 }
 async function init(){
-  const r=await fetch('data/course-data.json',{cache:'no-store'});if(!r.ok)throw new Error(`course-data.json HTTP ${r.status}`);
+  const r=await fetch('data/course-index.json',{cache:'no-store'});if(!r.ok)throw new Error(`course-index.json HTTP ${r.status}`);
   course=await r.json();attempt=await store.restore();if(attempt?.language)selectedLanguage=attempt.language;
   $('qualityRule').textContent=course.course.qa;
   $('practiceTotal').textContent=`${course.modules.reduce((s,m)=>s+m.time,0)} min`;
