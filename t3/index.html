@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Seminario T3 · Python + Java</title>
+  <link rel="stylesheet" href="css/course.css?v=20260819-1">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js?v=20260819-1"></script>
+  <script type="module" src="js/course.js?v=20260819-1"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">&lt;/&gt;</div>
+      <div>
+        <div class="eyebrow">Instituto Jorge Robledo · Seminario de Programación · 11°</div>
+        <h1>Third Period Coding Studio</h1>
+      </div>
+    </div>
+    <nav class="top-actions">
+      <a href="../monitor.html" class="button ghost">Monitor</a>
+      <a href="../progress.html" class="button ghost">Seguimiento</a>
+      <a href="teacher.html" class="button ghost">Registro T3</a>
+      <a href="../" class="button ghost">Proyecto de referencia</a>
+    </nav>
+  </header>
+
+  <main class="course-shell">
+    <section class="hero">
+      <div>
+        <div class="hero-kicker">BÁSICO → MEDIO → AVANZADO</div>
+        <h2>Python y Java desde cero hasta POO.</h2>
+        <p>Una ruta paralela construida a partir de las 32 guías del paquete <strong>Basics T3</strong>. Cada tema conserva los objetivos, práctica guiada y criterios de logro de las guías, pero ahora vive en un laboratorio interactivo.</p>
+      </div>
+      <div class="hero-stats">
+        <div><strong>16</strong><span>temas por ruta</span></div>
+        <div><strong>2</strong><span>lenguajes</span></div>
+        <div><strong>3</strong><span>niveles</span></div>
+      </div>
+    </section>
+
+    <section class="control-panel">
+      <div class="control-copy">
+        <div class="section-label">RUTA ACTIVA</div>
+        <h3>Elige el lenguaje principal del equipo.</h3>
+        <p>Python usa un intérprete real en el navegador. Java usa un laboratorio guiado de estructura y exportación a <code>Main.java</code>, alineado con la guía JDK/VS Code.</p>
+      </div>
+      <div class="language-switch" role="group" aria-label="Lenguaje">
+        <button type="button" data-language="python" class="language-option active">
+          <span class="lang-icon">Py</span>
+          <span><strong>Python</strong><small>Runtime Pyodide</small></span>
+        </button>
+        <button type="button" data-language="java" class="language-option">
+          <span class="lang-icon java">Jv</span>
+          <span><strong>Java</strong><small>JDK-guided lab</small></span>
+        </button>
+      </div>
+      <div id="routeRuntimeCopy" class="session-summary"></div>
+      <div id="sessionSummary" class="session-summary"></div>
+      <div class="course-actions">
+        <a id="continueButton" class="button primary" href="lab.html?language=python&module=m01">Comenzar ruta</a>
+        <button id="resetProgress" type="button" class="button ghost">Reiniciar progreso local</button>
+        <span><strong id="practiceTotal">—</strong> de práctica guiada en la ruta completa.</span>
+      </div>
+    </section>
+
+    <section class="rule-strip">
+      <strong>Regla de trabajo:</strong>
+      <span>leer → predecir → construir → ejecutar/validar → modificar → explicar → evidenciar.</span>
+    </section>
+
+    <section id="roadmap" class="roadmap" aria-live="polite"></section>
+
+    <section class="quality-panel">
+      <div>
+        <div class="section-label">CRITERIO QA</div>
+        <h3>Ejecutar no equivale a dominar.</h3>
+      </div>
+      <p id="qualityRule"></p>
+    </section>
+  </main>
+
+  <footer class="course-footer">
+    <span>Seminario de Programación · Tercer Periodo 2026</span>
+    <span id="backendLabel">Modo local listo</span>
+  </footer>
+</body>
+</html>
