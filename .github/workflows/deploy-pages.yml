@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -16,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Validate dashboard source files
+      - name: Validate existing seminar source files
         shell: bash
         run: |
           set -euo pipefail
@@ -25,10 +26,29 @@ jobs:
           test -s data/monitor/latest.json
           python -m json.tool data/students.json >/dev/null
           python -m json.tool data/monitor/latest.json >/dev/null
-          echo "Dashboard source files are valid."
-          echo "Published URL: https://juanperez238421-cpu.github.io/IJR---Seminario/monitor.html"
+
+      - name: Validate T3 dual-language course
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s t3/index.html
+          test -s t3/lab.html
+          test -s t3/teacher.html
+          test -s t3/data/course-index.json
+          python -m json.tool t3/data/course-index.json >/dev/null
+          python -m json.tool t3/data/source-map.json >/dev/null
+          for f in t3/data/modules/*.json; do python -m json.tool "$f" >/dev/null; done
+          node --check t3/config.js
+          node --check t3/js/course.js
+          node --check t3/js/course-store.js
+          node --check t3/js/lab.js
+          node --check t3/js/scoring-core.js
+          node --check t3/js/teacher.js
+          npm test
 
       - name: Explain hosting target
         run: |
-          echo "The public dashboard is hosted in juanperez238421-cpu/juanperez238421-cpu.github.io."
-          echo "This repository remains the source of roster and monitoring data."
+          echo "Source repository: juanperez238421-cpu/IJR---Seminario"
+          echo "T3 source entrypoint: t3/index.html"
+          echo "T3 teacher entrypoint: t3/teacher.html"
+          echo "The established public dashboard is hosted by the user's GitHub Pages site."
