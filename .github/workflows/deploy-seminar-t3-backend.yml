@@ -1,0 +1,86 @@
+name: Deploy Seminar T3 Supabase Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - ".github/workflows/deploy-seminar-t3-backend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_PROJECT_REF: rlfxnjbqxbozjdzkbwlz
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Seminar course
+        uses: actions/checkout@v6
+
+      - name: Checkout shared academic backend baseline
+        uses: actions/checkout@v6
+        with:
+          repository: juanperez238421-cpu/ijr-estadistica-11-2026
+          ref: main
+          path: _shared_backend
+
+      - name: Validate deployment secrets
+        shell: bash
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing GitHub Actions secret: $name"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Configure the two Supabase deployment secrets in Repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Prepare migration workspace without history drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/seminar-supabase
+          cp -R _shared_backend/supabase /tmp/seminar-supabase
+          mkdir -p /tmp/seminar-supabase/migrations
+          cp supabase/migrations/*.sql /tmp/seminar-supabase/migrations/
+          test -s /tmp/seminar-supabase/migrations/20260819190000_seminar_t3_dual_language_course.sql
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link shared project
+        working-directory: /tmp/seminar-supabase
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Apply Seminar migration on top of shared baseline
+        working-directory: /tmp/seminar-supabase
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase db push --include-all
+
+      - name: Deployment summary
+        run: |
+          echo "### Seminar T3 backend migration applied" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project: $SUPABASE_PROJECT_REF" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Course: seminario-programacion-t3-2026" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Routes: Python + Java" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Modules: 16 per route" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Team size: 1-3 students" >> "$GITHUB_STEP_SUMMARY"
