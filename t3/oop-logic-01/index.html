@@ -158,9 +158,9 @@
           <div id="outputInstruction" class="cell-instruction compact-instruction"><div class="instruction-number">2</div><div><strong>Run, read, and explain the output.</strong><span>A Python syntax/runtime error does not cost points.</span></div></div>
 
           <section id="terminalCard" class="terminal-card">
-            <div class="terminal-head"><span>Python console</span><button id="clearTerminalButton" type="button">Clear</button></div>
+            <div class="terminal-head"><span>Python console · cell output</span><button id="clearTerminalButton" type="button">Clear</button></div>
             <pre id="terminalOutput" class="terminal-output"><span class="terminal-muted">Initializing Python runtime…</span></pre>
-            <form id="terminalForm" class="terminal-input-row"><span class="terminal-prompt">&gt;&gt;&gt;</span><input id="terminalCommand" type="text" autocomplete="off" spellcheck="false" placeholder="Try another Python expression"><button type="submit">Run</button></form>
+            <form id="terminalForm" class="terminal-input-row hidden" aria-hidden="true"><span class="terminal-prompt">&gt;&gt;&gt;</span><input id="terminalCommand" type="text" autocomplete="off" spellcheck="false" disabled><button type="submit" disabled>Run</button></form>
           </section>
 
           <section id="solutionPanel" class="solution-panel hidden">
