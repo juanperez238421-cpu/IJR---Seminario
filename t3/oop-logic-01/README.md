@@ -1,26 +1,36 @@
-# OOP Logic Lab 01 · Seminario 11
+# Python OOP Colab Lab 01 · Seminario 11
 
-Question-driven formative lab for object-oriented programming reasoning.
+Google-Colab-style formative laboratory for learning object-oriented programming by reasoning about objects **and executing real Python in the browser**.
 
 ## Scope
 
-- 12 sequential questions.
-- 36 persistent randomized packs.
-- Teams of 1–3 students in 11A / 11B / 11C.
-- Class/object, state/behavior, constructor, encapsulation, `self`/`this`, references, inheritance, polymorphism, composition, abstraction, and an integrated trace.
+- 12 sequential OOP stages mixing concept checks and Python cells.
+- Real Python execution with Pyodide.
+- 36 persistent randomized workstation packs (12 × 36 = 432 backend variants).
+- Teams of 2–3 students in 11A / 11B / 11C using institutional `@ijr.edu.co` emails.
+- Class/object, instance, constructor, `self`, state/behavior, methods, independent objects, aliasing/references, encapsulation, inheritance/overriding, polymorphism and composition.
 - Three global help tokens.
-- Incorrect validated answers reduce the projected maximum; syntax itself is not graded.
-- Reveal = 25% of the question; skip = 0%.
-- Server-side validation and persistence in the shared Supabase academic backend.
-- Teacher dashboard with live progress and per-question inspection.
+- Python syntax/runtime errors do **not** reduce the grade; only incorrect answers sent to server-side validation do.
+- Reveal = 25% stage credit; skip = 0%.
+- Supabase session persistence, server validation and 36-pack allocation.
+- Separate live teacher master with search/group filters, projected grades, detailed stage inspection, evidence events, CSV export and cleanup of invalid registrations.
 
-## Production routes
+## Canonical production routes
 
-The existing `seminar-t3-host` Edge Function proxies `main/t3/`, so after merge this folder is available at:
+GitHub Pages is the classroom frontend. Supabase is the data/validation backend, not the student-facing canonical page.
 
-- Student: `/functions/v1/seminar-t3-host/oop-logic-01/`
-- Teacher: `/functions/v1/seminar-t3-host/oop-logic-01/teacher.html`
+- Student: `https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/`
+- Teacher master: `https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/teacher.html`
 
 ## Backend activity
 
-`seminar11-oop-logic-01-2026`
+`seminar11-oop-colab-01-2026`
+
+Backend QA contract:
+
+- 12 checkpoints.
+- 432 variant records.
+- least-used randomized pack allocation over the active classroom window.
+- token-validated student RPCs.
+- teacher-code-protected master RPCs.
+- internal pack/snapshot helpers not executable by browser client roles.
