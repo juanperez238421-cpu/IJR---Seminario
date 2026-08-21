@@ -1,4 +1,4 @@
-name: Deploy Seminar T3 to GitHub Pages
+name: Validate Seminar T3 Frontend
 
 on:
   push:
@@ -23,11 +23,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: seminar-frontend-validation
   cancel-in-progress: true
 
 jobs:
@@ -72,7 +70,7 @@ jobs:
           node --check t3/js/scoring-core.js
           node --check t3/js/teacher.js
 
-      - name: Validate Python OOP Colab student and master
+      - name: Validate Python OOP Colab source and master
         shell: bash
         run: |
           set -euo pipefail
@@ -93,34 +91,11 @@ jobs:
       - name: Run JavaScript contract tests
         run: npm test
 
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: validate
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
-
-      - name: Upload static site artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Publish course URLs
+      - name: Document canonical classroom host
         shell: bash
         run: |
-          echo "### Seminar T3 production URLs" >> "$GITHUB_STEP_SUMMARY"
-          echo "- T3 course: ${{ steps.deployment.outputs.page_url }}t3/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- T3 teacher: ${{ steps.deployment.outputs.page_url }}t3/teacher.html" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Python OOP Colab student: ${{ steps.deployment.outputs.page_url }}t3/oop-logic-01/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Python OOP Colab master: ${{ steps.deployment.outputs.page_url }}t3/oop-logic-01/teacher.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Seminar 11 Python OOP Colab" >> "$GITHUB_STEP_SUMMARY"
+          echo "The source is maintained in this repository." >> "$GITHUB_STEP_SUMMARY"
+          echo "The canonical classroom HTML is deployed through the already-enabled GitHub Pages site in ijr-estadistica-11-2026:" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Student: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-colab-01/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Master: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-colab-01/teacher.html" >> "$GITHUB_STEP_SUMMARY"
