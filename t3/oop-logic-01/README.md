@@ -17,10 +17,12 @@ Google-Colab-style formative laboratory for learning object-oriented programming
 
 ## Canonical production routes
 
-GitHub Pages is the classroom frontend. Supabase is the data/validation backend, not the student-facing canonical page.
+The source is maintained in `IJR---Seminario`. Its repository-level GitHub Pages site is not enabled, so the classroom HTML is deliberately published through the already-enabled institutional Pages repository `ijr-estadistica-11-2026`. Supabase remains the data/validation backend, not the classroom frontend.
 
-- Student: `https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/`
-- Teacher master: `https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/teacher.html`
+- Student: `https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-colab-01/`
+- Teacher master: `https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-colab-01/teacher.html`
+
+The two canonical URLs were HTTP-smoke-tested after deployment and returned `200` with the expected OOP student/master HTML.
 
 ## Backend activity
 
