@@ -23,6 +23,9 @@ jobs:
           node --check scripts/monitor-students.mjs
           node --check js/monitor.js
           node --check js/progress-roster-bootstrap.js
+          node --check t3/oop-logic-01/config.js
+          node --check t3/oop-logic-01/app.js
+          node --check t3/oop-logic-01/teacher.js
 
       - name: Run tests
         run: npm test

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light">
+  <title>Seminario 11 · OOP Logic Master</title>
+  <link rel="stylesheet" href="teacher.css?v=20260821-oop1">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js?v=20260821-oop1"></script>
+  <script defer src="teacher.js?v=20260821-oop1"></script>
+</head>
+<body>
+<main class="shell">
+  <header class="topbar"><div><div class="eyebrow">Instituto Jorge Robledo · Seminario de Programación 11°</div><h1>OOP Logic Lab 01 · Registro maestro</h1><p>Equipos, packs, respuestas, ayudas y nota proyectada en vivo.</p></div><nav><a href="./">Actividad</a><a href="../">Curso T3</a></nav></header>
+  <section id="loginPanel" class="panel login-panel"><div><span class="kicker">ACCESO DOCENTE</span><h2>Panel de razonamiento POO</h2><p>Usa el código docente del ecosistema académico.</p></div><form id="loginForm"><input id="teacherCode" type="password" autocomplete="current-password" placeholder="Código docente" required><button>Entrar</button></form><div id="loginStatus" class="status"></div></section>
+  <section id="dashboardPanel" class="hidden">
+    <div class="toolbar panel"><div><strong id="liveStatus">LIVE</strong><span id="updatedAt"></span></div><div class="filters"><select id="groupFilter"><option value="">Todos los grupos</option><option>11A</option><option>11B</option><option>11C</option></select><input id="searchInput" type="search" placeholder="Buscar integrante"><label class="check"><input id="activeOnly" type="checkbox"> Solo activos</label><button id="refreshButton" class="secondary">Actualizar</button><button id="logoutButton" class="secondary">Salir</button></div></div>
+    <div id="metrics" class="metrics"></div>
+    <section class="panel table-panel"><div class="table-head"><div><h2>Sesiones</h2><p>Cada fila corresponde a un equipo/sesión y conserva su pack de 36 variantes.</p></div><span id="rowCount"></span></div><div class="table-wrap"><table><thead><tr><th>Grupo</th><th>Integrantes</th><th>Pack</th><th>Estado</th><th>Progreso</th><th>Nota</th><th>Última respuesta</th><th>Soporte</th><th>Actualizado</th><th></th></tr></thead><tbody id="sessionBody"></tbody></table></div></section>
+  </section>
+</main>
+<dialog id="detailDialog"><div class="dialog-shell"><div class="dialog-head"><div><span class="kicker">INSPECCIÓN</span><h2 id="dialogTitle">Sesión</h2></div><button id="closeDialog" class="secondary">Cerrar</button></div><div id="dialogStatus"></div><section id="detailSummary" class="detail-summary"></section><section><h3>Preguntas y evidencia</h3><div id="detailResponses" class="responses"></div></section><details><summary>Eventos de actividad</summary><div id="detailEvents" class="events"></div></details></div></dialog>
+</body>
+</html>
