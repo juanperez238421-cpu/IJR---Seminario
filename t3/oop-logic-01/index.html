@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="color-scheme" content="light">
+  <title>Seminario 11 · OOP Logic Lab 01</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://rlfxnjbqxbozjdzkbwlz.supabase.co" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=20260821-oop1">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js?v=20260821-oop1"></script>
+  <script defer src="app.js?v=20260821-oop1"></script>
+</head>
+<body>
+<main class="app-shell">
+  <header class="app-bar">
+    <div class="brand-block">
+      <div class="brand-mark">{ }</div>
+      <div><div class="eyebrow">Instituto Jorge Robledo · Seminario de Programación 11°</div><h1>OOP Logic Lab 01</h1></div>
+    </div>
+    <div class="app-status"><span id="networkBadge" class="pill">Online</span><span class="pill">Questions + reasoning</span></div>
+  </header>
+
+  <section id="setupPanel" class="screen setup-screen">
+    <article class="setup-card">
+      <div class="kicker">FORMATIVE LAB · 12 QUESTIONS · ≈ 40 MIN</div>
+      <h2>Think in objects before writing more code.</h2>
+      <p class="lead">La actividad se concentra en <strong>lógica de Programación Orientada a Objetos</strong>: interpretar clases, objetos, estado, comportamiento y relaciones. La sintaxis es secundaria; lo importante es justificar qué objeto existe, qué estado cambia y por qué.</p>
+      <div class="concept-grid">
+        <div><strong>01 · FOUNDATIONS</strong><span>class · object · state · method</span></div>
+        <div><strong>02 · OBJECT DESIGN</strong><span>constructor · encapsulation · self / this</span></div>
+        <div><strong>03 · RELATIONSHIPS</strong><span>inheritance · polymorphism · composition · abstraction</span></div>
+      </div>
+      <div class="policy-card">
+        <div><strong>36 packs</strong><span>Problemas equivalentes con casos y valores diferentes.</span></div>
+        <div><strong>3 helps</strong><span>Las ayudas son progresivas y quedan registradas.</span></div>
+        <div><strong>Wrong validation</strong><span>Solo una respuesta incorrecta validada reduce la proyección.</span></div>
+        <div><strong>Reveal / Skip</strong><span>Revelar = 25% de la pregunta · omitir = 0%.</span></div>
+      </div>
+      <form id="registrationForm" class="registration-form">
+        <div class="registration-meta">
+          <label>Grupo<select id="groupCode" required><option value="">Selecciona…</option><option>11A</option><option>11B</option><option>11C</option></select></label>
+          <label>Integrantes<select id="teamSize" required><option value="1">1 estudiante</option><option value="2" selected>2 estudiantes</option><option value="3">3 estudiantes</option></select></label>
+        </div>
+        <fieldset><legend>Integrantes del equipo</legend><div class="member-grid">
+          <label>Estudiante 1<input id="student1" autocomplete="name" required placeholder="Nombre completo"></label>
+          <label id="student2Wrap">Estudiante 2<input id="student2" autocomplete="name" required placeholder="Nombre completo"></label>
+          <label id="student3Wrap" class="hidden-member">Estudiante 3<input id="student3" autocomplete="name" placeholder="Nombre completo"></label>
+        </div></fieldset>
+        <div class="registration-actions"><p><strong>Antes de iniciar:</strong> el equipo comparte una sola sesión, un pack persistente y una nota proyectada.</p><button id="startButton" class="primary" type="submit">Entrar al laboratorio</button></div>
+      </form>
+      <div id="setupStatus" class="inline-status"></div>
+    </article>
+  </section>
+
+  <section id="workspacePanel" class="workspace hidden">
+    <div class="workspace-topline">
+      <div><strong id="teamLabel">Equipo</strong><span class="separator">/</span><span id="questionLabel">Pregunta 1 de 12</span><span id="packLabel" class="mini-pill">Pack —</span></div>
+      <div class="metrics-line"><span id="timeLabel">00:00 / 40:00</span><span id="helpBadge">3 ayudas</span><span id="progressText">0 / 12</span><strong id="gradeLabel">Proyección 5.00</strong></div>
+    </div>
+    <div class="progress-line"><div id="progressBar"></div></div>
+    <div id="questionRail" class="question-rail" aria-label="Progreso de preguntas"></div>
+
+    <div class="workspace-grid">
+      <aside class="guide-pane">
+        <div class="topic-tag" id="topicTag">OOP FOUNDATIONS</div>
+        <h2 id="conceptTitle">Loading…</h2>
+        <div id="conceptCopy" class="concept-copy"></div>
+        <section class="thinking-card"><h3>Cómo razonar esta pregunta</h3><ol id="thinkingSteps"></ol></section>
+        <section class="support-card">
+          <div class="support-head"><div><span class="kicker">HELP TOKENS</span><strong id="helpRemaining">3 de 3</strong></div><button id="helpButton" type="button">Usar 1 ayuda</button></div>
+          <div id="helpPanel" class="help-panel hidden"></div>
+        </section>
+      </aside>
+
+      <section class="question-pane">
+        <div class="question-kicker">OBJECT-ORIENTED REASONING · SELECT ONE</div>
+        <h2 id="questionPrompt">Loading question…</h2>
+        <pre id="codeSnippet" class="code-snippet hidden"></pre>
+        <div id="choiceOptions" class="choice-options"></div>
+        <div class="validation-bar">
+          <div><strong id="activityStatus">Selecciona una respuesta.</strong><span id="penaltyStatus">La sintaxis no se evalúa; se evalúa tu razonamiento.</span></div>
+          <div class="actions"><button id="revealButton" type="button" class="text-action">Revelar respuesta</button><button id="skipButton" type="button" class="danger-outline">Omitir</button><button id="validateButton" type="button" class="validate" disabled>Validar respuesta</button></div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section id="solutionOverlay" class="overlay hidden" aria-live="polite">
+    <article class="solution-card"><div class="solution-icon">✓</div><div class="kicker">SOLUTION REVEALED</div><h2>Estudia la lógica antes de continuar.</h2><p><strong>Respuesta correcta:</strong> <span id="solutionAnswer"></span></p><p id="solutionExplanation"></p><p class="credit-note">Esta pregunta queda cerrada con 25% del crédito.</p><button id="continueAfterReveal" class="primary">Entendemos · continuar</button></article>
+  </section>
+
+  <section id="finishPanel" class="screen hidden">
+    <article class="finish-card"><div class="finish-icon">✓</div><div class="kicker">LAB COMPLETED</div><h2>OOP Logic Lab 01 complete.</h2><p>El equipo recorrió los conceptos fundamentales de diseño y razonamiento orientado a objetos.</p><div class="finish-metrics"><div><span>Preguntas</span><strong id="finishQuestions">12 / 12</strong></div><div><span>Nota final</span><strong id="finishGrade">—</strong></div><div><span>Ayudas</span><strong id="finishHelps">—</strong></div><div><span>Tiempo</span><strong id="finishTime">—</strong></div></div><a class="primary link-button" href="../">Volver al curso T3</a></article>
+  </section>
+</main>
+</body>
+</html>
