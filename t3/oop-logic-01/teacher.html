@@ -1,24 +1,68 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light">
-  <title>Seminario 11 · OOP Logic Master</title>
-  <link rel="stylesheet" href="teacher.css?v=20260821-oop1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="color-scheme" content="light">
+  <title>Seminar 11 · Python OOP Master</title>
+  <link rel="preconnect" href="https://rlfxnjbqxbozjdzkbwlz.supabase.co" crossorigin>
+  <link rel="stylesheet" href="teacher.css?v=20260821-oop-colab-v1">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="config.js?v=20260821-oop1"></script>
-  <script defer src="teacher.js?v=20260821-oop1"></script>
+  <script defer src="config.js?v=20260821-oop-colab-v1"></script>
+  <script defer src="teacher.js?v=20260821-oop-colab-v1"></script>
 </head>
 <body>
-<main class="shell">
-  <header class="topbar"><div><div class="eyebrow">Instituto Jorge Robledo · Seminario de Programación 11°</div><h1>OOP Logic Lab 01 · Registro maestro</h1><p>Equipos, packs, respuestas, ayudas y nota proyectada en vivo.</p></div><nav><a href="./">Actividad</a><a href="../">Curso T3</a></nav></header>
-  <section id="loginPanel" class="panel login-panel"><div><span class="kicker">ACCESO DOCENTE</span><h2>Panel de razonamiento POO</h2><p>Usa el código docente del ecosistema académico.</p></div><form id="loginForm"><input id="teacherCode" type="password" autocomplete="current-password" placeholder="Código docente" required><button>Entrar</button></form><div id="loginStatus" class="status"></div></section>
-  <section id="dashboardPanel" class="hidden">
-    <div class="toolbar panel"><div><strong id="liveStatus">LIVE</strong><span id="updatedAt"></span></div><div class="filters"><select id="groupFilter"><option value="">Todos los grupos</option><option>11A</option><option>11B</option><option>11C</option></select><input id="searchInput" type="search" placeholder="Buscar integrante"><label class="check"><input id="activeOnly" type="checkbox"> Solo activos</label><button id="refreshButton" class="secondary">Actualizar</button><button id="logoutButton" class="secondary">Salir</button></div></div>
-    <div id="metrics" class="metrics"></div>
-    <section class="panel table-panel"><div class="table-head"><div><h2>Sesiones</h2><p>Cada fila corresponde a un equipo/sesión y conserva su pack de 36 variantes.</p></div><span id="rowCount"></span></div><div class="table-wrap"><table><thead><tr><th>Grupo</th><th>Integrantes</th><th>Pack</th><th>Estado</th><th>Progreso</th><th>Nota</th><th>Última respuesta</th><th>Soporte</th><th>Actualizado</th><th></th></tr></thead><tbody id="sessionBody"></tbody></table></div></section>
-  </section>
-</main>
-<dialog id="detailDialog"><div class="dialog-shell"><div class="dialog-head"><div><span class="kicker">INSPECCIÓN</span><h2 id="dialogTitle">Sesión</h2></div><button id="closeDialog" class="secondary">Cerrar</button></div><div id="dialogStatus"></div><section id="detailSummary" class="detail-summary"></section><section><h3>Preguntas y evidencia</h3><div id="detailResponses" class="responses"></div></section><details><summary>Eventos de actividad</summary><div id="detailEvents" class="events"></div></details></div></dialog>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Instituto Jorge Robledo · Seminar 11</div>
+        <h1>Python OOP Colab · Live Master</h1>
+        <p>Team registrations, randomized packs, Python/OOP progress, projected grades and detailed evidence.</p>
+      </div>
+      <nav><a href="./">Student lab</a><a href="../">Seminar T3</a></nav>
+    </header>
+
+    <section id="loginPanel" class="panel login-panel">
+      <div><span class="kicker">TEACHER ACCESS</span><h2>OOP classroom master</h2><p>Use the institutional teacher code. The master reads only the Python OOP Colab activity and refreshes automatically while visible.</p></div>
+      <form id="loginForm"><input id="teacherCode" type="password" autocomplete="current-password" placeholder="Teacher code" required><button type="submit">Enter</button></form>
+      <div id="loginStatus" class="status"></div>
+    </section>
+
+    <section id="dashboardPanel" class="hidden">
+      <div class="toolbar panel">
+        <div class="live-block"><span id="liveStatus" class="live-status syncing">Connecting…</span><span id="updatedAt"></span></div>
+        <div class="filters">
+          <select id="groupFilter" aria-label="Group filter"><option value="">All groups</option><option>11A</option><option>11B</option><option>11C</option></select>
+          <input id="searchInput" type="search" placeholder="Search email / student">
+          <label class="check"><input id="activeOnly" type="checkbox"> Active only</label>
+          <button id="exportButton" type="button" class="secondary">Export CSV</button>
+          <button id="refreshButton" type="button" class="secondary">Refresh</button>
+          <button id="logoutButton" type="button" class="secondary">Logout</button>
+        </div>
+      </div>
+
+      <section id="metrics" class="metrics" aria-label="Live summary"></section>
+
+      <section class="panel table-panel">
+        <div class="table-head"><div><h2>OOP registrations</h2><p>Each row is one 2–3 student workstation session. Pack remains fixed during the attempt.</p></div><span id="rowCount"></span></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Group</th><th>Students</th><th>Pack</th><th>Status</th><th>Progress</th><th>Grade</th><th>Latest answer</th><th>Support</th><th>Updated</th><th>Actions</th></tr></thead>
+          <tbody id="sessionBody"></tbody>
+        </table></div>
+      </section>
+      <p class="footnote">Use <strong>Inspect</strong> for the complete stage history, expected answers, starter/solution code and activity events. Delete only invalid or QA registrations.</p>
+    </section>
+  </main>
+
+  <dialog id="detailDialog">
+    <div class="dialog-shell">
+      <div class="dialog-head"><div><span class="eyebrow">OOP SESSION</span><h2 id="dialogTitle">Details</h2></div><button id="closeDialogButton" class="secondary">Close</button></div>
+      <div id="dialogStatus" class="muted"></div>
+      <section id="detailSummary" class="detail-summary"></section>
+      <section class="dialog-section"><h3>Stage evidence</h3><div id="detailResponses" class="responses"></div></section>
+      <details class="event-details"><summary>Activity events</summary><div id="detailEvents" class="events"></div></details>
+    </div>
+  </dialog>
 </body>
 </html>

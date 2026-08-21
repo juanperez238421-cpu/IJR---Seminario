@@ -12,10 +12,12 @@ on:
       - "css/**"
       - "js/**"
       - "data/**"
+      - "tests/**"
       - ".github/workflows/deploy-pages.yml"
   pull_request:
     paths:
       - "t3/**"
+      - "tests/**"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -34,6 +36,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Validate existing seminar source files
         shell: bash
@@ -64,7 +71,27 @@ jobs:
           node --check t3/js/lab.js
           node --check t3/js/scoring-core.js
           node --check t3/js/teacher.js
-          npm test
+
+      - name: Validate Python OOP Colab student and master
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s t3/oop-logic-01/index.html
+          test -s t3/oop-logic-01/teacher.html
+          test -s t3/oop-logic-01/config.js
+          test -s t3/oop-logic-01/app.js
+          test -s t3/oop-logic-01/styles.css
+          test -s t3/oop-logic-01/teacher.js
+          test -s t3/oop-logic-01/teacher.css
+          node --check t3/oop-logic-01/config.js
+          node --check t3/oop-logic-01/app.js
+          node --check t3/oop-logic-01/teacher.js
+          grep -q "pyodide/v0.27.7" t3/oop-logic-01/index.html
+          grep -q "seminar11-oop-colab-01-2026" t3/oop-logic-01/config.js
+          grep -q "teacher_seminar_oop_colab_dashboard_v1" t3/oop-logic-01/config.js
+
+      - name: Run JavaScript contract tests
+        run: npm test
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -93,5 +120,7 @@ jobs:
         shell: bash
         run: |
           echo "### Seminar T3 production URLs" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Student: ${{ steps.deployment.outputs.page_url }}t3/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Teacher: ${{ steps.deployment.outputs.page_url }}t3/teacher.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "- T3 course: ${{ steps.deployment.outputs.page_url }}t3/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- T3 teacher: ${{ steps.deployment.outputs.page_url }}t3/teacher.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Python OOP Colab student: ${{ steps.deployment.outputs.page_url }}t3/oop-logic-01/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Python OOP Colab master: ${{ steps.deployment.outputs.page_url }}t3/oop-logic-01/teacher.html" >> "$GITHUB_STEP_SUMMARY"
