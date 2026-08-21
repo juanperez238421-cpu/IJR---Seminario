@@ -1,20 +1,86 @@
 (() => {
   'use strict';
-  const cfg=window.IJR_OOP_LOGIC_CONFIG,$=id=>document.getElementById(id);
-  const sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  let token=sessionStorage.getItem(cfg.teacherSessionKey)||'',snapshot=null,timer=null,loading=false;
-  const VISIBLE_MS=3000,HIDDEN_MS=12000;
+
+  const cfg=window.IJR_OOP_COLAB_CONFIG;
+  const $=id=>document.getElementById(id);
+  const sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const SNAPSHOT_KEY=`${cfg.teacherSessionKey}-snapshot-v1`;
+  const POLL_VISIBLE_MS=3000,POLL_HIDDEN_MS=12000,MAX_BACKOFF_MS=30000;
+  let token=sessionStorage.getItem(cfg.teacherSessionKey)||'',snapshot=null,timer=null,loading=false,failures=0,lastSuccessAt=0,selectedAttemptId=null;
+
   async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw new Error(error.message||'Backend error');return data}
-  function esc(v=''){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-  function fmt(v){return v==null?'—':Number(v).toFixed(2)}
-  function fmtTime(v){if(!v)return'—';try{return new Date(v).toLocaleString('es-CO',{dateStyle:'short',timeStyle:'medium'})}catch{return'—'}}
-  function schedule(ms){clearTimeout(timer);if(token)timer=setTimeout(load,ms)}
-  function names(s){return Array.isArray(s?.participants)?s.participants:[]}
-  function filtered(){if(!snapshot)return[];const g=$('groupFilter').value,q=$('searchInput').value.trim().toLowerCase(),active=$('activeOnly').checked;return Array.from(snapshot.sessions||[]).filter(s=>(!g||s.group_code===g)&&(!active||s.status==='active')&&(!q||names(s).some(p=>String(p.display_name||'').toLowerCase().includes(q))))}
-  function render(){if(!snapshot)return;const rows=filtered(),active=rows.filter(s=>s.status==='active').length,students=rows.reduce((n,s)=>n+Number(s.team_size||names(s).length||1),0),grades=rows.map(s=>Number(s.status==='submitted'?s.grade:s.projected_grade)).filter(Number.isFinite),avg=grades.length?grades.reduce((a,b)=>a+b,0)/grades.length:null;$('metrics').innerHTML=[['Sesiones',rows.length],['Activas',active],['Estudiantes',students],['Promedio / proyección',avg==null?'—':avg.toFixed(2)],['Preguntas',12]].map(([k,v])=>`<div class="metric"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');$('rowCount').textContent=`${rows.length} mostradas`;$('sessionBody').innerHTML=rows.map(s=>{const participantHtml=names(s).map(p=>`<span>${esc(p.display_name)}</span>`).join(''),support=`H ${Number(s.helps||0)} · E ${Number(s.wrong_attempts||0)} · R ${Number(s.revealed_count||0)} · S ${Number(s.skipped_count||0)}`,mark=s.latest_answer_correct===true?'✓':s.latest_answer_correct===false?'✗':'·',aCls=s.latest_answer_correct===true?'answer-ok':s.latest_answer_correct===false?'answer-bad':'';return `<tr><td><strong>${esc(s.group_code||'—')}</strong></td><td><div class="students">${participantHtml||'<span>—</span>'}</div></td><td class="pack">${String(s.variant_pack??'—').padStart(2,'0')}</td><td><span class="badge ${s.status==='submitted'?'submitted':''}">${s.status==='submitted'?'Finalizada':'Activa'}</span></td><td><strong>${Number(s.completed_count||0)}/12</strong></td><td class="grade">${fmt(s.status==='submitted'?s.grade:s.projected_grade)}</td><td class="${aCls}"><strong>${esc(s.latest_checkpoint_key||'—')}</strong><div class="sub">${esc(s.latest_answer??'—')} ${mark}</div></td><td>${esc(support)}</td><td>${fmtTime(s.last_activity_at)}</td><td><button class="inspect" data-id="${esc(s.attempt_id)}">Inspeccionar</button></td></tr>`}).join('')||'<tr><td colspan="10" class="empty">No hay sesiones para este filtro.</td></tr>';$('updatedAt').textContent=`Actualizado ${new Date(snapshot.generated_at||Date.now()).toLocaleTimeString('es-CO')}`;document.querySelectorAll('.inspect[data-id]').forEach(b=>b.addEventListener('click',()=>openDetail(b.dataset.id)));}
-  async function load(force=false){if(!token||loading)return;loading=true;try{snapshot=await rpc(cfg.rpc.teacherDashboard,{p_teacher_token:token});$('loginPanel').classList.add('hidden');$('dashboardPanel').classList.remove('hidden');$('liveStatus').textContent='LIVE';render();schedule(document.hidden?HIDDEN_MS:VISIBLE_MS)}catch(err){if(/invalid|expired|teacher session/i.test(err.message)){token='';sessionStorage.removeItem(cfg.teacherSessionKey);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden');$('loginStatus').textContent=`Sesión docente no disponible: ${err.message}`}else{$('liveStatus').textContent='STALE';schedule(force?VISIBLE_MS:Math.min(30000,VISIBLE_MS*2))}}finally{loading=false}}
-  async function openDetail(id){$('dialogStatus').textContent='Cargando…';$('detailDialog').showModal();try{const data=await rpc(cfg.rpc.teacherDetail,{p_teacher_token:token,p_attempt_id:id}),a=data.attempt||{},ps=data.participants||[],rs=data.responses||[],events=data.events||[];$('dialogTitle').textContent=`${a.group_code||'—'} · ${ps.map(p=>p.display_name).join(' · ')}`;$('detailSummary').innerHTML=[['Estado',a.status],['Nota',fmt(a.grade)],['Pack',a.variant_pack],['Inicio',fmtTime(a.started_at)],['Última actividad',fmtTime(a.last_activity_at)]].map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v??'—')}</strong></div>`).join('');$('detailResponses').innerHTML=rs.map(r=>`<article class="response ${r.correct?'ok':r.completion_mode==='revealed'?'revealed':''}"><div class="response-head"><h4>${esc(r.sequence)} · ${esc(r.title)}</h4><strong>${esc(r.completion_mode||'pending')}</strong></div><p>${esc(r.prompt||'')}</p><div class="pair"><span>Respuesta</span><code>${esc(r.latest_answer??'—')}</code><span>Esperada</span><code>${esc(r.expected_answer??'—')}</code><span>Explicación</span><code>${esc(r.explanation??'—')}</code></div><small>intentos ${Number(r.try_count||0)} · errores ${Number(r.wrong_attempts||0)} · ayudas ${Number(r.help_count||0)} · puntos ${Number(r.awarded_points||0).toFixed(2)}</small></article>`).join('');$('detailEvents').innerHTML=events.map(e=>`<div class="event"><strong>${esc(e.event_type)}</strong><span>${fmtTime(e.created_at)}</span><code>${esc(JSON.stringify(e.metadata||{}))}</code></div>`).join('')||'Sin eventos.';$('dialogStatus').textContent=''}catch(err){$('dialogStatus').textContent=`No fue posible cargar el detalle: ${err.message}`}}
-  $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginStatus').textContent='Ingresando…';try{const data=await rpc(cfg.rpc.teacherLogin,{p_code:$('teacherCode').value,p_user_agent:navigator.userAgent});token=data.teacher_token;sessionStorage.setItem(cfg.teacherSessionKey,token);$('teacherCode').value='';$('loginStatus').textContent='';await load(true)}catch(err){$('loginStatus').textContent=`No fue posible ingresar: ${err.message}`}});
-  $('logoutButton').addEventListener('click',async()=>{try{if(token)await rpc(cfg.rpc.teacherLogout,{p_teacher_token:token})}catch{}token='';snapshot=null;clearTimeout(timer);sessionStorage.removeItem(cfg.teacherSessionKey);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden')});
-  $('refreshButton').addEventListener('click',()=>load(true));$('groupFilter').addEventListener('change',render);$('activeOnly').addEventListener('change',render);$('searchInput').addEventListener('input',render);$('closeDialog').addEventListener('click',()=>$('detailDialog').close());document.addEventListener('visibilitychange',()=>{if(token){document.hidden?schedule(HIDDEN_MS):load(true)}});window.addEventListener('online',()=>{if(token)load(true)});if(token)load(true);
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function fmtGrade(v){return v==null||!Number.isFinite(Number(v))?'—':Number(v).toFixed(2)}
+  function fmtTime(v,full=false){if(!v)return'—';try{return new Date(v).toLocaleString('es-CO',full?{dateStyle:'short',timeStyle:'medium'}:{hour:'2-digit',minute:'2-digit',second:'2-digit'})}catch{return'—'}}
+  function participants(s){return Array.isArray(s?.participants)?s.participants:[]}
+  function visibleGrade(s){return s?.status==='submitted'?s.grade:(s?.projected_grade??s?.grade)}
+  function isAuthError(err){return /invalid|expired|teacher session/i.test(String(err?.message||err))}
+  function setLive(mode,text){const el=$('liveStatus');el.className=`live-status ${mode}`;el.textContent=text}
+  function schedule(ms){clearTimeout(timer);if(token)timer=setTimeout(()=>load(),ms)}
+  function cacheSnapshot(){try{sessionStorage.setItem(SNAPSHOT_KEY,JSON.stringify(snapshot))}catch{}}
+  function restoreCached(){try{const raw=sessionStorage.getItem(SNAPSHOT_KEY);if(!raw)return false;snapshot=JSON.parse(raw);if(!snapshot)return false;render();setLive('stale','Saved view');return true}catch{return false}}
+
+  function searchText(s){return [s.group_code,s.variant_pack,...participants(s).flatMap(p=>[p.display_name,p.institutional_email,p.email_normalized])].filter(Boolean).join(' ').toLowerCase()}
+  function filteredSessions(){const group=$('groupFilter').value,q=$('searchInput').value.trim().toLowerCase(),activeOnly=$('activeOnly').checked;return Array.from(snapshot?.sessions||[]).filter(s=>(!group||s.group_code===group)&&(!activeOnly||s.status==='active')&&(!q||searchText(s).includes(q)))}
+
+  function studentCell(s){const ps=participants(s);if(!ps.length)return'<span class="muted">No participant data</span>';return `<div class="students">${ps.map(p=>{const email=p.institutional_email||p.email_normalized||'',name=p.display_name||email||'Student';return `<div><strong>${esc(name)}</strong>${email&&String(name).toLowerCase()!==String(email).toLowerCase()?`<span>${esc(email)}</span>`:''}</div>`}).join('')}</div>`}
+  function latestCell(s){const key=s.latest_checkpoint_key||'—',answer=s.latest_answer??'—',correct=s.latest_answer_correct,cls=correct===true?'answer-ok':correct===false?'answer-bad':'',mark=correct===true?'✓':correct===false?'✗':'·';return `<div class="latest ${cls}"><strong>${esc(key)}</strong><code title="${esc(answer)}">${esc(answer)}</code><span>${mark}</span></div>`}
+  function supportText(s){return `H ${Number(s.help_tokens_used||0)} · E ${Number(s.wrong_attempts||0)} · R ${Number(s.revealed_count||0)} · S ${Number(s.skipped_count||0)}`}
+
+  function render(){
+    if(!snapshot)return;
+    const rows=filteredSessions(),active=rows.filter(s=>s.status==='active').length,students=rows.reduce((n,s)=>n+Math.max(1,Number(s.team_size||participants(s).length||1)),0),grades=rows.map(visibleGrade).filter(v=>Number.isFinite(Number(v))).map(Number),avg=grades.length?grades.reduce((a,b)=>a+b,0)/grades.length:null,helps=rows.reduce((n,s)=>n+Number(s.help_tokens_used||0),0),errors=rows.reduce((n,s)=>n+Number(s.wrong_attempts||0),0);
+    $('metrics').innerHTML=[['Registrations',rows.length],['Active',active],['Students',students],['Avg. grade',avg==null?'—':avg.toFixed(2)],['Helps',helps],['Validated errors',errors]].map(([label,value])=>`<div class="metric"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('');
+    $('rowCount').textContent=`${rows.length} shown · 36-pack bank`;
+    $('sessionBody').innerHTML=rows.map(s=>{const completed=Number(s.completed_count||0),total=Number(s.checkpoint_count||12),pct=Math.max(0,Math.min(100,completed/Math.max(1,total)*100)),status=s.status==='submitted'?'submitted':'active';return `<tr>
+      <td><strong>${esc(s.group_code||'—')}</strong></td>
+      <td>${studentCell(s)}</td>
+      <td><span class="pack">${String(s.variant_pack??'—').padStart(2,'0')}</span></td>
+      <td><span class="badge ${status}">${status==='submitted'?'Completed':'Active'}</span></td>
+      <td><div class="progress"><span>${completed}/${total}</span><i><b style="width:${pct}%"></b></i></div></td>
+      <td class="grade">${fmtGrade(visibleGrade(s))}</td>
+      <td>${latestCell(s)}</td>
+      <td><strong>${esc(supportText(s))}</strong><div class="sub">exit ${Number(s.restriction_events||0)}</div></td>
+      <td>${fmtTime(s.last_activity_at)}</td>
+      <td><div class="row-actions"><button class="inspect" data-action="inspect" data-id="${esc(s.attempt_id)}">Inspect</button><button class="delete" data-action="delete" data-id="${esc(s.attempt_id)}">Delete</button></div></td>
+    </tr>`}).join('')||'<tr><td colspan="10" class="empty">No OOP registrations match this filter.</td></tr>';
+    $('updatedAt').textContent=`Updated ${new Date(snapshot.generated_at||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+    bindActions();
+  }
+
+  function bindActions(){document.querySelectorAll('[data-action][data-id]').forEach(btn=>btn.addEventListener('click',()=>btn.dataset.action==='delete'?deleteAttempt(btn.dataset.id):openDetail(btn.dataset.id)))}
+
+  function renderDetail(data){
+    const a=data?.attempt||{},ps=Array.isArray(data?.participants)?data.participants:[],rs=Array.isArray(data?.responses)?data.responses:[],events=Array.isArray(data?.events)?data.events:[];
+    $('dialogTitle').textContent=`${a.group_code||'—'} · Pack ${String(data?.variant_pack??'—').padStart(2,'0')}`;
+    $('detailSummary').innerHTML=[['Students',ps.map(p=>p.institutional_email||p.display_name).filter(Boolean).join(' · ')||'—'],['Status',a.status||'—'],['Grade',fmtGrade(a.grade)],['Started',fmtTime(a.started_at,true)],['Last activity',fmtTime(a.last_activity_at,true)]].map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');
+    $('detailResponses').innerHTML=rs.map(r=>{const mode=r.mode||'code',cls=r.correct?'ok':r.completion_mode==='revealed'?'revealed':r.completion_mode==='skipped'?'skipped':'';return `<article class="response ${cls}">
+      <div class="response-head"><div><span class="stage-mode">${esc(mode.toUpperCase())}</span><h4>${esc(r.sequence)} · ${esc(r.title)}</h4></div><span class="badge">${esc(r.completion_mode||'pending')}</span></div>
+      <p>${esc(r.prompt||'')}</p>
+      <div class="pair"><span>Student answer</span><code>${esc(r.latest_answer??'—')}</code><span>Expected</span><code>${esc(r.expected_answer??'—')}</code><span>Variant</span><code>${esc(r.variant_key??'—')}</code></div>
+      ${mode==='code'?`<details class="code-details"><summary>Starter / solution code</summary><div class="code-pair"><div><span>Starter</span><pre>${esc(String(r.starter_code||'').replace(/\\n/g,'\n'))}</pre></div><div><span>Solution</span><pre>${esc(String(r.solution_code||'').replace(/\\n/g,'\n'))}</pre></div></div></details>`:''}
+      <small>tries ${Number(r.try_count||0)} · validated errors ${Number(r.wrong_attempts||0)} · helps ${Number(r.help_count||0)} · awarded ${Number(r.awarded_points||0).toFixed(2)}</small>
+    </article>`}).join('')||'<div class="empty">No stage responses yet.</div>';
+    $('detailEvents').innerHTML=events.slice(0,120).map(e=>`<div class="event"><strong>${esc(e.event_type)}</strong><span>${esc(fmtTime(e.created_at,true))}</span><code>${esc(JSON.stringify(e.metadata||{}))}</code></div>`).join('')||'<span class="muted">No events.</span>';
+  }
+
+  async function openDetail(id){selectedAttemptId=id;$('dialogStatus').textContent='Loading session evidence…';$('detailDialog').showModal();try{const data=await rpc(cfg.rpc.teacherDetail,{p_teacher_token:token,p_attempt_id:id});renderDetail(data);$('dialogStatus').textContent='Read-only evidence from the OOP backend.'}catch(err){$('dialogStatus').textContent=`Could not load: ${err.message}`}}
+  async function deleteAttempt(id=selectedAttemptId){if(!id)return;const row=(snapshot?.sessions||[]).find(s=>s.attempt_id===id),label=row?participants(row).map(p=>p.institutional_email||p.display_name).filter(Boolean).join(' · '):id;if(!confirm(`Delete this OOP registration and all stage evidence?\n\n${label}\n\nUse this only for invalid or QA registrations.`))return;try{await rpc(cfg.rpc.teacherDelete,{p_teacher_token:token,p_attempt_id:id});if($('detailDialog').open)$('detailDialog').close();selectedAttemptId=null;await load(true)}catch(err){alert(`Could not delete: ${err.message}`)}}
+
+  function csvCell(v){const text=String(v??'');return `"${text.replaceAll('"','""')}"`}
+  function exportCsv(){const rows=filteredSessions(),head=['group','students','pack','status','progress','grade','helps','validated_errors','reveals','skips','last_activity'];const lines=[head.map(csvCell).join(',')];for(const s of rows){lines.push([s.group_code,participants(s).map(p=>p.institutional_email||p.display_name).join(' | '),s.variant_pack,s.status,`${s.completed_count||0}/${s.checkpoint_count||12}`,fmtGrade(visibleGrade(s)),s.help_tokens_used||0,s.wrong_attempts||0,s.revealed_count||0,s.skipped_count||0,s.last_activity_at||''].map(csvCell).join(','))}const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`seminar11_oop_colab_${new Date().toISOString().slice(0,10)}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),500)}
+
+  async function load(force=false){
+    if(!token||loading)return;if(navigator.onLine===false&&!force){setLive('offline','Offline · last data');schedule(5000);return}
+    loading=true;if(!snapshot)setLive('syncing','Syncing…');
+    try{snapshot=await rpc(cfg.rpc.teacherDashboard,{p_teacher_token:token});lastSuccessAt=Date.now();failures=0;cacheSnapshot();$('loginPanel').classList.add('hidden');$('dashboardPanel').classList.remove('hidden');render();setLive('live','LIVE · 3 s');schedule(document.hidden?POLL_HIDDEN_MS:POLL_VISIBLE_MS)}
+    catch(err){if(isAuthError(err)){token='';snapshot=null;clearTimeout(timer);sessionStorage.removeItem(cfg.teacherSessionKey);sessionStorage.removeItem(SNAPSHOT_KEY);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden');$('loginStatus').textContent=`Teacher session unavailable: ${err.message}`}else{failures+=1;const age=lastSuccessAt?Math.round((Date.now()-lastSuccessAt)/1000):null;setLive(navigator.onLine===false?'offline':'stale',age==null?'Retrying…':`Stale · ${age}s`);schedule(Math.min(MAX_BACKOFF_MS,POLL_VISIBLE_MS*Math.pow(2,Math.min(failures-1,4))))}}
+    finally{loading=false}
+  }
+
+  $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginStatus').textContent='Signing in…';try{const data=await rpc(cfg.rpc.teacherLogin,{p_code:$('teacherCode').value,p_user_agent:navigator.userAgent});token=data.teacher_token;sessionStorage.setItem(cfg.teacherSessionKey,token);$('teacherCode').value='';$('loginStatus').textContent='';await load(true)}catch(err){$('loginStatus').textContent=`Could not sign in: ${err.message}`}});
+  $('groupFilter').addEventListener('change',render);$('activeOnly').addEventListener('change',render);$('searchInput').addEventListener('input',render);$('refreshButton').addEventListener('click',()=>load(true));$('exportButton').addEventListener('click',exportCsv);$('closeDialogButton').addEventListener('click',()=>$('detailDialog').close());
+  $('logoutButton').addEventListener('click',async()=>{try{await rpc(cfg.rpc.teacherLogout,{p_teacher_token:token})}catch{}token='';snapshot=null;clearTimeout(timer);sessionStorage.removeItem(cfg.teacherSessionKey);sessionStorage.removeItem(SNAPSHOT_KEY);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden')});
+  document.addEventListener('visibilitychange',()=>{if(!token)return;document.hidden?schedule(POLL_HIDDEN_MS):load(true)});window.addEventListener('online',()=>{if(token)load(true)});window.addEventListener('offline',()=>{if(token)setLive('offline','Offline · last data')});
+  if(token){restoreCached();$('loginPanel').classList.add('hidden');$('dashboardPanel').classList.remove('hidden');load(true)}
 })();
