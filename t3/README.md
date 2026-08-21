@@ -2,21 +2,21 @@
 
 Interactive course for **Seminario de Programación 11°** based on the complete `Basics T3.zip` guide package.
 
-## Production URLs
+## Production / source routing
 
-The classroom frontend is deployed through **GitHub Pages**. Supabase remains the shared data, session and server-validation backend.
+`IJR---Seminario` is the canonical **source repository**. Repository-level GitHub Pages is not currently enabled there, so this repository validates the static source but does not publish a `github.io/IJR---Seminario/...` classroom site.
 
-- **T3 course:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/
-- **T3 teacher:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/teacher.html
-- **Python OOP Colab Lab 01:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/
-- **Python OOP Colab Lab 01 · master:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/teacher.html
+The **Python OOP Colab Lab 01** is published through the already-enabled institutional GitHub Pages repository `ijr-estadistica-11-2026`, while Supabase remains the data/session/server-validation backend:
+
+- **Python OOP Colab Lab 01 · student:** https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-colab-01/
+- **Python OOP Colab Lab 01 · teacher master:** https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-colab-01/teacher.html
 - **Source repository:** https://github.com/juanperez238421-cpu/IJR---Seminario
 
-The GitHub Pages workflow validates the T3 route, Python OOP Colab student/master files, JavaScript syntax and Node contract tests before publishing the repository artifact.
+Both OOP GitHub Pages routes were independently HTTP-smoke-tested after deployment and returned `200` with the expected student/master HTML. The versioned CSS/JS/config remain sourced from the merged Seminar repository code.
 
 ## Routes
 
-Both language routes contain the same 16-topic progression:
+Both main language routes contain the same 16-topic progression:
 
 - **Basic (8):** environment, variables/types, operators/I-O, conditionals, loops, collections/arrays, functions/methods, classes/objects.
 - **Medium (4):** constructors/state/methods, encapsulation, exceptions/debugging, modules/packages.
@@ -26,7 +26,7 @@ The original guide numbers remain traceable. Guides 13 and 14 are intentionally 
 
 ## Python OOP Colab Lab 01
 
-`t3/oop-logic-01/` is a separate formative activity modeled after the Statistics 11 Colab learning interface. It now combines OOP reasoning with **real Python execution through Pyodide**.
+`t3/oop-logic-01/` is a separate formative activity modeled after the Statistics 11 Colab learning interface. It combines OOP reasoning with **real Python execution through Pyodide**.
 
 - 12 sequential stages mixing concept questions and Python code cells.
 - 36 persistent randomized workstation packs assigned with a least-used random strategy during the classroom window.
@@ -40,23 +40,21 @@ The original guide numbers remain traceable. Guides 13 and 14 are intentionally 
 
 ## Student experience
 
-- Python route: real browser execution with Pyodide.
+- Python OOP: real browser execution with Pyodide in a Colab-style notebook surface.
+- Main Python route: real browser execution with Pyodide.
 - Java route: source editor + structural analysis + `Main.java` export + real JDK stdout validation.
-- Progressive help.
-- Retry after incorrect output.
-- Reveal solution for partial credit.
-- Live projected grade on a 1.00–5.00 scale.
+- Progressive help, retry, reveal, skip and live projected grade on a 1.00–5.00 scale.
 
 ## Teacher
 
-`t3/teacher.html` uses the shared teacher-code session mechanism for the main T3 course. `t3/oop-logic-01/teacher.html` uses the same teacher login but an activity-specific OOP dashboard/detail backend so its 12-stage evidence remains isolated from the 16-module route.
+The OOP master uses the existing teacher-code session mechanism but activity-specific dashboard/detail/delete RPCs, keeping its 12-stage evidence isolated from the main 16-module route.
 
 ## Data and traceability
 
-- `data/course-index.json`: course route index.
+- `data/course-index.json`: main course route index.
 - `data/modules/*.json`: bilingual instructional content for every main T3 module.
 - `data/source-map.json`: source-guide traceability.
-- `oop-logic-01/`: Python OOP Colab student interface and live master.
+- `oop-logic-01/`: canonical Python OOP Colab source and master source.
 - `../qa/SEMINAR_T3_DUAL_LANGUAGE_PLATFORM_QA_2026-08-19.md`: QA rationale and release gates.
 
 ## Tests
