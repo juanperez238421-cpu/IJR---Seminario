@@ -3,12 +3,31 @@
 
   const cfg=window.IJR_OOP_COLAB_CONFIG;
   const $=id=>document.getElementById(id);
-  const sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const SNAPSHOT_KEY=`${cfg.teacherSessionKey}-snapshot-v1`;
   const POLL_VISIBLE_MS=3000,POLL_HIDDEN_MS=12000,MAX_BACKOFF_MS=30000;
-  let token=sessionStorage.getItem(cfg.teacherSessionKey)||'',snapshot=null,timer=null,loading=false,failures=0,lastSuccessAt=0,selectedAttemptId=null;
+  let token='',snapshot=null,timer=null,loading=false,failures=0,lastSuccessAt=0,selectedAttemptId=null,pendingFactorId='',pendingChallengeId='';
 
-  async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw new Error(error.message||'Backend error');return data}
+  const RPC_OPERATION={
+    teacher_seminar_oop_colab_dashboard_v1:'seminar_oop_colab_dashboard',
+    teacher_seminar_oop_colab_detail_v1:'seminar_oop_colab_detail',
+    teacher_seminar_oop_colab_delete_v1:'seminar_oop_colab_delete'
+  };
+  async function rpc(name,args={}){
+    const operation=RPC_OPERATION[name];if(!operation)throw new Error('Teacher operation not allowed');
+    const {data,error}=await sb.functions.invoke('teacher-auth-gateway',{body:{operation,args}});
+    if(error)throw new Error(error.message||'Backend error');if(data?.error)throw new Error(data.error);return data?.data;
+  }
+  async function beginMfa(){
+    const {data:aal,error:aalError}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();if(aalError)throw aalError;
+    if(aal?.currentLevel==='aal2'){const {data:{session}}=await sb.auth.getSession();token=session?.access_token||'';if(!token)throw new Error('Session unavailable');$('mfaPanel').classList.add('hidden');$('loginStatus').textContent='';restoreCached();await load(true);return}
+    const {data:factors,error:factorsError}=await sb.auth.mfa.listFactors();if(factorsError)throw factorsError;
+    let factor=(factors?.totp||[]).find(item=>item.status==='verified');
+    if(!factor){const {data:enrolled,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'IJR teacher panel'});if(error)throw error;factor=enrolled;$('mfaQr').src=enrolled.totp.qr_code;$('mfaQr').classList.remove('hidden');$('mfaHelp').textContent='Scan the QR code, then enter the six-digit code.'}
+    else{$('mfaQr').classList.add('hidden');$('mfaHelp').textContent='Enter the six-digit code from your authenticator app.'}
+    pendingFactorId=factor.id;const {data:challenge,error}=await sb.auth.mfa.challenge({factorId:pendingFactorId});if(error)throw error;pendingChallengeId=challenge.id;$('mfaPanel').classList.remove('hidden');$('mfaCode').focus();
+  }
+  async function bootstrapAuth(){const {data:{session}}=await sb.auth.getSession();if(!session)return;try{await beginMfa()}catch(err){$('loginStatus').textContent=`Access pending: ${err.message}`}}
   function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function fmtGrade(v){return v==null||!Number.isFinite(Number(v))?'—':Number(v).toFixed(2)}
   function fmtTime(v,full=false){if(!v)return'—';try{return new Date(v).toLocaleString('es-CO',full?{dateStyle:'short',timeStyle:'medium'}:{hour:'2-digit',minute:'2-digit',second:'2-digit'})}catch{return'—'}}
@@ -78,9 +97,10 @@
     finally{loading=false}
   }
 
-  $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginStatus').textContent='Signing in…';try{const data=await rpc(cfg.rpc.teacherLogin,{p_code:$('teacherCode').value,p_user_agent:navigator.userAgent});token=data.teacher_token;sessionStorage.setItem(cfg.teacherSessionKey,token);$('teacherCode').value='';$('loginStatus').textContent='';await load(true)}catch(err){$('loginStatus').textContent=`Could not sign in: ${err.message}`}});
+  $('loginForm').addEventListener('submit',async e=>{e.preventDefault();const email=$('teacherEmail').value.trim().toLowerCase();if(!email.endsWith('@ijr.edu.co')){$('loginStatus').textContent='Use the institutional teacher @ijr.edu.co account.';return}$('loginStatus').textContent='Checking institutional account…';try{const {error}=await sb.auth.signInWithPassword({email,password:$('teacherPassword').value});if(error)throw error;$('teacherPassword').value='';await beginMfa()}catch(err){$('loginStatus').textContent=`Could not sign in: ${err.message}`}});
+  $('mfaButton').addEventListener('click',async()=>{const code=$('mfaCode').value.trim();if(!pendingFactorId||!pendingChallengeId||!/^[0-9]{6}$/.test(code)){$('loginStatus').textContent='Enter a valid six-digit MFA code.';return}try{const {error}=await sb.auth.mfa.verify({factorId:pendingFactorId,challengeId:pendingChallengeId,code});if(error)throw error;$('mfaCode').value='';await beginMfa()}catch(err){$('loginStatus').textContent=`MFA not verified: ${err.message}`}});
   $('groupFilter').addEventListener('change',render);$('activeOnly').addEventListener('change',render);$('searchInput').addEventListener('input',render);$('refreshButton').addEventListener('click',()=>load(true));$('exportButton').addEventListener('click',exportCsv);$('closeDialogButton').addEventListener('click',()=>$('detailDialog').close());
-  $('logoutButton').addEventListener('click',async()=>{try{await rpc(cfg.rpc.teacherLogout,{p_teacher_token:token})}catch{}token='';snapshot=null;clearTimeout(timer);sessionStorage.removeItem(cfg.teacherSessionKey);sessionStorage.removeItem(SNAPSHOT_KEY);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden')});
+  $('logoutButton').addEventListener('click',async()=>{await sb.auth.signOut({scope:'local'});token='';snapshot=null;clearTimeout(timer);sessionStorage.removeItem(SNAPSHOT_KEY);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden')});
   document.addEventListener('visibilitychange',()=>{if(!token)return;document.hidden?schedule(POLL_HIDDEN_MS):load(true)});window.addEventListener('online',()=>{if(token)load(true)});window.addEventListener('offline',()=>{if(token)setLive('offline','Offline · last data')});
-  if(token){restoreCached();$('loginPanel').classList.add('hidden');$('dashboardPanel').classList.remove('hidden');load(true)}
+  bootstrapAuth();
 })();
