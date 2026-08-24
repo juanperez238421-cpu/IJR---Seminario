@@ -1,1 +1,40 @@
-import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');test('Studio manifest has one common core and exactly five tracks',()=>{const x=JSON.parse(read('t3/data/studio-index.json')).studio;assert.equal(x.commonCore.length,10);assert.deepEqual(x.tracks.map(t=>t.slug),['web','data-science','cybersecurity','3d-programming','robotics']);x.tracks.forEach(t=>assert.equal(t.sprints.length,8));});test('Public T3 navigation exposes Studio but not private Studio teacher route',()=>{const html=read('t3/index.html');assert.match(html,/studio\//);assert.doesNotMatch(html,/studio\/teacher\.html/);});test('Student Studio uses one constrained Edge Function and first-choice routing',()=>{const js=read('t3/studio/app.js');assert.match(js,/seminar-studio-student/);assert.match(js,/first_choice/);assert.match(js,/track_slug/);});test('Defensive cybersecurity track is explicitly defensive',()=>{const html=read('t3/tracks/cybersecurity/index.html');const manifest=read('t3/data/studio-index.json');assert.match(html,/AUTHORIZED DEFENSIVE SCOPE/);assert.match(manifest,/No external target exploitation/);});test('Private teacher view uses MFA gateway instead of direct table reads',()=>{const js=read('t3/studio/teacher.js');assert.match(js,/teacher-auth-gateway/);assert.match(js,/seminar_studio_dashboard/);assert.doesNotMatch(js,/from\(['"]seminar_studio_profiles/);});
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
+
+test('Studio manifest has one common core and exactly five tracks',()=>{
+  const x=JSON.parse(read('t3/data/studio-index.json')).studio;
+  assert.equal(x.commonCore.length,10);
+  assert.deepEqual(x.tracks.map(t=>t.slug),['web','data-science','cybersecurity','3d-programming','robotics']);
+  x.tracks.forEach(t=>assert.equal(t.sprints.length,8));
+});
+
+test('Public T3 navigation exposes Studio but not private Studio teacher route',()=>{
+  const html=read('t3/index.html');
+  assert.match(html,/studio\//);
+  assert.doesNotMatch(html,/studio\/teacher\.html/);
+});
+
+test('Student Studio uses one constrained Edge Function and first-choice routing',()=>{
+  const js=read('t3/studio/app.js');
+  assert.match(js,/seminar-studio-student/);
+  assert.match(js,/first_choice/);
+  assert.match(js,/track_slug/);
+});
+
+test('Defensive cybersecurity track is explicitly defensive and authorized-only',()=>{
+  const html=read('t3/tracks/cybersecurity/index.html');
+  const manifest=read('t3/data/studio-index.json');
+  assert.match(html,/AUTHORIZED DEFENSIVE SCOPE/);
+  assert.match(html,/No external target exploitation/);
+  assert.match(manifest,/without attacking external systems/);
+});
+
+test('Private teacher view uses MFA gateway instead of direct table reads',()=>{
+  const js=read('t3/studio/teacher.js');
+  assert.match(js,/teacher-auth-gateway/);
+  assert.match(js,/seminar_studio_dashboard/);
+  assert.match(js,/getAuthenticatorAssuranceLevel/);
+  assert.doesNotMatch(js,/from\(['"]seminar_studio_profiles/);
+});
