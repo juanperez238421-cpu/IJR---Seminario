@@ -2,21 +2,19 @@ name: Deploy Seminar T3 to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - "t3/**"
-      - "monitor.html"
-      - "progress.html"
+      - "encuesta*.html"
       - "index.html"
       - "css/**"
       - "js/**"
-      - "data/**"
       - "tests/**"
       - ".github/workflows/deploy-pages.yml"
   pull_request:
     paths:
       - "t3/**"
+      - "encuesta*.html"
       - "tests/**"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
@@ -34,26 +32,19 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Configure Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Validate existing seminar source files
+      - name: Validate privacy baseline
         shell: bash
         run: |
           set -euo pipefail
           test -s index.html
-          test -s monitor.html
-          test -s progress.html
-          test -s data/students.json
-          test -s data/monitor/latest.json
-          python -m json.tool data/students.json >/dev/null
-          python -m json.tool data/monitor/latest.json >/dev/null
-
+          test ! -e monitor.html
+          test ! -e progress.html
+          test ! -e data/students.json
+          test ! -e data/attendance/2026-07-28.json
       - name: Validate T3 dual-language course
         shell: bash
         run: |
@@ -71,28 +62,29 @@ jobs:
           node --check t3/js/lab.js
           node --check t3/js/scoring-core.js
           node --check t3/js/teacher.js
-
-      - name: Validate Python OOP Colab student and master
+      - name: Validate OOP Colab and Software Engineering Studio
         shell: bash
         run: |
           set -euo pipefail
           test -s t3/oop-logic-01/index.html
           test -s t3/oop-logic-01/teacher.html
-          test -s t3/oop-logic-01/config.js
-          test -s t3/oop-logic-01/app.js
-          test -s t3/oop-logic-01/styles.css
-          test -s t3/oop-logic-01/teacher.js
-          test -s t3/oop-logic-01/teacher.css
           node --check t3/oop-logic-01/config.js
           node --check t3/oop-logic-01/app.js
           node --check t3/oop-logic-01/teacher.js
           grep -q "pyodide/v0.27.7" t3/oop-logic-01/index.html
-          grep -q "seminar11-oop-colab-01-2026" t3/oop-logic-01/config.js
-          grep -q "teacher_seminar_oop_colab_dashboard_v1" t3/oop-logic-01/config.js
-
+          test -s t3/studio/index.html
+          test -s t3/studio/app.js
+          test -s t3/studio/teacher.html
+          test -s t3/studio/teacher.js
+          test -s t3/common/index.html
+          test -s t3/data/studio-index.json
+          python -m json.tool t3/data/studio-index.json >/dev/null
+          node --check t3/studio/app.js
+          node --check t3/studio/teacher.js
+          node --check t3/tracks/track.js
+          for track in web data-science cybersecurity 3d-programming robotics; do test -s "t3/tracks/$track/index.html"; done
       - name: Run JavaScript contract tests
         run: npm test
-
   deploy:
     if: github.event_name != 'pull_request'
     needs: validate
@@ -101,26 +93,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6
-
-      - name: Upload static site artifact
-        uses: actions/upload-pages-artifact@v4
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: .
-
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Publish course URLs
+      - name: Publish student URLs
         shell: bash
         run: |
-          echo "### Seminar T3 production URLs" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Seminar T3 student routes" >> "$GITHUB_STEP_SUMMARY"
           echo "- T3 course: ${{ steps.deployment.outputs.page_url }}t3/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- T3 teacher: ${{ steps.deployment.outputs.page_url }}t3/teacher.html" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Python OOP Colab student: ${{ steps.deployment.outputs.page_url }}t3/oop-logic-01/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Python OOP Colab master: ${{ steps.deployment.outputs.page_url }}t3/oop-logic-01/teacher.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Software Engineering Studio: ${{ steps.deployment.outputs.page_url }}t3/studio/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Common Core OOP + UML: ${{ steps.deployment.outputs.page_url }}t3/common/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Specialized tracks: ${{ steps.deployment.outputs.page_url }}t3/tracks/" >> "$GITHUB_STEP_SUMMARY"
