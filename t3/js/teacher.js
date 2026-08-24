@@ -2,13 +2,32 @@ import {CourseStore} from './course-store.js';
 
 const cfg=window.IJR_SEMINAR_T3_CONFIG,$=id=>document.getElementById(id);
 const store=new CourseStore(cfg);
-const sb=globalThis.supabase?globalThis.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
-let token=sessionStorage.getItem(cfg.teacherSessionKey)||'',snapshot=null,timer=null;
+const sb=globalThis.supabase?globalThis.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+let token='',snapshot=null,timer=null,pendingFactorId='',pendingChallengeId='';
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmt(v){return v==null?'—':Number(v).toFixed(2)}
 function fmtTime(v){if(!v)return'—';try{return new Date(v).toLocaleString('es-CO',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})}catch{return'—'}}
-async function rpc(name,args={}){if(!sb)throw new Error('Supabase JS no está disponible');const {data,error}=await sb.rpc(name,args);if(error)throw new Error(error.message||'Backend RPC error');return data}
+async function rpc(name,args={}){
+  if(!sb||name!==cfg.rpc.teacherDashboard)throw new Error('Operación docente no permitida');
+  const {data,error}=await sb.functions.invoke('teacher-auth-gateway',{body:{operation:'seminar_course_dashboard',args}});
+  if(error)throw new Error(error.message||'Backend gateway error');
+  if(data?.error)throw new Error(data.error);
+  return data?.data;
+}
+async function beginMfa(){
+  const {data:aal,error:aalError}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();if(aalError)throw aalError;
+  if(aal?.currentLevel==='aal2'){
+    const {data:{session}}=await sb.auth.getSession();token=session?.access_token||'';if(!token)throw new Error('Sesión no disponible');
+    $('mfaPanel').classList.add('hidden');$('loginStatus').textContent='';await load();clearInterval(timer);timer=setInterval(load,5000);return;
+  }
+  const {data:factors,error:factorsError}=await sb.auth.mfa.listFactors();if(factorsError)throw factorsError;
+  let factor=(factors?.totp||[]).find(item=>item.status==='verified');
+  if(!factor){const {data:enrolled,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Panel docente IJR'});if(error)throw error;factor=enrolled;$('mfaQr').src=enrolled.totp.qr_code;$('mfaQr').classList.remove('hidden');$('mfaHelp').textContent='Escanea el QR y escribe el código de seis dígitos.'}
+  else{$('mfaQr').classList.add('hidden');$('mfaHelp').textContent='Escribe el código de seis dígitos de tu aplicación autenticadora.'}
+  pendingFactorId=factor.id;const {data:challenge,error}=await sb.auth.mfa.challenge({factorId:pendingFactorId});if(error)throw error;pendingChallengeId=challenge.id;$('mfaPanel').classList.remove('hidden');$('mfaCode').focus();
+}
+async function bootstrapAuth(){const {data:{session}}=await sb.auth.getSession();if(!session)return;try{await beginMfa()}catch(err){$('loginStatus').textContent=`Acceso pendiente: ${err.message}`}}
 function renderLocal(){
   let local=null;try{local=JSON.parse(localStorage.getItem(cfg.localKey)||'null')}catch{}
   if(!local){$('localAttempt').textContent='Sin sesión local en este navegador.';return;}
@@ -52,16 +71,15 @@ async function load(){
   }
 }
 $('loginForm').addEventListener('submit',async e=>{
-  e.preventDefault();$('loginStatus').textContent='Ingresando…';
-  try{
-    const data=await rpc(cfg.rpc.teacherLogin,{p_code:$('teacherCode').value,p_user_agent:navigator.userAgent});
-    token=data.teacher_token;sessionStorage.setItem(cfg.teacherSessionKey,token);$('teacherCode').value='';$('loginStatus').textContent='';
-    await load();clearInterval(timer);timer=setInterval(load,5000);
-  }catch(err){$('loginStatus').textContent=`No fue posible ingresar: ${err.message}`;}
+  e.preventDefault();const email=$('teacherEmail').value.trim().toLowerCase();
+  if(!email.endsWith('@ijr.edu.co')){$('loginStatus').textContent='Usa la cuenta institucional docente @ijr.edu.co.';return}
+  $('loginStatus').textContent='Verificando cuenta institucional…';
+  try{const {error}=await sb.auth.signInWithPassword({email,password:$('teacherPassword').value});if(error)throw error;$('teacherPassword').value='';await beginMfa()}catch(err){$('loginStatus').textContent=`No fue posible ingresar: ${err.message}`}
 });
-$('logoutButton').addEventListener('click',async()=>{
-  try{if(token)await rpc(cfg.rpc.teacherLogout,{p_teacher_token:token})}catch{}
-  token='';sessionStorage.removeItem(cfg.teacherSessionKey);clearInterval(timer);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden');
+$('mfaButton').addEventListener('click',async()=>{
+  const code=$('mfaCode').value.trim();if(!pendingFactorId||!pendingChallengeId||!/^[0-9]{6}$/.test(code)){$('loginStatus').textContent='Escribe un código MFA válido.';return}
+  try{const {error}=await sb.auth.mfa.verify({factorId:pendingFactorId,challengeId:pendingChallengeId,code});if(error)throw error;$('mfaCode').value='';await beginMfa()}catch(err){$('loginStatus').textContent=`MFA no verificado: ${err.message}`}
 });
+$('logoutButton').addEventListener('click',async()=>{await sb.auth.signOut({scope:'local'});token='';clearInterval(timer);$('dashboardPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden');});
 $('refreshButton').addEventListener('click',load);$('groupFilter').addEventListener('change',render);$('languageFilter').addEventListener('change',render);$('searchInput').addEventListener('input',render);
-renderLocal();if(token){load();timer=setInterval(load,5000);}
+renderLocal();bootstrapAuth();

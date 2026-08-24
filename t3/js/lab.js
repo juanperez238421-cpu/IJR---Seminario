@@ -1,5 +1,5 @@
 import {CourseStore} from './course-store.js';
-import {validateExpected, analyzeJava, solvedCredit} from './scoring-core.js';
+import {analyzeJava, solvedCredit} from './scoring-core.js';
 
 const cfg=window.IJR_SEMINAR_T3_CONFIG;
 const $=id=>document.getElementById(id);
@@ -42,9 +42,11 @@ function updateGrade(){
 }
 function updateHelpUI(){
   $('helpCounter').textContent=`${helps} / 3 usadas en este módulo`;
-  $('helpList').innerHTML=variant.hints.slice(0,helps).map((h,i)=>`<li><strong>Ayuda ${i+1}.</strong> ${esc(h)}</li>`).join('');
+  const hints=Array.isArray(variant.hints)?variant.hints:[];
+  $('helpList').innerHTML=hints.slice(0,helps).map((h,i)=>`<li><strong>Ayuda ${i+1}.</strong> ${esc(h)}</li>`).join('');
   const btn=$('helpButton');
-  if(helps>=3){btn.disabled=true;btn.textContent='3 ayudas utilizadas';}
+  if(!hints.length){btn.disabled=true;btn.textContent='Ayudas retiradas del cliente público';}
+  else if(helps>=Math.min(3,hints.length)){btn.disabled=true;btn.textContent='Ayudas utilizadas';}
   else{btn.disabled=false;btn.textContent=`Usar ayuda ${helps+1}`;}
 }
 function updateTeamSize(){
@@ -130,15 +132,14 @@ async function runCurrent(){return language==='python'?runPython():analyzeCurren
 async function persistPending(){if(!attempt||completedMode())return;attempt=await store.updatePending(module.id,{helps,wrongs,code:$('codeEditor').value});updateGrade();}
 async function useHelp(){if(!enforceFullscreen()||helps>=3||completedMode())return;helps++;updateHelpUI();await persistPending();setStatus(`Ayuda ${helps} registrada. La proyección máxima del módulo se ajustó. Lee la ayuda y vuelve al código.`);await store.event('HELP_USED',{module_key:module.id,help_level:helps,language});}
 async function validateModule(){
-  if(!enforceFullscreen()||completedMode())return;let output='';
-  if(language==='python'){if(lastError){setStatus('Primero corrige el error de Python y vuelve a ejecutar. Ese error no penaliza.','bad');return;}if(!lastOutput){setStatus('Primero ejecuta la celda y obtén una salida antes de validar.','bad');return;}output=lastOutput;}
-  else{const analysis=analyzeJava($('codeEditor').value,variant);if(!analysis.ok){setStatus('La estructura Java todavía no pasa el análisis. Corrige antes de validar.','bad');return;}output=$('javaOutput').value.trim();if(!output){setStatus('Pega la salida real obtenida con el JDK antes de validar.','bad');return;}}
-  if(validateExpected(output,variant)){setStatus('Salida correcta. Registrando el módulo…','ok');attempt=await store.recordModule(module.id,{mode:'solved',helps,wrongs,code:$('codeEditor').value,language});await store.event('MODULE_SOLVED',{module_key:module.id,language,helps,wrongs});updateGrade();setTimeout(()=>showCompletion('solved'),450);}
-  else{wrongs++;$('skipButton').classList.remove('hidden');await persistPending();setStatus('La salida validada no coincide con el objetivo. Puedes corregir y reintentar, usar una ayuda, revelar la solución o continuar sin resolver.','bad');appendTerminal('✗ Validación incorrecta registrada.');await store.event('WRONG_VALIDATION',{module_key:module.id,language,wrong_count:wrongs});}
+  if(!enforceFullscreen()||completedMode())return;
+  setStatus('La clave de validación fue retirada del repositorio público. Conserva la ejecución y solicita validación docente en el panel protegido.','bad');
+  await store.event('SERVER_VALIDATION_REQUIRED',{module_key:module.id,language});
 }
 async function revealSolution(){
-  if(!enforceFullscreen()||completedMode())return;if(!confirm('Revelar la solución registra este módulo con 25% de su valor. ¿Quieres verla para estudiarla?'))return;
-  attempt=await store.recordModule(module.id,{mode:'revealed',helps,wrongs,code:$('codeEditor').value,language});await store.event('SOLUTION_REVEALED',{module_key:module.id,language,helps,wrongs});$('solutionCode').textContent=variant.solution;$('solutionOutput').textContent=variant.expected??variant.expectedPattern??'Salida variable: compara el comportamiento indicado por la guía.';$('solutionPanel').classList.remove('hidden');$('validateButton').disabled=$('helpButton').disabled=$('revealButton').disabled=true;$('skipButton').classList.add('hidden');solutionVisible=true;updateGrade();setStatus('Solución revelada. Compárala con tu intento y explica qué cambió.','bad');
+  if(!enforceFullscreen()||completedMode())return;
+  setStatus('Las soluciones ya no se entregan desde el cliente público. Solicita revisión docente autenticada.','bad');
+  await store.event('SOLUTION_ACCESS_BLOCKED',{module_key:module.id,language});
 }
 async function skipModule(){if(!enforceFullscreen()||completedMode()||wrongs<1)return;if(!confirm('Continuar sin resolver otorga 0% en este módulo. ¿Deseas avanzar?'))return;attempt=await store.recordModule(module.id,{mode:'skipped',helps,wrongs,code:$('codeEditor').value,language});await store.event('MODULE_SKIPPED',{module_key:module.id,language,helps,wrongs});updateGrade();showCompletion('skipped');}
 function downloadJava(){const blob=new Blob([$('codeEditor').value],{type:'text/x-java-source;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Main.java';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);appendTerminal(`[system] Main.java descargado. Ejecuta con JDK:\n${javaCommands()}`);}
