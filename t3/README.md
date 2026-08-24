@@ -1,68 +1,46 @@
-# Third Period Coding Studio · Python + Java
+# Seminar 11 · Third Period Software Engineering Studio
 
-Interactive course for **Seminario de Programación 11°** based on the complete `Basics T3.zip` guide package.
+The public student frontend is deployed through GitHub Pages. Supabase is the private data, validation and teacher-authentication backend.
 
-## Production URLs
+## Classroom architecture
 
-The classroom frontend is deployed through **GitHub Pages**. Supabase remains the shared data, session and server-validation backend.
+- **Hour 1 — Common Core:** OOP + UML for everyone.
+- **Hour 2 — Specialized Project Studio:** Web Development, Python & Data Science, Defensive Cybersecurity, 3D Design + Programming, or Robotics & Automation.
+- Weekly engineering rule: **design → model → implement → test → document → defend**.
 
-- **T3 course:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/
-- **T3 teacher:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/teacher.html
-- **Python OOP Colab Lab 01:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/
-- **Python OOP Colab Lab 01 · master:** https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-logic-01/teacher.html
-- **Source repository:** https://github.com/juanperez238421-cpu/IJR---Seminario
+The existing 16-module Python/Java T3 course is preserved as a technical library, remediation path and advanced practice. It is not destroyed or replaced.
 
-The GitHub Pages workflow validates the T3 route, Python OOP Colab student/master files, JavaScript syntax and Node contract tests before publishing the repository artifact.
+## Common Core
 
-## Routes
+Ten sessions reuse the existing OOP modules while adding the missing UML layer: class/object/instance, state/behavior, constructors, encapsulation, object relationships, inheritance, polymorphism/abstraction, architecture, debugging/refactoring and final architecture defense.
 
-Both language routes contain the same 16-topic progression:
+## Specialized tracks
 
-- **Basic (8):** environment, variables/types, operators/I-O, conditionals, loops, collections/arrays, functions/methods, classes/objects.
-- **Medium (4):** constructors/state/methods, encapsulation, exceptions/debugging, modules/packages.
-- **Advanced (4):** inheritance/polymorphism, composition/abstraction, integrative project, final workshop.
+Every track has eight synchronized project sprints: problem/MVP, UML/data model, prototype, OOP integration, validation/persistence/control, testing, refactor, and final release/defense. The domain changes; the engineering evidence and assessment language remain common.
 
-The original guide numbers remain traceable. Guides 13 and 14 are intentionally taught before 11 and 12 because the source QA route moves exceptions/debugging and organization to the Medium level.
+## One consolidated selection flow
 
-## Python OOP Colab Lab 01
+The former GitHub-Issue and direct-table surveys are deprecated. Student selection now uses one write/read-by-secret Edge Function. Student records cannot be selected directly with the public/publishable key.
 
-`t3/oop-logic-01/` is a separate formative activity modeled after the Statistics 11 Colab learning interface. It now combines OOP reasoning with **real Python execution through Pyodide**.
+The first-choice field determines the initial track. A student may record a repository, UML link, current sprint, progress percentage and next goal. Only the student's private edit token can reload or update that profile.
 
-- 12 sequential stages mixing concept questions and Python code cells.
-- 36 persistent randomized workstation packs assigned with a least-used random strategy during the classroom window.
-- 2–3 participants per session, identified with institutional `@ijr.edu.co` emails.
-- Topics: class/object, instance, constructor, `self`, state/behavior, methods, independent objects, references/aliasing, encapsulation, inheritance/overriding, polymorphism and composition.
-- Three global help tokens.
-- Python syntax/runtime errors do not reduce the grade; only incorrect answers submitted to server-side validation do.
-- Reveal closes a stage with 25% credit; skip closes it with 0%.
-- Expected answers are validated in Supabase rather than trusted from the browser.
-- Dedicated teacher master with live progress, pack number, projected grade, answer evidence, starter/solution code, events and CSV export.
+## Private teacher controls
 
-## Student experience
+Teacher pages remain intentionally absent from public student navigation. Access requires an institutional `@ijr.edu.co` account, MFA/AAL2, an active `teacher` or `admin` profile, and the audited `teacher-auth-gateway`. Studio tables are never read directly by browser clients.
 
-- Python route: real browser execution with Pyodide.
-- Java route: source editor + structural analysis + `Main.java` export + real JDK stdout validation.
-- Progressive help.
-- Retry after incorrect output.
-- Reveal solution for partial credit.
-- Live projected grade on a 1.00–5.00 scale.
+## Assessment model
 
-## Teacher
+- Common OOP + UML: **30%**
+- Functional project: **40%**
+- Git + documentation: **15%**
+- Individual live defense/modification: **15%**
 
-`t3/teacher.html` uses the shared teacher-code session mechanism for the main T3 course. `t3/oop-logic-01/teacher.html` uses the same teacher login but an activity-specific OOP dashboard/detail backend so its 12-stage evidence remains isolated from the 16-module route.
+Final evidence: problem statement, UML V1, GitHub repository, functional MVP, final UML, individual defense + live modification.
 
-## Data and traceability
+## Existing T3 technical library
 
-- `data/course-index.json`: course route index.
-- `data/modules/*.json`: bilingual instructional content for every main T3 module.
-- `data/source-map.json`: source-guide traceability.
-- `oop-logic-01/`: Python OOP Colab student interface and live master.
-- `../qa/SEMINAR_T3_DUAL_LANGUAGE_PLATFORM_QA_2026-08-19.md`: QA rationale and release gates.
+The parallel Python/Java route still contains 16 modules across Basic, Medium and Advanced levels. The separate Python OOP Colab Lab continues to provide real Pyodide execution and server-side validation.
 
-## Tests
+## QA
 
-```bash
-npm test
-```
-
-The test suite verifies the complete T3 route plus the OOP Colab contract: Pyodide runtime presence, code editor/run controls, 12-stage learning map, dedicated Supabase RPCs and independent live teacher master.
+`npm test` verifies the original T3 contracts plus the Studio manifest, five-track coverage, defensive cybersecurity scope, single Edge Function selection flow and absence of a Studio teacher link in the public T3 page.

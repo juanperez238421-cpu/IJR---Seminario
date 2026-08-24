@@ -20,7 +20,7 @@ test('T3 manifest contains complete 16-module route',()=>{
   );
 });
 
-test('every source topic exists in Python and Java with progressive help',()=>{
+test('every source topic preserves public instructional scaffolding without public answer material',()=>{
   for(const module of modules){
     for(const language of ['python','java']){
       const v=module[language];
@@ -29,12 +29,13 @@ test('every source topic exists in Python and Java with progressive help',()=>{
       assert.ok(v.objectives.length>=1);
       assert.ok(v.concept.length>=1);
       assert.ok(v.steps.length>=3);
-      assert.equal(v.hints.length,3);
       assert.ok(v.questions.length>=2);
       assert.ok(v.criteria.length>=2);
       assert.match(v.starter,/WRITE_HERE/);
-      assert.doesNotMatch(v.solution,/WRITE_HERE/);
-      assert.ok(v.expected!=null || v.expectedPattern);
+      assert.ok(Array.isArray(v.checks));
+      for(const privateField of ['hints','solution','expected','expectedPattern']){
+        assert.equal(Object.hasOwn(v,privateField),false,`${module.id}/${language} must not publish ${privateField}`);
+      }
     }
   }
 });
@@ -50,11 +51,11 @@ test('formative scoring preserves maximum 5 and penalty floors',()=>{
   assert.equal(completedCount({m01:{mode:'solved'},m02:{mode:'revealed'},m03:{mode:'skipped'}}),3);
 });
 
-test('Java analyzer rejects unresolved starter and accepts source-complete solution',()=>{
-  for(const module of modules){
-    const v=module.java;
-    assert.equal(analyzeJava(v.starter,v).ok,false,`${module.id} starter should remain incomplete`);
-    const solved=analyzeJava(v.solution,v);
-    assert.equal(solved.ok,true,`${module.id} solution structural QA: ${solved.issues.join('; ')}`);
-  }
+test('Java analyzer rejects unresolved scaffold and accepts structurally complete code',()=>{
+  const variant={checks:['public class Main','public static void main','System.out.println',';','WRITE_HERE']};
+  const starter='public class Main {\n  public static void main(String[] args) {\n    System.out.println(WRITE_HERE);\n  }\n}';
+  const solved='public class Main {\n  public static void main(String[] args) {\n    System.out.println(2 + 3);\n  }\n}';
+  assert.equal(analyzeJava(starter,variant).ok,false);
+  const result=analyzeJava(solved,variant);
+  assert.equal(result.ok,true,result.issues.join('; '));
 });
