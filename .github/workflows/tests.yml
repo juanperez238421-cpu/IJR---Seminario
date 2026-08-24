@@ -11,21 +11,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Configure Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Check JavaScript syntax
         run: |
-          node --check scripts/monitor-students.mjs
-          node --check js/monitor.js
-          node --check js/progress-roster-bootstrap.js
+          set -euo pipefail
+          node --check t3/config.js
+          node --check t3/js/course.js
+          node --check t3/js/course-store.js
+          node --check t3/js/lab.js
+          node --check t3/js/scoring-core.js
+          node --check t3/js/teacher.js
           node --check t3/oop-logic-01/config.js
           node --check t3/oop-logic-01/app.js
           node --check t3/oop-logic-01/teacher.js
+          node --check t3/studio/app.js
+          node --check t3/studio/teacher.js
+          node --check t3/tracks/track.js
 
       - name: Run tests
         run: npm test
