@@ -39,12 +39,16 @@ test('legacy OOP migration retains randomized-pack infrastructure for backwards 
   assert.match(legacyMigration,/learning_activity_attempt_variant_pack/);
 });
 
-test('teacher dashboard uses new OOP Colab protected RPCs',()=>{
+test('teacher dashboard uses protected OOP RPCs through institutional MFA gateway',()=>{
   assert.match(config,/teacher_seminar_oop_colab_dashboard_v1/);
   assert.match(config,/teacher_seminar_oop_colab_detail_v1/);
   assert.match(config,/teacher_seminar_oop_colab_delete_v1/);
   assert.match(teacher,/cfg\.rpc\.teacherDashboard/);
   assert.match(teacher,/cfg\.rpc\.teacherDetail/);
   assert.match(teacher,/cfg\.rpc\.teacherDelete/);
-  assert.match(teacher,/teacherLogin/);
+  assert.match(teacher,/teacher-auth-gateway/);
+  assert.match(teacher,/getAuthenticatorAssuranceLevel/);
+  assert.match(teacher,/currentLevel==='aal2'/);
+  assert.match(teacher,/signInWithPassword/);
+  assert.doesNotMatch(teacher,/teacher_code_login/);
 });
