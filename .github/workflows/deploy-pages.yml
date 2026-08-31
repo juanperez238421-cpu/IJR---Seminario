@@ -83,6 +83,21 @@ jobs:
           node --check t3/studio/teacher.js
           node --check t3/tracks/track.js
           for track in web data-science cybersecurity 3d-programming robotics; do test -s "t3/tracks/$track/index.html"; done
+      - name: Validate OOP + UML Learning Hub
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s t3/oop-uml/index.html
+          test -s t3/oop-uml/theory.html
+          test -s t3/oop-uml/workshop.html
+          test -s t3/oop-uml/styles.css
+          test -s t3/oop-uml/course-data.js
+          test -s t3/oop-uml/hub.js
+          node --check t3/oop-uml/course-data.js
+          node --check t3/oop-uml/hub.js
+          grep -q "CourseStore" t3/oop-uml/hub.js
+          grep -q "Supabase" t3/oop-uml/index.html
+          grep -q "oop-uml/" t3/index.html
       - name: Run JavaScript contract tests
         run: npm test
   deploy:
@@ -105,6 +120,7 @@ jobs:
         run: |
           echo "### Seminar T3 student routes" >> "$GITHUB_STEP_SUMMARY"
           echo "- T3 course: ${{ steps.deployment.outputs.page_url }}t3/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- OOP + UML Learning Hub: ${{ steps.deployment.outputs.page_url }}t3/oop-uml/" >> "$GITHUB_STEP_SUMMARY"
           echo "- Software Engineering Studio: ${{ steps.deployment.outputs.page_url }}t3/studio/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Common Core OOP + UML: ${{ steps.deployment.outputs.page_url }}t3/common/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Common Core schedule: ${{ steps.deployment.outputs.page_url }}t3/common/" >> "$GITHUB_STEP_SUMMARY"
           echo "- Specialized tracks: ${{ steps.deployment.outputs.page_url }}t3/tracks/" >> "$GITHUB_STEP_SUMMARY"
