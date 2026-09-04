@@ -1,0 +1,208 @@
+name: Render Seminar 11 Class 03 Constructors
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'render_jobs/seminar11_class03/**'
+      - '.github/workflows/render-seminar11-class03.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: seminar11-class03-constructors-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Static source QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          JOB='render_jobs/seminar11_class03'
+          cat "$JOB"/chunks/scene_* > "$JOB/Seminar11_Class03_Constructors_ValidState.py"
+          python -m py_compile "$JOB/Seminar11_Class03_Constructors_ValidState.py"
+          python -m py_compile "$JOB/jp_classroom_style.py"
+          python "$JOB/check_manim_style.py" "$JOB/Seminar11_Class03_Constructors_ValidState.py"
+          grep -nE 'Constructors|Initialization|THREE valid objects|__init__|self\.value = value|this\.value = value' \
+            "$JOB/Seminar11_Class03_Constructors_ValidState.py" > /tmp/curricular_qa.txt
+
+      - name: Prepare ManimCE 0.20.1 and verification tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          docker pull manimcommunity/manim:v0.20.1 >/dev/null
+          mkdir -p out
+          cp /tmp/curricular_qa.txt out/CURRICULAR_QA.txt
+
+      - name: Literal PQL full-scene QA render
+        shell: bash
+        run: |
+          set -euo pipefail
+          JOB='render_jobs/seminar11_class03'
+          rm -rf media_pql
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp/manim-home \
+            -e LESSON_TIME_SCALE=0.12 \
+            -v "$PWD:/manim" -w /manim \
+            --entrypoint bash manimcommunity/manim:v0.20.1 -c "
+              set -euo pipefail
+              mkdir -p /tmp/manim-bin
+              printf '#!/usr/bin/env bash\nexit 0\n' > /tmp/manim-bin/xdg-open
+              chmod +x /tmp/manim-bin/xdg-open
+              export PATH=/tmp/manim-bin:\$PATH
+              manim -pql $JOB/Seminar11_Class03_Constructors_ValidState.py \
+                Seminar11Class03ConstructorsValidState \
+                --format=mp4 --media_dir media_pql --disable_caching
+            " 2>&1 | tee out/render_pql.log
+          P="$(find media_pql -type f -name 'Seminar11Class03ConstructorsValidState.mp4' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+          test -n "$P" && test -s "$P"
+
+      - name: Literal PQH final render
+        shell: bash
+        run: |
+          set -euo pipefail
+          JOB='render_jobs/seminar11_class03'
+          rm -rf media
+          docker run --rm --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp/manim-home \
+            -e LESSON_TIME_SCALE=0.80 \
+            -v "$PWD:/manim" -w /manim \
+            --entrypoint bash manimcommunity/manim:v0.20.1 -c "
+              set -euo pipefail
+              mkdir -p /tmp/manim-bin
+              printf '#!/usr/bin/env bash\nexit 0\n' > /tmp/manim-bin/xdg-open
+              chmod +x /tmp/manim-bin/xdg-open
+              export PATH=/tmp/manim-bin:\$PATH
+              manim -pqh $JOB/Seminar11_Class03_Constructors_ValidState.py \
+                Seminar11Class03ConstructorsValidState \
+                --fps 30 --format=mp4 --media_dir media --disable_caching
+            " 2>&1 | tee out/render_pqh.log
+          F="$(find media -type f -name 'Seminar11Class03ConstructorsValidState.mp4' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
+          test -n "$F" && test -s "$F"
+          cp "$F" out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4
+          cp "$JOB/Seminar11_Class03_Constructors_ValidState.py" out/
+          cp "$JOB/jp_classroom_style.py" out/
+
+      - name: Strict technical QA and representative frames
+        shell: bash
+        run: |
+          set -euo pipefail
+          F='out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4'
+          W="$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$F")"
+          H="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$F")"
+          FPS="$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$F")"
+          CODEC="$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$F")"
+          PIX="$(ffprobe -v error -select_streams v:0 -show_entries stream=pix_fmt -of csv=p=0 "$F")"
+          DUR="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$F")"
+          SIZE="$(ffprobe -v error -show_entries format=size -of csv=p=0 "$F")"
+          printf 'width\theight\tfps\tcodec\tpix_fmt\tduration\tsize\n%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+            "$W" "$H" "$FPS" "$CODEC" "$PIX" "$DUR" "$SIZE" > out/VIDEO_TECHNICAL.tsv
+          test "$W" = 1920
+          test "$H" = 1080
+          test "$FPS" = 30/1
+          test "$CODEC" = h264
+          test "$PIX" = yuv420p
+          python - "$DUR" <<'PY'
+          import sys
+          d=float(sys.argv[1])
+          if not 170 <= d <= 235:
+              raise SystemExit(f'duration outside senior target envelope: {d:.3f}s')
+          PY
+          ffmpeg -nostdin -v error -i "$F" -f null - 2> out/full_decode.log
+
+          mkdir -p out/audit_frames
+          python - "$DUR" <<'PY' > /tmp/frame_times.tsv
+          import sys
+          d=float(sys.argv[1])
+          points=[
+              ('00_opening',0.035),
+              ('01_half_built',0.125),
+              ('02_constructor_birth',0.205),
+              ('03_uml',0.285),
+              ('04_python_init',0.375),
+              ('05_parameter_attribute',0.465),
+              ('06_three_objects',0.555),
+              ('07_python_java',0.645),
+              ('08_invalid_state',0.735),
+              ('09_behavior',0.815),
+              ('10_project_transfer',0.875),
+              ('11_evidence',0.925),
+              ('12_final',0.975),
+          ]
+          for name,p in points:
+              print(f'{name}\t{d*p:.4f}')
+          PY
+          while IFS=$'\t' read -r NAME T; do
+            ffmpeg -nostdin -loglevel error -ss "$T" -i "$F" -frames:v 1 "out/audit_frames/${NAME}.png"
+          done < /tmp/frame_times.tsv
+
+          sha256sum \
+            out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4 \
+            out/Seminar11_Class03_Constructors_ValidState.py \
+            out/jp_classroom_style.py > out/SHA256SUMS.txt
+
+          cat > out/RENDER_REPORT.md <<EOF
+          # Seminar 11 · Class 03 render report
+
+          - Scene: \`Seminar11Class03ConstructorsValidState\`
+          - Topic: Constructors & Valid State
+          - ManimCE: 0.20.1
+          - Final output: \`Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4\`
+          - Duration: ${DUR} s
+          - Resolution: ${W} × ${H}
+          - FPS: ${FPS}
+          - Codec / pixel format: ${CODEC} / ${PIX}
+          - Preview command: literal \`-pql\`, full scene, \`LESSON_TIME_SCALE=0.12\`
+          - Final command: literal \`-pqh\`, \`--fps 30\`, \`LESSON_TIME_SCALE=0.80\`
+          - QA: py_compile + static style/curricular QA + PQL + PQH + ffprobe + full FFmpeg decode + 13 representative frames + SHA-256
+          - Curriculum lock: Constructors + Initialization + Valid State; no dedicated Session 4–7 teaching.
+          - Required evidence represented: THREE VALID OBJECTS.
+          EOF
+
+      - name: Upload verified render package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Seminar11-Class03-Constructors-ValidState-PQH
+          path: |
+            out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4
+            out/Seminar11_Class03_Constructors_ValidState.py
+            out/jp_classroom_style.py
+            out/VIDEO_TECHNICAL.tsv
+            out/CURRICULAR_QA.txt
+            out/SHA256SUMS.txt
+            out/RENDER_REPORT.md
+            out/render_pql.log
+            out/render_pqh.log
+            out/full_decode.log
+            out/audit_frames/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish direct-download delivery branch
+        if: success()
+        shell: bash
+        env:
+          DELIVERY_BRANCH: delivery/seminar11-class03-constructors-valid-state-20260904
+        run: |
+          set -euo pipefail
+          cp -a out /tmp/class03_delivery
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan "$DELIVERY_BRANCH"
+          git rm -rf . >/dev/null 2>&1 || true
+          mkdir -p seminar11_class03
+          cp -a /tmp/class03_delivery/. seminar11_class03/
+          git add seminar11_class03
+          git commit -m 'Publish Seminar 11 Class 03 verified PQH render'
+          git push --force origin "HEAD:$DELIVERY_BRANCH"
