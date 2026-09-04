@@ -49,14 +49,18 @@ PAUSE_SUMMARY = 4.60
 PAUSE_FINAL = 5.20
 
 
-class JPClassroomScene(MovingCameraScene):
-    """Small reusable base with the exact visual safeguards needed here."""
+class JPClassroomScene(Scene):
+    """Small reusable base with the exact visual safeguards needed here.
+
+    A plain ``Scene`` is intentional. Class 03 does not use camera zooming, and
+    avoiding a moving-camera dependency keeps the helper fully compatible with
+    the ManimCE 0.20.1 renderer used by the repository workflow.
+    """
 
     def setup(self) -> None:
         super().setup()
         self.validate_lesson_data()
         self.camera.background_color = WHITE
-        self.camera.frame.set(width=FRAME_WIDTH).move_to(ORIGIN)
         self.header_group: VGroup | None = None
         self.subtitle_group: Mobject | None = None
 
@@ -152,7 +156,6 @@ class JPClassroomScene(MovingCameraScene):
         removable = [mob for mob in self.mobjects if id(mob) not in keep_family_ids]
         if removable:
             self.play(*[FadeOut(mob) for mob in removable], run_time=RUN_NORMAL)
-        self.camera.frame.set(width=FRAME_WIDTH).move_to(ORIGIN)
 
     def assert_within_frame(self, mob: Mobject, label: str, margin: float = 0.03) -> None:
         left, right = mob.get_left()[0], mob.get_right()[0]
