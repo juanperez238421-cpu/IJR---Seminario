@@ -119,18 +119,18 @@
         calls = VGroup(*[
             Text(f'{item.name} = Measurement({item.value}, {item.unit})', font="DejaVu Sans Mono", font_size=20, color=BLACK_TEXT)
             for item in MEASUREMENTS
-        ]).arrange(DOWN, aligned_edge=LEFT, buff=0.30).move_to(LEFT * 1.75 + UP * 0.35)
+        ]).arrange(DOWN, aligned_edge=LEFT, buff=0.30).move_to(LEFT * 1.75 + UP * 0.15)
         cards = VGroup(*[
-            self.instance_card(item.name, item.value, item.unit, width=3.25, height=1.75)
+            self.instance_card(item.name, item.value, item.unit, width=3.25, height=1.62)
             for item in MEASUREMENTS
-        ]).arrange(DOWN, buff=0.25).move_to(RIGHT * 4.75 + UP * 0.15)
+        ]).arrange(DOWN, buff=0.18).move_to(RIGHT * 4.75 + DOWN * 0.38)
         arrows = VGroup(*[
             self.simple_arrow(blueprint.get_right(), card.get_left(), width=1.25)
             for card in cards
         ])
-        same = self.text("SAME CLASS · SAME CONSTRUCTOR STRUCTURE", 22, BOLD).move_to(DOWN * 2.45)
-        different = self.text("DIFFERENT STATE", 28, BOLD).next_to(same, DOWN, buff=0.20)
-        evidence = self.tag("3 VALID OBJECTS", 2.75, 0.62, 22, filled=True).next_to(different, DOWN, buff=0.20)
+        same = self.text("SAME CLASS · SAME CONSTRUCTOR STRUCTURE", 21, BOLD).move_to(LEFT * 0.85 + DOWN * 2.10)
+        different = self.text("DIFFERENT STATE", 27, BOLD).move_to(LEFT * 0.85 + DOWN * 2.67)
+        evidence = self.tag("3 VALID OBJECTS", 2.75, 0.62, 22, filled=True).move_to(LEFT * 0.85 + DOWN * 3.30)
 
         self.assert_content_safe(VGroup(blueprint, calls, cards, arrows, same, different), "scene06")
         self.assert_within_frame(VGroup(flow, evidence), "scene06 lower")
@@ -139,6 +139,9 @@
             self.play(Write(call), run_time=RUN_NORMAL)
             self.play(GrowArrow(arrow), FadeIn(card, shift=RIGHT * 0.10), run_time=RUN_NORMAL)
             self.wait(PAUSE_READ)
+        # The narrative strip has completed EXECUTE; remove it before the evidence
+        # summary so the lower-third remains spacious and overlap-free.
+        self.play(FadeOut(flow), run_time=RUN_QUICK)
         self.play(FadeIn(same), run_time=RUN_NORMAL)
         self.wait(PAUSE_READ)
         self.play(FadeIn(different), FadeIn(evidence), run_time=RUN_NORMAL)
