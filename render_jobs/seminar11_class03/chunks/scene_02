@@ -1,0 +1,190 @@
+        )
+        note = VGroup(
+            self.text("The constructor communicates the information", 23, BOLD),
+            self.text("required when the object is created.", 23, BOLD),
+            self.text("Constructor → initialization", 19),
+        ).arrange(DOWN, buff=0.12).move_to(RIGHT * 3.65 + DOWN * 2.15)
+
+        self.assert_content_safe(VGroup(uml, call, value_tag, unit_tag, mapping, note), "scene03")
+        self.assert_within_frame(flow, "scene03 flow")
+        self.play(FadeIn(flow), run_time=RUN_QUICK)
+        self.play(Create(base[0]), FadeIn(base[1]), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(Create(attrs[0]), FadeIn(attrs[1]), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(Create(ops[0]), FadeIn(ops[1]), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        constructor_line = ops[1][0]
+        self.play(Circumscribe(constructor_line, color=BLACK_LINE, time_width=1.0), run_time=RUN_NORMAL)
+        self.play(Write(call), FadeIn(value_tag), FadeIn(unit_tag), run_time=RUN_NORMAL)
+        self.play(*[GrowArrow(a) for a in mapping], run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(note), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 04 — Python __init__
+    # ------------------------------------------------------------------
+    def scene_04_python_init(self) -> None:
+        self.set_header(4, "PYTHON: __init__ BUILDS THE INSTANCE STATE", "Read the code as data movement: parameters enter, attributes persist.")
+        flow = self.flow_strip("CODE")
+        lines = [
+            "class Measurement:",
+            "    def __init__(self, value, unit):",
+            "        self.value = value",
+            "        self.unit = unit",
+        ]
+        panel, code_lines = self.code_panel(lines, width=7.65, height=3.65, font_size=25, title="PYTHON")
+        panel.move_to(LEFT * 3.55 + UP * 0.05)
+
+        params_label = self.tag("PARAMETERS", 2.25, 0.52, 19, filled=True).move_to(RIGHT * 2.85 + UP * 1.70)
+        params = VGroup(self.tag("value", 1.50, 0.52, 19), self.tag("unit", 1.50, 0.52, 19)).arrange(RIGHT, buff=0.22).next_to(params_label, DOWN, buff=0.24)
+        stored_label = self.tag("OBJECT STATE", 2.25, 0.52, 19, filled=True).move_to(RIGHT * 2.85 + DOWN * 0.25)
+        stored = VGroup(self.tag("self.value", 1.90, 0.52, 18), self.tag("self.unit", 1.90, 0.52, 18)).arrange(RIGHT, buff=0.22).next_to(stored_label, DOWN, buff=0.24)
+        arrows = VGroup(
+            self.simple_arrow(params[0].get_bottom(), stored[0].get_top(), width=1.5),
+            self.simple_arrow(params[1].get_bottom(), stored[1].get_top(), width=1.5),
+        )
+        call = Text('m = Measurement(12, "C")', font="DejaVu Sans Mono", font_size=24, color=BLACK_TEXT).move_to(RIGHT * 3.40 + DOWN * 2.10)
+        card = self.instance_card("m", "12", '"C"', width=3.25, height=1.90).move_to(RIGHT * 5.25 + DOWN * 1.55)
+        call_arrow = self.simple_arrow(call.get_right(), card.get_left(), width=1.6)
+
+        self.assert_content_safe(VGroup(panel, params_label, params, stored_label, stored, arrows, call, card, call_arrow), "scene04")
+        self.assert_within_frame(flow, "scene04 flow")
+        self.play(FadeIn(flow), FadeIn(panel[0]), FadeIn(panel[1]), run_time=RUN_NORMAL)
+        # Progressive code construction: never dump all code at once.
+        self.play(Write(code_lines[0]), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(Write(code_lines[1]), FadeIn(params_label), FadeIn(params), run_time=RUN_NORMAL)
+        self.play(Circumscribe(code_lines[1], color=BLACK_LINE, time_width=0.9), run_time=RUN_QUICK)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(Write(code_lines[2]), FadeIn(stored_label), FadeIn(stored[0]), GrowArrow(arrows[0]), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(Write(code_lines[3]), FadeIn(stored[1]), GrowArrow(arrows[1]), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(Write(call), FadeIn(card), GrowArrow(call_arrow), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 05 — parameter vs attribute
+    # ------------------------------------------------------------------
+    def scene_05_parameter_vs_attribute(self) -> None:
+        self.set_header(5, "SAME WORD — DIFFERENT RESPONSIBILITY", "A constructor parameter delivers a value; an object attribute remembers it.")
+
+        center_line = Line(UP * 2.10, DOWN * 2.45, color=LIGHT_GRAY, stroke_width=1.8)
+        left_title = self.text("value", 40, BOLD).move_to(LEFT * 3.60 + UP * 1.45)
+        left_role = self.text("Constructor parameter", 24, BOLD).move_to(LEFT * 3.60 + UP * 0.65)
+        left_note = self.text("exists during the call", 22).move_to(LEFT * 3.60 + UP * 0.10)
+
+        right_title = self.text("self.value", 40, BOLD).move_to(RIGHT * 3.60 + UP * 1.45)
+        right_role = self.text("Object attribute", 24, BOLD).move_to(RIGHT * 3.60 + UP * 0.65)
+        right_note = self.text("remains in the instance", 22).move_to(RIGHT * 3.60 + UP * 0.10)
+
+        line1 = Text("def __init__(self, value, unit):", font="DejaVu Sans Mono", font_size=23, color=BLACK_TEXT)
+        line2 = Text("    self.value = value", font="DejaVu Sans Mono", font_size=23, color=BLACK_TEXT)
+        code = VGroup(line1, line2).arrange(DOWN, aligned_edge=LEFT, buff=0.15).move_to(UP * -0.90)
+        param_box = SurroundingRectangle(line1, color=BLACK_LINE, stroke_width=1.8, buff=0.08)
+        attribute_box = SurroundingRectangle(line2, color=BLACK_LINE, stroke_width=1.8, buff=0.08)
+
+        temporary = self.tag("temporary: value", 2.45, 0.54, 19, filled=True).move_to(LEFT * 3.60 + DOWN * 2.05)
+        card = self.instance_card("m", "12", '"C"', width=3.25, height=1.90).move_to(RIGHT * 3.60 + DOWN * 1.80)
+        takeaway = self.text("The parameter delivers the value.  The attribute remembers it.", 25, BOLD).move_to(DOWN * 3.15)
+
+        self.assert_content_safe(VGroup(center_line, left_title, left_role, left_note, right_title, right_role, right_note, code, param_box, attribute_box, temporary, card), "scene05")
+        self.assert_within_frame(takeaway, "scene05 takeaway")
+        self.play(Create(center_line), FadeIn(left_title), FadeIn(right_title), run_time=RUN_NORMAL)
+        self.play(FadeIn(left_role), FadeIn(left_note), FadeIn(right_role), FadeIn(right_note), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(Write(code), run_time=RUN_NORMAL)
+        self.play(Create(param_box), run_time=RUN_QUICK)
+        self.wait(PAUSE_READ)
+        self.play(ReplacementTransform(param_box, attribute_box), FadeIn(temporary), FadeIn(card), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        # Constructor call ends: parameter fades, object state remains.
+        self.play(FadeOut(temporary), FadeOut(left_note), run_time=RUN_SLOW)
+        self.wait(PAUSE_READ)
+        self.play(FadeIn(takeaway), run_time=RUN_NORMAL)
+        self.wait(2.4)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 06 — three valid objects
+    # ------------------------------------------------------------------
+    def scene_06_three_objects(self) -> None:
+        self.set_header(6, "ONE CONSTRUCTOR → MANY VALID OBJECTS", "The constructor is reused; each instance owns independent state.")
+        flow = self.flow_strip("EXECUTE")
+        blueprint = self.small_blueprint().move_to(LEFT * 5.20 + UP * 0.25)
+        calls = VGroup(*[
+            Text(f'{item.name} = Measurement({item.value}, {item.unit})', font="DejaVu Sans Mono", font_size=20, color=BLACK_TEXT)
+            for item in MEASUREMENTS
+        ]).arrange(DOWN, aligned_edge=LEFT, buff=0.30).move_to(LEFT * 1.75 + UP * 0.35)
+        cards = VGroup(*[
+            self.instance_card(item.name, item.value, item.unit, width=3.25, height=1.75)
+            for item in MEASUREMENTS
+        ]).arrange(DOWN, buff=0.25).move_to(RIGHT * 4.75 + UP * 0.15)
+        arrows = VGroup(*[
+            self.simple_arrow(blueprint.get_right(), card.get_left(), width=1.25)
+            for card in cards
+        ])
+        same = self.text("SAME CLASS · SAME CONSTRUCTOR STRUCTURE", 22, BOLD).move_to(DOWN * 2.45)
+        different = self.text("DIFFERENT STATE", 28, BOLD).next_to(same, DOWN, buff=0.20)
+        evidence = self.tag("3 VALID OBJECTS", 2.75, 0.62, 22, filled=True).next_to(different, DOWN, buff=0.20)
+
+        self.assert_content_safe(VGroup(blueprint, calls, cards, arrows, same, different), "scene06")
+        self.assert_within_frame(VGroup(flow, evidence), "scene06 lower")
+        self.play(FadeIn(flow), FadeIn(blueprint), run_time=RUN_NORMAL)
+        for call, card, arrow in zip(calls, cards, arrows):
+            self.play(Write(call), run_time=RUN_NORMAL)
+            self.play(GrowArrow(arrow), FadeIn(card, shift=RIGHT * 0.10), run_time=RUN_NORMAL)
+            self.wait(PAUSE_READ)
+        self.play(FadeIn(same), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(FadeIn(different), FadeIn(evidence), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 07 — Java semantic correspondence
+    # ------------------------------------------------------------------
+    def scene_07_java_connection(self) -> None:
+        self.set_header(7, "SAME IDEA, DIFFERENT SYNTAX", "The Common Core object model is language-independent: Python self corresponds to Java this.")
+
+        py_lines = [
+            "def __init__(self, value, unit):",
+            "    self.value = value",
+            "    self.unit = unit",
+        ]
+        java_lines = [
+            "public Measurement(double value, String unit) {",
+            "    this.value = value;",
+            "    this.unit = unit;",
+            "}",
+        ]
+        py_panel, py_code = self.code_panel(py_lines, width=6.55, height=2.65, font_size=21, title="PYTHON")
+        java_panel, java_code = self.code_panel(java_lines, width=6.55, height=2.65, font_size=21, title="JAVA")
+        py_panel.move_to(LEFT * 3.60 + UP * 0.35)
+        java_panel.move_to(RIGHT * 3.60 + UP * 0.35)
+
+        correspondence = VGroup(
+            self.text("self", 28, BOLD), self.text("↔", 28), self.text("this", 28, BOLD),
+            self.text("__init__", 24, BOLD), self.text("↔", 28), self.text("Measurement(...) constructor", 22, BOLD),
+            self.text("parameter", 22), self.text("→", 24), self.text("object field", 22, BOLD),
+        ).arrange_in_grid(rows=3, cols=3, buff=(0.28, 0.22)).move_to(DOWN * 1.80)
+        sentence = self.text("Different syntax.  Same object-modeling idea.", 27, BOLD).move_to(DOWN * 3.10)
+
+        self.assert_content_safe(VGroup(py_panel, java_panel, correspondence), "scene07")
+        self.assert_within_frame(sentence, "scene07 sentence")
+        self.play(FadeIn(py_panel[0]), FadeIn(py_panel[1]), FadeIn(java_panel[0]), FadeIn(java_panel[1]), run_time=RUN_NORMAL)
+        self.play(LaggedStart(*[Write(line) for line in py_code], lag_ratio=0.15), run_time=RUN_SLOW)
+        self.play(LaggedStart(*[Write(line) for line in java_code], lag_ratio=0.12), run_time=RUN_SLOW)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(correspondence), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.play(FadeIn(sentence), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 08 — constructor validation
