@@ -30,27 +30,46 @@ test('Personalized project learning manifest has four Theory + Workshop stages p
   });
 });
 
-test('Every project page is wired to the shared adaptive track runtime',()=>{
+test('Every project page is wired to the shared adaptive track runtime with fresh assets',()=>{
   TRACKS.forEach(slug=>{
     const html=read(`t3/tracks/${slug}/index.html`);
     assert.match(html,new RegExp(`data-track=["']${slug}["']`));
-    assert.match(html,/track\.js/);
+    assert.match(html,/track\.js\?v=20260905-1/);
+    assert.match(html,/track\.css\?v=20260905-1/);
   });
 });
 
-test('Track runtime requires Studio identity and uses server-computed v3 diagnostic mastery',()=>{
+test('Track runtime requires Studio identity and uses Edge-gateway diagnostic actions',()=>{
   const js=read('t3/tracks/track.js');
   assert.match(js,/ijr-seminario-studio-edit-token-v1/);
+  assert.match(js,/seminar-studio-student/);
   assert.match(js,/2026-09-05-v3/);
-  assert.match(js,/seminar_track_diagnostic_get_questions/);
-  assert.match(js,/seminar_track_diagnostic_start/);
-  assert.match(js,/seminar_track_diagnostic_submit/);
-  assert.match(js,/seminar_track_diagnostic_status/);
+  assert.match(js,/diagnostic-status/);
+  assert.match(js,/diagnostic-questions/);
+  assert.match(js,/diagnostic-start/);
+  assert.match(js,/diagnostic-submit/);
   assert.match(js,/qs\.length !== 15/);
   assert.match(js,/stageCount\) !== 4/);
   assert.match(js,/ACTIVE LEARNING STAGE/);
   assert.match(js,/LOCKED UNTIL PRIOR STAGE/);
+  assert.doesNotMatch(js,/rest\/v1\/rpc/);
   assert.doesNotMatch(js,/correct_option/);
+});
+
+test('Student Edge gateway enforces origin + token and is sole browser route for diagnostics',()=>{
+  const edge=read('supabase/functions/seminar-studio-student/index.ts');
+  assert.match(edge,/DIAGNOSTIC_BANK = "2026-09-05-v3"/);
+  assert.match(edge,/allowedOrigins/);
+  assert.match(edge,/validToken/);
+  assert.match(edge,/profile_not_found/);
+  assert.match(edge,/diagnostic-status/);
+  assert.match(edge,/diagnostic-questions/);
+  assert.match(edge,/diagnostic-start/);
+  assert.match(edge,/diagnostic-submit/);
+  assert.match(edge,/admin\.rpc\("seminar_track_diagnostic_status"/);
+  assert.match(edge,/admin\.rpc\("seminar_track_diagnostic_submit"/);
+  assert.match(edge,/sprint_not_released/);
+  assert.doesNotMatch(edge,/correct_option/);
 });
 
 test('Defensive cybersecurity track preserves authorized-only scope and critical gating',()=>{
@@ -86,6 +105,15 @@ test('Diagnostic migration binds attempts to private Studio profiles and compute
   assert.match(sql,/security definer/);
   assert.match(sql,/set search_path=''/);
   assert.match(sql,/revoke all on table public\.seminar_track_diagnostic_questions from anon, authenticated/);
+});
+
+test('Diagnostic RPCs are hardened behind service-role Edge gateway',()=>{
+  const sql=read('supabase/migrations/20260905140000_seminar_track_diagnostic_edge_gateway_hardening.sql');
+  for(const fn of ['get_questions','start','submit','snapshot','status']){
+    assert.match(sql,new RegExp(`seminar_track_diagnostic_${fn}`));
+  }
+  assert.match(sql,/from public, anon, authenticated/);
+  assert.match(sql,/to service_role/);
 });
 
 test('Public T3 navigation exposes Studio but not private Studio teacher route',()=>{
