@@ -1,4 +1,4 @@
-name: Render Seminar 11 Class 03 Constructors
+name: Render Seminar 11 Class 03 Constructors Senior Robot
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: seminar11-class03-constructors-${{ github.ref }}
+  group: seminar11-class03-constructors-senior-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -28,11 +28,11 @@ jobs:
         run: |
           set -euo pipefail
           JOB='render_jobs/seminar11_class03'
-          cat "$JOB"/chunks/scene_* > "$JOB/Seminar11_Class03_Constructors_ValidState.py"
+          gzip -dc "$JOB/Seminar11_Class03_Constructors_ValidState.py.gz" > "$JOB/Seminar11_Class03_Constructors_ValidState.py"
           python -m py_compile "$JOB/Seminar11_Class03_Constructors_ValidState.py"
           python -m py_compile "$JOB/jp_classroom_style.py"
           python "$JOB/check_manim_style.py" "$JOB/Seminar11_Class03_Constructors_ValidState.py"
-          grep -nE 'Constructors|Initialization|THREE valid objects|__init__|self\.value = value|this\.value = value' \
+          grep -nE 'CONSTRUCTORS & VALID STATE|Robot\("Atlas", 90, 0\)|__init__|self\.name = name|self\.valor = valor|THREE valid objects|Scout.*-25' \
             "$JOB/Seminar11_Class03_Constructors_ValidState.py" > /tmp/curricular_qa.txt
 
       - name: Prepare ManimCE 0.20.1 and verification tools
@@ -53,7 +53,7 @@ jobs:
           rm -rf media_pql
           docker run --rm --user "$(id -u):$(id -g)" \
             -e HOME=/tmp/manim-home \
-            -e LESSON_TIME_SCALE=0.12 \
+            -e LESSON_TIME_SCALE=0.16 \
             -v "$PWD:/manim" -w /manim \
             --entrypoint bash manimcommunity/manim:v0.20.1 -c "
               set -euo pipefail
@@ -76,7 +76,7 @@ jobs:
           rm -rf media
           docker run --rm --user "$(id -u):$(id -g)" \
             -e HOME=/tmp/manim-home \
-            -e LESSON_TIME_SCALE=0.80 \
+            -e LESSON_TIME_SCALE=1.00 \
             -v "$PWD:/manim" -w /manim \
             --entrypoint bash manimcommunity/manim:v0.20.1 -c "
               set -euo pipefail
@@ -90,7 +90,7 @@ jobs:
             " 2>&1 | tee out/render_pqh.log
           F="$(find media -type f -name 'Seminar11Class03ConstructorsValidState.mp4' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
           test -n "$F" && test -s "$F"
-          cp "$F" out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4
+          cp "$F" out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4
           cp "$JOB/Seminar11_Class03_Constructors_ValidState.py" out/
           cp "$JOB/jp_classroom_style.py" out/
 
@@ -98,7 +98,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          F='out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4'
+          F='out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4'
           W="$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$F")"
           H="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$F")"
           FPS="$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$F")"
@@ -116,8 +116,8 @@ jobs:
           python - "$DUR" <<'PY'
           import sys
           d=float(sys.argv[1])
-          if not 170 <= d <= 235:
-              raise SystemExit(f'duration outside senior target envelope: {d:.3f}s')
+          if not 250 <= d <= 360:
+              raise SystemExit(f'duration outside senior readability envelope: {d:.3f}s')
           PY
           ffmpeg -nostdin -v error -i "$F" -f null - 2> out/full_decode.log
 
@@ -126,19 +126,21 @@ jobs:
           import sys
           d=float(sys.argv[1])
           points=[
-              ('00_opening',0.035),
-              ('01_half_built',0.125),
-              ('02_constructor_birth',0.205),
-              ('03_uml',0.285),
-              ('04_python_init',0.375),
-              ('05_parameter_attribute',0.465),
-              ('06_three_objects',0.555),
-              ('07_python_java',0.645),
-              ('08_invalid_state',0.735),
-              ('09_behavior',0.815),
-              ('10_project_transfer',0.875),
-              ('11_evidence',0.925),
-              ('12_final',0.975),
+              ('00_opening',0.025),
+              ('01_recall_atlas',0.105),
+              ('02_empty_object',0.185),
+              ('03_constructor_model',0.275),
+              ('04_python_init',0.350),
+              ('05_self',0.425),
+              ('06_three_objects',0.495),
+              ('07_validation',0.575),
+              ('08_constructor_method',0.655),
+              ('09_uml_sync',0.720),
+              ('10_medicion',0.790),
+              ('11_common_mistake',0.855),
+              ('12_exit_check',0.905),
+              ('13_synthesis',0.955),
+              ('14_next_class',0.985),
           ]
           for name,p in points:
               print(f'{name}\t{d*p:.4f}')
@@ -148,34 +150,34 @@ jobs:
           done < /tmp/frame_times.tsv
 
           sha256sum \
-            out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4 \
+            out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4 \
             out/Seminar11_Class03_Constructors_ValidState.py \
             out/jp_classroom_style.py > out/SHA256SUMS.txt
 
           cat > out/RENDER_REPORT.md <<EOF
-          # Seminar 11 · Class 03 render report
+          # Seminar 11 · Class 03 senior render report
 
           - Scene: \`Seminar11Class03ConstructorsValidState\`
           - Topic: Constructors & Valid State
+          - Narrative: Robot / Atlas continuity → m09 Medicion transfer
           - ManimCE: 0.20.1
-          - Final output: \`Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4\`
+          - Final output: \`Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4\`
           - Duration: ${DUR} s
           - Resolution: ${W} × ${H}
           - FPS: ${FPS}
           - Codec / pixel format: ${CODEC} / ${PIX}
-          - Preview command: literal \`-pql\`, full scene, \`LESSON_TIME_SCALE=0.12\`
-          - Final command: literal \`-pqh\`, \`--fps 30\`, \`LESSON_TIME_SCALE=0.80\`
-          - QA: py_compile + static style/curricular QA + PQL + PQH + ffprobe + full FFmpeg decode + 13 representative frames + SHA-256
-          - Curriculum lock: Constructors + Initialization + Valid State; no dedicated Session 4–7 teaching.
-          - Required evidence represented: THREE VALID OBJECTS.
+          - Preview: literal full-scene \`-pql\`, \`LESSON_TIME_SCALE=0.16\`
+          - Final: literal \`-pqh\`, \`--fps 30\`, \`LESSON_TIME_SCALE=1.00\`
+          - QA: py_compile + curricular/style guard + PQL + PQH + ffprobe + full FFmpeg decode + 15 representative frames + SHA-256
+          - Evidence: three valid Robot instances + parameter justification + UML/code consistency + rejected invalid state + self.valor vs factor.
           EOF
 
       - name: Upload verified render package
         uses: actions/upload-artifact@v4
         with:
-          name: Seminar11-Class03-Constructors-ValidState-PQH
+          name: Seminar11-Class03-Constructors-Valid-State-SENIOR-PQH
           path: |
-            out/Seminar11_Class03_Constructors_ValidState_FINAL_pqh.mp4
+            out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4
             out/Seminar11_Class03_Constructors_ValidState.py
             out/jp_classroom_style.py
             out/VIDEO_TECHNICAL.tsv
@@ -193,7 +195,7 @@ jobs:
         if: success()
         shell: bash
         env:
-          DELIVERY_BRANCH: delivery/seminar11-class03-constructors-valid-state-20260904
+          DELIVERY_BRANCH: delivery/seminar11-class03-constructors-valid-state-20260905
         run: |
           set -euo pipefail
           cp -a out /tmp/class03_delivery
@@ -204,5 +206,5 @@ jobs:
           mkdir -p seminar11_class03
           cp -a /tmp/class03_delivery/. seminar11_class03/
           git add seminar11_class03
-          git commit -m 'Publish Seminar 11 Class 03 verified PQH render'
+          git commit -m 'Publish Seminar 11 Class 03 senior Robot PQH render'
           git push --force origin "HEAD:$DELIVERY_BRANCH"
