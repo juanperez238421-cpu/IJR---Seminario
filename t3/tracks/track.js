@@ -3,7 +3,6 @@ const dataUrl = '../../data/studio-index.json';
 const learningUrl = '../../data/track-learning.json';
 const TOKEN_KEY = 'ijr-seminario-studio-edit-token-v1';
 const API = 'https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-studio-student';
-const SB = 'https://rlfxnjbqxbozjdzkbwlz.supabase.co';
 const KEY = 'sb_publishable_rmVOQ3Orx49KpW_4uMqYew_c2HpcA87';
 const BANK = '2026-09-05-v3';
 const $ = id => document.getElementById(id);
@@ -15,37 +14,27 @@ let learningTrack = null;
 let diagnostic = null;
 let questions = [];
 
-async function loadProfile() {
+async function studioApi(action, payload = {}) {
   const edit_token = localStorage.getItem(TOKEN_KEY);
-  if (!edit_token) return null;
+  if (!edit_token) throw new Error('studio_profile_required');
+  const r = await fetch(API, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','apikey':KEY},
+    body: JSON.stringify({action, edit_token, ...payload})
+  });
+  let data = null;
+  try { data = await r.json(); } catch {}
+  if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
+  return data;
+}
+
+async function loadProfile() {
   try {
-    const r = await fetch(API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','apikey':KEY},
-      body: JSON.stringify({action:'load', edit_token})
-    });
-    if (!r.ok) return null;
-    return (await r.json()).profile;
+    const data = await studioApi('load');
+    return data?.profile || null;
   } catch {
     return null;
   }
-}
-
-async function rpc(name, args) {
-  const r = await fetch(`${SB}/rest/v1/rpc/${name}`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','apikey':KEY},
-    body: JSON.stringify(args)
-  });
-  if (!r.ok) {
-    let detail = `HTTP ${r.status}`;
-    try {
-      const e = await r.json();
-      detail = e.message || e.hint || e.code || detail;
-    } catch {}
-    throw new Error(detail);
-  }
-  return r.json();
 }
 
 function insertAdaptiveSections() {
@@ -109,7 +98,7 @@ function stageStatus(stageNo) {
 
 function renderLearningPath() {
   const box = $('learningStages');
-  if (!learningTrack) return;
+  if (!learningTrack || !box) return;
   if (learningTrack.safety) {
     $('learningSummary').innerHTML = `<strong>Safety boundary:</strong> ${esc(learningTrack.safety)}`;
   } else if (diagnostic?.status === 'completed') {
@@ -195,7 +184,7 @@ function renderDiagnosticStatus() {
     return;
   }
 
-  intro.textContent = `15 questions · 12 knowledge checks + 3 self-profile items · one result for this student and this project track.`;
+  intro.textContent = '15 questions · 12 knowledge checks + 3 self-profile items · one result for this student and this project track.';
   actions.innerHTML = '<button id="startDiagnostic" type="button">Start diagnostic</button>';
   $('startDiagnostic').addEventListener('click', startDiagnostic);
   body.innerHTML = `<div class="diag-empty">No completed ${esc(track.title)} diagnostic is stored for this student yet.</div>`;
@@ -208,12 +197,8 @@ async function loadDiagnosticStatus() {
     renderDiagnosticStatus();
     return;
   }
-  const token = localStorage.getItem(TOKEN_KEY);
   try {
-    diagnostic = await rpc('seminar_track_diagnostic_status', {
-      p_track_slug: slug,
-      p_attempt_token: token
-    });
+    diagnostic = await studioApi('diagnostic-status', {track_slug: slug});
   } catch (e) {
     diagnostic = null;
     $('diagnosticIntro').textContent = 'Diagnostic backend unavailable.';
@@ -232,7 +217,7 @@ function questionCard(q, index) {
     <fieldset class="diag-question" data-question="${esc(q.id)}">
       <legend><span>${index + 1}. ${esc(q.prompt)}</span><small>${esc(section)}</small></legend>
       <div class="diag-options">
-        ${q.options.map((opt, i) => `
+        ${(Array.isArray(q.options) ? q.options : []).map((opt, i) => `
           <label>
             <input type="radio" name="${esc(q.id)}" value="${i}" required>
             <span>${esc(opt)}</span>
@@ -243,7 +228,6 @@ function questionCard(q, index) {
 
 async function startDiagnostic() {
   if (!profile) return;
-  const token = localStorage.getItem(TOKEN_KEY);
   const actions = $('diagnosticActions');
   const body = $('diagnosticBody');
   actions.innerHTML = '';
@@ -251,15 +235,8 @@ async function startDiagnostic() {
   body.innerHTML = '<div class="diag-empty">Preparing diagnostic…</div>';
   try {
     const [qs, attempt] = await Promise.all([
-      rpc('seminar_track_diagnostic_get_questions', {p_track_slug:slug, p_bank_version:BANK}),
-      rpc('seminar_track_diagnostic_start', {
-        p_track_slug:slug,
-        p_bank_version:BANK,
-        p_full_name:profile.full_name,
-        p_group_code:profile.group_code,
-        p_attempt_token:token,
-        p_user_agent:navigator.userAgent
-      })
+      studioApi('diagnostic-questions', {track_slug:slug, bank_version:BANK}),
+      studioApi('diagnostic-start', {track_slug:slug, bank_version:BANK})
     ]);
     if (!Array.isArray(qs) || qs.length !== 15) throw new Error('question_bank_incomplete');
     questions = qs;
@@ -287,10 +264,9 @@ async function startDiagnostic() {
       $('submitDiagnostic').disabled = true;
       $('diagnosticFormStatus').textContent = 'Calculating stage mastery on the server…';
       try {
-        diagnostic = await rpc('seminar_track_diagnostic_submit', {
-          p_attempt_id:attempt.attempt_id,
-          p_attempt_token:token,
-          p_answers:answers
+        diagnostic = await studioApi('diagnostic-submit', {
+          attempt_id: attempt.attempt_id,
+          answers
         });
         renderDiagnosticStatus();
         $('diagnosticPanel').scrollIntoView({behavior:'smooth', block:'start'});
