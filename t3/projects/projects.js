@@ -277,3 +277,18 @@ $('changeEmail').addEventListener('click',()=>{
   selectedKey='';
   showAccess();
 });
+
+
+/* Reuse the global Seminar institutional-email gate.
+   Students should not be asked for a second identity field on this page. */
+window.IJRSeminarAccess?.ready?.then(({email})=>{
+  if(!email)return;
+  const input=$('institutionalEmail');
+  if(input)input.value=email;
+  if(!$('projectPanel').classList.contains('hidden'))return;
+  $('accessForm').requestSubmit();
+}).catch(()=>{});
+
+$('changeEmail').addEventListener('click',()=>{
+  window.IJRSeminarAccess?.logout?.();
+});
