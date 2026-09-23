@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           JOB='render_jobs/seminar11_class03'
-          gzip -dc "$JOB/Seminar11_Class03_Constructors_ValidState.py.gz" > "$JOB/Seminar11_Class03_Constructors_ValidState.py"
+          cp "$JOB/Seminar11_Class03_Constructors_ValidState_V21.py" "$JOB/Seminar11_Class03_Constructors_ValidState.py"
           python -m py_compile "$JOB/Seminar11_Class03_Constructors_ValidState.py"
           python -m py_compile "$JOB/jp_classroom_style.py"
           python "$JOB/check_manim_style.py" "$JOB/Seminar11_Class03_Constructors_ValidState.py"
@@ -90,7 +90,7 @@ jobs:
             " 2>&1 | tee out/render_pqh.log
           F="$(find media -type f -name 'Seminar11Class03ConstructorsValidState.mp4' -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)"
           test -n "$F" && test -s "$F"
-          cp "$F" out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4
+          cp "$F" out/Seminar11_Class03_Constructors_Valid_State_V21_SENIOR_FINAL_pqh.mp4
           cp "$JOB/Seminar11_Class03_Constructors_ValidState.py" out/
           cp "$JOB/jp_classroom_style.py" out/
 
@@ -98,7 +98,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          F='out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4'
+          F='out/Seminar11_Class03_Constructors_Valid_State_V21_SENIOR_FINAL_pqh.mp4'
           W="$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$F")"
           H="$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of csv=p=0 "$F")"
           FPS="$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0 "$F")"
@@ -150,7 +150,7 @@ jobs:
           done < /tmp/frame_times.tsv
 
           sha256sum \
-            out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4 \
+            out/Seminar11_Class03_Constructors_Valid_State_V21_SENIOR_FINAL_pqh.mp4 \
             out/Seminar11_Class03_Constructors_ValidState.py \
             out/jp_classroom_style.py > out/SHA256SUMS.txt
 
@@ -161,7 +161,7 @@ jobs:
           - Topic: Constructors & Valid State
           - Narrative: Robot / Atlas continuity → m09 Medicion transfer
           - ManimCE: 0.20.1
-          - Final output: \`Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4\`
+          - Final output: \`Seminar11_Class03_Constructors_Valid_State_V21_SENIOR_FINAL_pqh.mp4\`
           - Duration: ${DUR} s
           - Resolution: ${W} × ${H}
           - FPS: ${FPS}
@@ -177,7 +177,7 @@ jobs:
         with:
           name: Seminar11-Class03-Constructors-Valid-State-SENIOR-PQH
           path: |
-            out/Seminar11_Class03_Constructors_Valid_State_SENIOR_FINAL_pqh.mp4
+            out/Seminar11_Class03_Constructors_Valid_State_V21_SENIOR_FINAL_pqh.mp4
             out/Seminar11_Class03_Constructors_ValidState.py
             out/jp_classroom_style.py
             out/VIDEO_TECHNICAL.tsv
@@ -206,5 +206,5 @@ jobs:
           mkdir -p seminar11_class03
           cp -a /tmp/class03_delivery/. seminar11_class03/
           git add seminar11_class03
-          git commit -m 'Publish Seminar 11 Class 03 senior Robot PQH render'
+          git commit -m 'Publish Seminar 11 Class 03 V2.1 overlap-free senior PQH render'
           git push --force origin "HEAD:$DELIVERY_BRANCH"
