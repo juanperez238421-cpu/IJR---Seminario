@@ -159,6 +159,23 @@ function render(data){
   }else{
     $('safetyPanel').classList.add('hidden');
   }
+
+  const contentSections=Array.isArray(p.content_sections)?p.content_sections:[];
+  $('contentGrid').innerHTML=contentSections.map((section,index)=>`
+    <article class="content-card">
+      <div class="content-step">${String(index+1).padStart(2,'0')}</div>
+      <div class="content-body">
+        <div class="content-kicker">${esc(section?.kicker||'PROJECT')}</div>
+        <h4>${esc(section?.title||'Contenido del proyecto')}</h4>
+        ${section?.body?`<p>${esc(section.body)}</p>`:''}
+        ${Array.isArray(section?.items)&&section.items.length
+          ?`<ul>${section.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`
+          :''}
+      </div>
+    </article>
+  `).join('');
+  $('contentPanel').classList.toggle('hidden',contentSections.length===0);
+
   $('sprintGrid').innerHTML=(p.sprints||[]).map(step=>`
     <article class="sprint-card">
       <div class="sprint-number">S${esc(step.n)}</div>
