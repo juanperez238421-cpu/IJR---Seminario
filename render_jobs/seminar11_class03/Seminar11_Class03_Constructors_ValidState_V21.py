@@ -295,8 +295,11 @@ class Seminar11Class03ConstructorsValidState(JPClassroomScene):
             self.play(Indicate(row, color=BLACK_LINE, scale_factor=1.04), run_time=RUN_QUICK)
         self.wait(PAUSE_READ)
 
-        question = self.text("WHERE DID THESE INITIAL VALUES COME FROM?", 32, BOLD).move_to(DOWN * 2.68)
-        values = VGroup(self.mono('"Atlas"', 31, BOLD), self.mono("90", 31, BOLD), self.mono("0", 31, BOLD)).arrange(RIGHT, buff=0.90).next_to(question, DOWN, buff=0.32)
+        # V2.1 final QA: remove the lower labels before the reflective question.
+        # Keeping only the robot and state card preserves the visual reference without collisions.
+        self.safe_fade(atlas_label, state_tag, behavior, run_time=RUN_QUICK)
+        question = self.text("WHERE DID THESE INITIAL VALUES COME FROM?", 32, BOLD).move_to(DOWN * 2.52)
+        values = VGroup(self.mono('"Atlas"', 31, BOLD), self.mono("90", 31, BOLD), self.mono("0", 31, BOLD)).arrange(RIGHT, buff=0.90).next_to(question, DOWN, buff=0.26)
         self.play(FadeIn(question), run_time=RUN_NORMAL)
         self.play(LaggedStart(*[TransformFromCopy(row, val) for row, val in zip(rows, values)], lag_ratio=0.20), run_time=RUN_SLOW)
         self.wait(PAUSE_EXPLAIN)
@@ -464,12 +467,20 @@ class Seminar11Class03ConstructorsValidState(JPClassroomScene):
         self_tag = self.tag("self → atlas", 2.25, 0.56, 20, filled=True).next_to(atlas, UP, buff=0.18)
         self.play(FadeIn(self_tag), run_time=RUN_NORMAL)
         self.wait(PAUSE_EXPLAIN)
+        # V2.1 final QA: use a dedicated mapping panel instead of free-floating lines.
+        # The previous lower-third mapping intersected the Atlas card.
+        mapping_box = RoundedRectangle(
+            width=4.55, height=1.34, corner_radius=0.10,
+            stroke_color=BLACK_LINE, stroke_width=1.5,
+            fill_color=PAPER_GRAY, fill_opacity=1,
+        ).move_to(LEFT * 4.45 + UP * 0.26)
         map_lines = VGroup(
-            self.mono("self.name     → atlas.name", 22),
-            self.mono("self.energy   → atlas.energy", 22),
-            self.mono("self.position → atlas.position", 22),
-        ).arrange(DOWN, aligned_edge=LEFT, buff=0.10).move_to(LEFT * 4.55 + DOWN * 3.00)
-        self.play(FadeIn(map_lines), run_time=RUN_NORMAL)
+            self.mono("self.name     → atlas.name", 19),
+            self.mono("self.energy   → atlas.energy", 19),
+            self.mono("self.position → atlas.position", 19),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.08).move_to(mapping_box)
+        mapping = VGroup(mapping_box, map_lines)
+        self.play(FadeIn(mapping), run_time=RUN_NORMAL)
         self.wait(PAUSE_READ)
 
         self.play(Write(calls[1]), run_time=RUN_NORMAL)
@@ -477,8 +488,8 @@ class Seminar11Class03ConstructorsValidState(JPClassroomScene):
         self_tag_2 = self.tag("self → explorer", 2.45, 0.56, 20, filled=True).next_to(explorer, UP, buff=0.18)
         self.play(ReplacementTransform(self_tag, self_tag_2), run_time=RUN_NORMAL)
         self.wait(PAUSE_EXPLAIN)
-        self.safe_fade(map_lines)
-        final = VGroup(self.text("SAME CREATION RULE.", 29, BOLD), self.text("DIFFERENT INITIAL STATE.", 29, BOLD)).arrange(DOWN, buff=0.10).move_to(DOWN * 3.35)
+        self.safe_fade(mapping)
+        final = VGroup(self.text("SAME CREATION RULE.", 29, BOLD), self.text("DIFFERENT INITIAL STATE.", 29, BOLD)).arrange(DOWN, buff=0.10).move_to(DOWN * 3.30)
         self.play(FadeIn(final), run_time=RUN_NORMAL)
         self.wait(PAUSE_EXPLAIN)
         self.clear_scene()
@@ -502,10 +513,13 @@ class Seminar11Class03ConstructorsValidState(JPClassroomScene):
             self.play(Write(call), run_time=RUN_NORMAL)
             self.play(FadeIn(card, shift=UP * 0.10), run_time=RUN_NORMAL)
             self.wait(PAUSE_READ)
+        # V2.1 final QA: once the three calls have done their explanatory job,
+        # clear them before showing the comparison statement.
+        self.safe_fade(calls, run_time=RUN_QUICK)
         compare = VGroup(
             self.text("SAME CLASS", 27, BOLD),
             self.text("DIFFERENT IDENTITY + DIFFERENT STATE", 27, BOLD),
-        ).arrange(DOWN, buff=0.10).move_to(DOWN * 3.55)
+        ).arrange(DOWN, buff=0.10).move_to(DOWN * 2.92)
         self.play(FadeIn(compare), run_time=RUN_NORMAL)
         self.wait(PAUSE_EXPLAIN)
         self.clear_scene()
