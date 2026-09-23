@@ -16,6 +16,7 @@ type Option = {
   summary: string;
   objective: string;
   stack: string[];
+  track_slug: string;
   kind: "teacher" | "curated" | "custom";
 };
 
@@ -63,6 +64,7 @@ function proposalOption(project: ProjectRow): Option {
     summary: project.initial_project_summary || project.project_summary || "",
     objective: project.initial_objective || project.objective || "",
     stack: Array.isArray(project.initial_stack) ? project.initial_stack : (project.stack || []),
+    track_slug: String(project.track_slug || ""),
     kind: "teacher",
   };
 }
@@ -214,25 +216,77 @@ function curatedOptions(track: string): Option[] {
       },
     ],
   };
-  return map[track] || [];
+  return (map[track] || []).map((option) => ({ ...option, track_slug: track }));
 }
-function buildOptions(project: ProjectRow): Option[] {
+
+const TRACKS = ["web", "data-science", "cybersecurity", "3d-programming", "robotics"] as const;
+function validTrack(value: string) {
+  return (TRACKS as readonly string[]).includes(value);
+}
+function customOption(track = ""): Option {
+  return {
+    key: "custom",
+    label: "Mi propia idea",
+    title: "",
+    summary: "",
+    objective: "",
+    stack: [],
+    track_slug: track,
+    kind: "custom",
+  };
+}
+function buildOptions(project: ProjectRow | null, preferredTrack = ""): Option[] {
+  if (project) {
+    const track = String(project.track_slug || "");
+    return [
+      proposalOption(project),
+      ...curatedOptions(track),
+      customOption(track),
+    ];
+  }
+
+  const orderedTracks = validTrack(preferredTrack)
+    ? [preferredTrack, ...TRACKS.filter((track) => track !== preferredTrack)]
+    : [...TRACKS];
+
   return [
-    proposalOption(project),
-    ...curatedOptions(String(project.track_slug || "")),
-    {
-      key: "custom",
-      label: "Mi propia idea",
-      title: "",
-      summary: "",
-      objective: "",
-      stack: [],
-      kind: "custom",
-    },
+    ...orderedTracks.flatMap((track) => curatedOptions(track)),
+    customOption(validTrack(preferredTrack) ? preferredTrack : ""),
   ];
+}
+function virtualProject(roster: Record<string, any>, preferredTrack = ""): ProjectRow {
+  return {
+    project_slug: null,
+    track_slug: validTrack(preferredTrack) ? preferredTrack : "",
+    project_title: "Aún no tienes un proyecto definido",
+    project_summary: "Selecciona una de las opciones disponibles o plantea tu propia idea. Después concreta título, producto, objetivo, ruta técnica y herramientas antes de confirmar.",
+    objective: "",
+    stack: [],
+    safety_scope: null,
+    content_sections: [],
+    sprints: [],
+    assignment_status: "unassigned",
+    decision_status: "proposed",
+    decision_note: "No tienes un proyecto final definido todavía. Elige una base y conviértela en una propuesta concreta y verificable.",
+    project_mode: "guided_definition",
+    definition_questions: [
+      "¿Quién usará o se beneficiará del producto?",
+      "¿Qué problema concreto resolverá?",
+      "¿Cuál es el producto mínimo funcional que puedes demostrar?",
+      "¿Qué evidencia mostrará que el proyecto realmente funciona?"
+    ],
+    student_choice_key: null,
+    student_decision_note: null,
+    student_decided_at: null,
+    student_revision_count: 0,
+    updated_at: null,
+    group_code: roster?.group_code || "",
+    student_name: roster?.display_name || "",
+  };
 }
 function projectPayload(project: ProjectRow) {
   return {
+    is_defined: Boolean(project.project_slug),
     project_slug: project.project_slug,
     track_slug: project.track_slug,
     project_title: project.project_title,
@@ -312,17 +366,27 @@ Deno.serve(async (req: Request) => {
     }
 
     const projectSelect = "group_code,student_name,project_slug,track_slug,project_title,project_summary,objective,stack,initial_project_title,initial_project_summary,initial_objective,initial_stack,safety_scope,content_sections,sprints,assignment_status,decision_status,decision_note,project_mode,definition_questions,student_choice_key,student_decision_note,student_decided_at,student_revision_count,updated_at";
-    const [projectResult, rosterResult] = await Promise.all([
+    const [projectResult, rosterResult, studioResult] = await Promise.all([
       admin.from("seminar_student_projects").select(projectSelect).eq("student_registry_id", identity.student_registry_id).maybeSingle(),
       admin.from("student_registry").select("display_name,group_code,active").eq("id", identity.student_registry_id).maybeSingle(),
+      admin.from("seminar_studio_profiles")
+        .select("track_slug")
+        .eq("student_registry_id", identity.student_registry_id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
     if (projectResult.error) throw projectResult.error;
     if (rosterResult.error) throw rosterResult.error;
+    if (studioResult.error) throw studioResult.error;
     let project = projectResult.data as ProjectRow | null;
     const roster = rosterResult.data;
+    const preferredTrack = validTrack(String(studioResult.data?.track_slug || ""))
+      ? String(studioResult.data?.track_slug)
+      : "";
 
-    if (!project || !roster?.active) {
+    if (!roster?.active || !["11A", "11B", "11C"].includes(String(roster.group_code || ""))) {
       await admin.from("seminar_project_access_events").insert({
         student_registry_id: identity.student_registry_id,
         success: false,
@@ -330,7 +394,7 @@ Deno.serve(async (req: Request) => {
         ip_hash: ipHash,
         user_agent: userAgent,
       });
-      return json(origin, 404, { error: "project_not_assigned" });
+      return json(origin, 404, { error: "project_access_denied" });
     }
 
     if (action === "save_decision") {
@@ -360,9 +424,20 @@ Deno.serve(async (req: Request) => {
       }
 
       const choiceKey = cleanText(body?.choice_key, 80);
-      const options = buildOptions(project);
-      if (!options.some((option) => option.key === choiceKey)) {
+      const requestedTrack = cleanText(body?.track_slug, 40);
+      const options = buildOptions(project, preferredTrack);
+      const selectedOption = options.find((option) => option.key === choiceKey);
+      if (!selectedOption) {
         return json(origin, 400, { error: "invalid_choice" });
+      }
+      if (!validTrack(requestedTrack)) {
+        return json(origin, 400, { error: "track_required" });
+      }
+      if (project && requestedTrack !== String(project.track_slug || "")) {
+        return json(origin, 409, { error: "track_change_not_allowed" });
+      }
+      if (selectedOption.kind !== "custom" && selectedOption.track_slug !== requestedTrack) {
+        return json(origin, 400, { error: "invalid_track_choice" });
       }
 
       const title = cleanText(body?.project_title, 180);
@@ -377,8 +452,9 @@ Deno.serve(async (req: Request) => {
         return json(origin, 400, { error: "project_fields_required" });
       }
 
-      const saved = await admin.rpc("seminar_student_project_save_decision", {
+      const saved = await admin.rpc("seminar_student_project_save_decision_v2", {
         p_student_registry_id: identity.student_registry_id,
+        p_track_slug: requestedTrack,
         p_choice_key: choiceKey,
         p_project_title: title,
         p_project_summary: summary,
@@ -401,9 +477,9 @@ Deno.serve(async (req: Request) => {
       return json(origin, 200, {
         ok: true,
         saved: true,
-        student: { name: roster.display_name, group_code: roster.group_code },
+        student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
         project: projectPayload(project),
-        options: buildOptions(project),
+        options: buildOptions(project, preferredTrack),
       });
     }
 
@@ -419,9 +495,9 @@ Deno.serve(async (req: Request) => {
 
     return json(origin, 200, {
       ok: true,
-      student: { name: roster.display_name, group_code: roster.group_code },
-      project: projectPayload(project),
-      options: buildOptions(project),
+      student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
+      project: projectPayload(project ?? virtualProject(roster, preferredTrack)),
+      options: buildOptions(project, preferredTrack),
     });
   } catch (error) {
     console.error(error);
