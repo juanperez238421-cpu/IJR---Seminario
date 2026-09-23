@@ -1,0 +1,7 @@
+124:            # V2 QA FIX: never morph two long header strings through each other.
+404:        self.set_header(3, "CONSTRUCTOR MENTAL MODEL", "Values enter; required state is initialized; a usable object comes out.")
+490:        self.set_header(5, "SELF AND PARAMETERS", "self is the current object; parameters are temporary inputs to a call.")
+585:        self.set_header(7, "VALID INITIAL STATE", "Reject an impossible beginning before the object enters the program.")
+603:        reject = self.label_box("INVALID INITIAL STATE", width=3.4, height=0.62, size=20, bold=True).move_to(RIGHT * 4.35 + UP * 1.35)
+673:        self.set_header(9, "UML ↔ CODE SYNCHRONIZATION", "The model and the implementation must describe the same initialization story.")
+723:        self.set_header(10, "M09 · CONSTRUCTORS, ATTRIBUTES & METHODS", "Transfer the same mental model to the real technical module: Medicion.")
