@@ -108,6 +108,9 @@ jobs:
           ! grep -q 'id="groupCode"' t3/oop-uml/index.html
           ! grep -q 'id="registrationMode"' t3/oop-uml/index.html
           grep -q "ensureEmailOnlyRegistration" t3/oop-uml/hub.js
+          grep -q 'data-oop-uml-build="20260923-email-v11"' t3/oop-uml/index.html
+          grep -q 'OOP_UML_EMAIL_BUILD = "20260923-email-v11"' supabase/functions/seminar-t3-host/index.ts
+          grep -q "rewriteOopUmlHtml" supabase/functions/seminar-t3-host/index.ts
           grep -q "Supabase" t3/oop-uml/index.html
           grep -q "oop-uml/" t3/index.html
       - name: Run JavaScript contract tests
@@ -137,10 +140,14 @@ jobs:
           grep -q "save_decision" /tmp/projects.js
           grep -q "option-card" /tmp/projects.css
 
-          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/?v=20260923-email-v10" -o /tmp/oop-uml.html
-          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js?v=20260923-email-v10" -o /tmp/oop-uml-hub.js
+          curl -fsS -D /tmp/oop-uml.headers -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/?v=20260923-email-v11" -o /tmp/oop-uml.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js?v=20260923-email-v11" -o /tmp/oop-uml-hub.js
           grep -q 'id="institutionalEmail"' /tmp/oop-uml.html
           grep -q 'type="email"' /tmp/oop-uml.html
+          grep -q 'data-oop-uml-build="20260923-email-v11"' /tmp/oop-uml.html
+          grep -qi '^x-ijr-build: 20260923-email-v11' /tmp/oop-uml.headers
+          grep -qi '^content-type: text/html' /tmp/oop-uml.headers
+          ! grep -q 'Register the student or exact classroom team' /tmp/oop-uml.html
           ! grep -q 'id="memberName1"' /tmp/oop-uml.html
           ! grep -q 'id="groupCode"' /tmp/oop-uml.html
           ! grep -q 'id="registrationMode"' /tmp/oop-uml.html
