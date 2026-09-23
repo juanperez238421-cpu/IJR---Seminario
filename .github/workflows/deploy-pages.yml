@@ -88,6 +88,8 @@ jobs:
           node --check t3/projects/projects.js
           grep -q 'href="projects/"' t3/index.html
           grep -q 'seminar-project-access' t3/projects/projects.js
+          grep -q 'save_decision' t3/projects/projects.js
+          grep -q 'Project Decision Center' t3/projects/index.html
           for track in web data-science cybersecurity 3d-programming robotics; do test -s "t3/tracks/$track/index.html"; done
       - name: Validate OOP + UML Learning Hub
         shell: bash
@@ -116,6 +118,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/configure-pages@v6
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v4
         with:
           path: .
@@ -126,6 +130,7 @@ jobs:
         run: |
           echo "### Seminar T3 student routes" >> "$GITHUB_STEP_SUMMARY"
           echo "- T3 course: ${{ steps.deployment.outputs.page_url }}t3/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project Decision Center: ${{ steps.deployment.outputs.page_url }}t3/projects/" >> "$GITHUB_STEP_SUMMARY"
           echo "- OOP + UML Learning Hub: ${{ steps.deployment.outputs.page_url }}t3/oop-uml/" >> "$GITHUB_STEP_SUMMARY"
           echo "- Software Engineering Studio: ${{ steps.deployment.outputs.page_url }}t3/studio/" >> "$GITHUB_STEP_SUMMARY"
           echo "- Common Core schedule: ${{ steps.deployment.outputs.page_url }}t3/common/" >> "$GITHUB_STEP_SUMMARY"
