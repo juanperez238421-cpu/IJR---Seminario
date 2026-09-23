@@ -14,7 +14,6 @@
   <script defer src="../config.js?v=20260824-1"></script>
   <script defer src="course-data.js?v=20260831-v1"></script>
   <script type="module" src="hub.js?v=20260831-v1"></script>
-  <script src="../access-gate.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -33,7 +32,7 @@
     <div class="registration-card">
       <p class="eyebrow">SOFTWARE ENGINEERING STUDIO · COMMON CORE</p>
       <h1>Model first. Code second.</h1>
-      <p class="registration-lead">Register the student or exact classroom team using this computer. The Common Core connects <strong>Object-Oriented Programming</strong> with <strong>UML class diagrams</strong> and reuses the live Seminar T3 Supabase progress backend.</p>
+      <p class="registration-lead">Enter only your <strong>institutional email</strong>. The system resolves your official Seminar 11 identity and group automatically from the school roster. No password, name, group or team form is required.</p>
 
       <div class="sequence-rule">
         <strong>10-session progression</strong>
@@ -43,35 +42,19 @@
 
       <form id="registrationForm" class="hub-registration-form">
         <div class="registration-grid">
-          <label>Language <small>· Lenguaje</small>
-            <select id="language" required><option value="python">Python</option><option value="java">Java</option></select>
-          </label>
-          <label>Registration mode <small>· Modalidad</small>
-            <select id="registrationMode" required><option value="individual">Individual · 1 student</option><option value="team">Team · 2–3 students</option></select>
-          </label>
-          <label>Group <small>· Grupo</small>
-            <select id="groupCode" required><option value="">Select…</option><option>11-A</option><option>11-B</option><option>11-C</option></select>
-          </label>
-          <label id="teamSizeWrap" class="hidden">Students at this computer
-            <select id="teamSize"><option value="2">2 students</option><option value="3">3 students</option></select>
+          <label>Institutional email <small>· Correo institucional</small>
+            <input id="institutionalEmail" type="email" inputmode="email" autocomplete="email"
+                   placeholder="nombre.apellido@ijr.edu.co" required>
           </label>
         </div>
-        <fieldset class="member-fieldset">
-          <legend>Students <small>· Integrantes</small></legend>
-          <div class="member-grid">
-            <label>Student 1<input id="memberName1" required autocomplete="name" placeholder="Full name"></label>
-            <label id="member2Wrap" class="hidden">Student 2<input id="memberName2" autocomplete="name" placeholder="Full name"></label>
-            <label id="member3Wrap" class="hidden">Student 3<input id="memberName3" autocomplete="name" placeholder="Full name"></label>
-          </div>
-        </fieldset>
         <div class="sequence-rule">
-          <strong>Automatic saving</strong>
-          <span>Workshop/module completion is synchronized through the existing Seminar T3 Supabase RPC backend when available.</span>
-          <small>The browser keeps a local recovery copy. A different team should always use <strong>Switch registration</strong> before working.</small>
+          <strong>Automatic identity resolution</strong>
+          <span>Your institutional email is matched server-side against the official Grade 11 roster.</span>
+          <small>No password is requested. Your name and group are resolved automatically after validation.</small>
         </div>
         <div class="registration-actions">
           <div><strong>Common Core rule</strong><span>predict → model → implement → test → explain. A program that only runs is not sufficient evidence of mastery.</span></div>
-          <button id="registerButton" class="button button-dark" type="submit">Enter OOP + UML Hub</button>
+          <button id="registerButton" class="button button-dark" type="submit">Enter with institutional email</button>
         </div>
         <p id="registrationStatus" class="inline-status" role="status" aria-live="polite"></p>
       </form>
