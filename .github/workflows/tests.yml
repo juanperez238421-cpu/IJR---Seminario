@@ -31,6 +31,8 @@ jobs:
           node --check t3/oop-logic-01/app.js
           node --check t3/oop-logic-01/teacher.js
           node --check t3/oop-uml/workshop-colab.js
+          node --check t3/access-gate.js
+          node --check t3/projects/projects.js
           node --check t3/studio/app.js
           node --check t3/studio/teacher.js
           node --check t3/tracks/track.js
