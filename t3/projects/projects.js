@@ -21,9 +21,11 @@ function friendlyError(code){
     write_authorization_required:'No pude validar el permiso para guardar. Usa tu código ST… o abre primero Project Studio en este mismo equipo.',
     project_fields_required:'Completa título, descripción y objetivo antes de confirmar.',
     invalid_choice:'Selecciona una de las opciones de proyecto antes de guardar.',
-    project_not_assigned:'No hay un módulo de proyecto asignado a este correo.',
-    project_access_denied:'No se encontró este correo en el registro autorizado de Seminario.',
-    institutional_email_required:'Debes usar un correo institucional @ijr.edu.co.',
+    track_required:'Selecciona la ruta técnica del proyecto antes de guardar.',
+    invalid_track_choice:'La ruta seleccionada no corresponde a la opción de proyecto elegida.',
+    track_change_not_allowed:'Tu proyecto ya tiene una ruta definida. Puedes modificar el proyecto dentro de esa ruta, pero no cambiarla desde esta pantalla.',
+    project_access_denied:'El correo no coincide con un correo institucional registrado para un estudiante activo de 11°.',
+    institutional_email_required:'Debes usar el correo institucional @ijr.edu.co asociado a tu registro.',
     invalid_client:'La configuración de acceso no es válida. Informa al docente.',
     invalid_request:'No fue posible completar la solicitud. Revisa los campos e intenta nuevamente.'
   };
@@ -83,11 +85,17 @@ function chooseOption(key,{silent=false}={}){
   selectedKey=key;
   updateSelectionUI();
   fillEditor(option,{clearNote:false});
+
+  const route=$('trackSlugInput');
+  if(option.track_slug)route.value=option.track_slug;
+  else if(!route.value&&state.project?.track_slug)route.value=state.project.track_slug;
+  route.disabled=Boolean(state.project?.is_defined)||option.kind!=='custom';
+
   if(key==='custom'){
     $('projectTitleInput').focus();
-    if(!silent)setStatus('decisionStatus','Escribe tu idea desde cero. Todos los campos se pueden editar.','info');
+    if(!silent)setStatus('decisionStatus','Escribe tu idea desde cero, selecciona la ruta técnica y concreta todos los campos antes de confirmar.','info');
   }else if(!silent){
-    setStatus('decisionStatus','Base cargada. Ahora modifícala para que el proyecto sea tuyo antes de confirmar.','info');
+    setStatus('decisionStatus','Base cargada. La ruta técnica queda definida por esta opción; ahora modifícala para que el proyecto sea realmente tuyo.','info');
   }
 }
 function restoreCurrent(){
@@ -95,11 +103,21 @@ function restoreCurrent(){
   if(!p)return;
   selectedKey=p.student_choice_key&&state.options.some(x=>x.key===p.student_choice_key)
     ?p.student_choice_key
-    :'teacher-proposal';
+    :(p.is_defined&&state.options.some(x=>x.key==='teacher-proposal')?'teacher-proposal':'');
   updateSelectionUI();
-  fillEditor(p);
+
+  if(p.is_defined){
+    fillEditor(p);
+  }else{
+    fillEditor({title:'',summary:'',objective:'',stack:[]});
+  }
+
+  const route=$('trackSlugInput');
+  route.value=p.track_slug||'';
+  route.disabled=Boolean(p.is_defined);
+
   $('studentNote').value=p.student_decision_note||'';
-  setStatus('decisionStatus','Se recuperó la última versión guardada.','info');
+  setStatus('decisionStatus',p.is_defined?'Se recuperó la última versión guardada.':'Aún no hay proyecto guardado. Selecciona una opción para comenzar.','info');
 }
 function renderOptions(){
   const kindLabel={teacher:'Propuesta inicial',curated:'Opción sugerida',custom:'Proyecto libre'};
