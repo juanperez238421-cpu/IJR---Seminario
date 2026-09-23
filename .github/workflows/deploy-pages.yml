@@ -102,6 +102,12 @@ jobs:
           node --check t3/oop-uml/course-data.js
           node --check t3/oop-uml/hub.js
           grep -q "CourseStore" t3/oop-uml/hub.js
+          grep -q 'id="institutionalEmail"' t3/oop-uml/index.html
+          grep -q 'type="email"' t3/oop-uml/index.html
+          ! grep -q 'id="memberName1"' t3/oop-uml/index.html
+          ! grep -q 'id="groupCode"' t3/oop-uml/index.html
+          ! grep -q 'id="registrationMode"' t3/oop-uml/index.html
+          grep -q "ensureEmailOnlyRegistration" t3/oop-uml/hub.js
           grep -q "Supabase" t3/oop-uml/index.html
           grep -q "oop-uml/" t3/index.html
       - name: Run JavaScript contract tests
@@ -131,13 +137,17 @@ jobs:
           grep -q "save_decision" /tmp/projects.js
           grep -q "option-card" /tmp/projects.css
 
-          curl -fsS --retry 2 --connect-timeout 10 "$BASE/oop-uml/" -o /tmp/oop-uml.html
-          curl -fsS --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js" -o /tmp/oop-uml-hub.js
-          curl -fsS --retry 2 --connect-timeout 10 "$BASE/access-gate.js" -o /tmp/access-gate.js
-          grep -q "Institutional email only" /tmp/oop-uml.html
-          grep -q "IJRSeminarAccess.ready" /tmp/oop-uml-hub.js
-          grep -q "seminar_email_access_v1" /tmp/access-gate.js
-          echo "Production Project Decision Center and OOP + UML email-only access are reachable and current."
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/?v=20260923-email-v10" -o /tmp/oop-uml.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js?v=20260923-email-v10" -o /tmp/oop-uml-hub.js
+          grep -q 'id="institutionalEmail"' /tmp/oop-uml.html
+          grep -q 'type="email"' /tmp/oop-uml.html
+          ! grep -q 'id="memberName1"' /tmp/oop-uml.html
+          ! grep -q 'id="groupCode"' /tmp/oop-uml.html
+          ! grep -q 'id="registrationMode"' /tmp/oop-uml.html
+          ! grep -q 'Full name' /tmp/oop-uml.html
+          grep -q "ensureEmailOnlyRegistration" /tmp/oop-uml-hub.js
+          grep -q "startWithEmail" /tmp/oop-uml-hub.js
+          echo "Production OOP + UML exposes institutional-email-only registration with no legacy name/group/team fields."
       - name: Publish production routes
         shell: bash
         run: |
