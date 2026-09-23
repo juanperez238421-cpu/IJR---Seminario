@@ -82,6 +82,12 @@ jobs:
           node --check t3/studio/app.js
           node --check t3/studio/teacher.js
           node --check t3/tracks/track.js
+          test -s t3/projects/index.html
+          test -s t3/projects/projects.js
+          test -s t3/projects/projects.css
+          node --check t3/projects/projects.js
+          grep -q 'href="projects/"' t3/index.html
+          grep -q 'seminar-project-access' t3/projects/projects.js
           for track in web data-science cybersecurity 3d-programming robotics; do test -s "t3/tracks/$track/index.html"; done
       - name: Validate OOP + UML Learning Hub
         shell: bash
