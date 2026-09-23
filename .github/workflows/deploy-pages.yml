@@ -108,11 +108,15 @@ jobs:
           ! grep -q 'id="groupCode"' t3/oop-uml/index.html
           ! grep -q 'id="registrationMode"' t3/oop-uml/index.html
           grep -q "ensureEmailOnlyRegistration" t3/oop-uml/hub.js
-          grep -q 'data-oop-uml-build="20260923-email-v11"' t3/oop-uml/index.html
-          grep -q 'OOP_UML_EMAIL_BUILD = "20260923-email-v11"' supabase/functions/seminar-t3-host/index.ts
+          grep -q 'data-oop-uml-build="20260923-email-v12"' t3/oop-uml/index.html
+          grep -q 'OOP_UML_EMAIL_BUILD = "20260923-email-v12"' supabase/functions/seminar-t3-host/index.ts
           grep -q "rewriteOopUmlHtml" supabase/functions/seminar-t3-host/index.ts
           grep -q "Supabase" t3/oop-uml/index.html
           grep -q "oop-uml/" t3/index.html
+          grep -q "seminar_email_access_v1" t3/access-gate.js
+          grep -q "institutional_email_not_registered" t3/access-gate.js
+          ! grep -q "No tengo correo institucional" t3/access-gate.js
+          ! grep -q "Acceso al sitio" t3/access-gate.js
       - name: Run JavaScript contract tests
         run: npm test
 
@@ -140,11 +144,11 @@ jobs:
           grep -q "save_decision" /tmp/projects.js
           grep -q "option-card" /tmp/projects.css
 
-          curl -fsS -D /tmp/oop-uml.headers -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/?v=20260923-email-v11" -o /tmp/oop-uml.html
-          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js?v=20260923-email-v11" -o /tmp/oop-uml-hub.js
+          curl -fsS -D /tmp/oop-uml.headers -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/?v=20260923-email-v12" -o /tmp/oop-uml.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js?v=20260923-email-v12" -o /tmp/oop-uml-hub.js
           grep -q 'id="institutionalEmail"' /tmp/oop-uml.html
           grep -q 'type="email"' /tmp/oop-uml.html
-          grep -q 'data-oop-uml-build="20260923-email-v11"' /tmp/oop-uml.html
+          grep -q 'data-oop-uml-build="20260923-email-v12"' /tmp/oop-uml.html
           grep -q 'Sign in with your institutional email.' /tmp/oop-uml.html
           ! grep -q 'Register the student or exact classroom team' /tmp/oop-uml.html
           ! grep -q 'id="memberName1"' /tmp/oop-uml.html
@@ -153,7 +157,12 @@ jobs:
           ! grep -q 'Full name' /tmp/oop-uml.html
           grep -q "ensureEmailOnlyRegistration" /tmp/oop-uml-hub.js
           grep -q "startWithEmail" /tmp/oop-uml-hub.js
-          echo "Production OOP + UML exposes institutional-email-only registration with no legacy name/group/team fields."
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/access-gate.js?v=20260923-email-v12" -o /tmp/access-gate.js
+          grep -q "seminar_email_access_v1" /tmp/access-gate.js
+          grep -q "Entrar a Seminario 11" /tmp/access-gate.js
+          ! grep -q "No tengo correo institucional" /tmp/access-gate.js
+          ! grep -q "Acceso al sitio" /tmp/access-gate.js
+          echo "Production Seminar 11 exposes only institutional-email entry; legacy alternate-access UI is absent."
       - name: Publish production routes
         shell: bash
         run: |
