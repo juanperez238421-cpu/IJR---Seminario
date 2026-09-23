@@ -4,7 +4,8 @@
   const SUPABASE_URL = 'https://rlfxnjbqxbozjdzkbwlz.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_rmVOQ3Orx49KpW_4uMqYew_c2HpcA87';
   const RPC_URL = SUPABASE_URL + '/rest/v1/rpc/seminar_email_access_v1';
-  const STORAGE_KEY = 'ijr-seminario-email-access-v1';
+  const STORAGE_KEY = 'ijr-seminario-email-access-v2';
+  const BUILD_ID = '20260923-email-v12';
   const MAX_AGE_MS = 8 * 60 * 60 * 1000;
 
   let activeEmail = '';
@@ -165,6 +166,9 @@
     const raw = await response.json().catch(() => null);
     const data = Array.isArray(raw) ? raw[0] : raw;
     if (!response.ok) throw new Error('No fue posible validar el acceso institucional.');
+    if (data?.error === 'institutional_email_not_registered') {
+      throw new Error('Este correo institucional no está registrado en Seminario 11.');
+    }
     if (!data?.ok || !isInstitutionalEmail(data.email)) {
       throw new Error('Ingresa únicamente tu correo institucional @ijr.edu.co.');
     }
@@ -190,18 +194,18 @@
     gate.innerHTML = `
       <div class="ijr-access-card">
         <div class="ijr-access-kicker">Instituto Jorge Robledo · Seminario 11</div>
-        <h1 id="ijrSeminarAccessTitle">Acceso institucional</h1>
-        <p>Ingresa con tu correo institucional. No se solicita contraseña, grupo, nombre ni código.</p>
+        <h1 id="ijrSeminarAccessTitle">Tu correo institucional identifica tu progreso.</h1>
+        <p>Ingresa <strong>únicamente</strong> tu correo institucional <strong>@ijr.edu.co</strong>. No se solicita contraseña, nombre, grupo, código ni existe acceso alternativo.</p>
         <form id="ijrSeminarAccessForm" novalidate>
           <label>
             Correo institucional
             <input id="ijrSeminarAccessEmail" type="email" inputmode="email" autocomplete="email"
                    placeholder="nombre.apellido@ijr.edu.co" value="${prefill.replace(/"/g, '&quot;')}" required>
           </label>
-          <button id="ijrSeminarAccessButton" type="submit">Ingresar</button>
+          <button id="ijrSeminarAccessButton" type="submit">Entrar a Seminario 11</button>
           <div id="ijrSeminarAccessStatus" class="ijr-access-status" role="status" aria-live="polite"></div>
         </form>
-        <div class="ijr-access-note">Acceso permitido únicamente para direcciones @ijr.edu.co.</div>
+        <div class="ijr-access-note">Solo pueden entrar cuentas institucionales activas de grado 11 registradas en el listado oficial de Seminario.</div>
       </div>
     `;
     document.body.appendChild(gate);
@@ -265,5 +269,6 @@
     mountGate();
   }
 
+  document.documentElement.dataset.ijrSeminarAccessBuild = BUILD_ID;
   boot().catch(() => mountGate());
 })();
