@@ -31,7 +31,7 @@ FRAME_WIDTH = 16.0
 FRAME_HEIGHT = 9.0
 SAFE_WIDTH = 14.75
 SAFE_HEIGHT = 7.65
-CONTENT_TOP_Y = 2.60
+CONTENT_TOP_Y = 2.42
 CONTENT_BOTTOM_Y = -4.05
 
 TIME_SCALE = float(os.getenv("LESSON_TIME_SCALE", "1.0"))
@@ -94,19 +94,19 @@ class JPClassroomScene(Scene):
 
     def set_header(self, number: int, title: str, subtitle: str) -> None:
         number_box = RoundedRectangle(
-            width=0.72,
-            height=0.52,
+            width=0.78,
+            height=0.58,
             corner_radius=0.10,
             stroke_color=BLACK_LINE,
             stroke_width=2.0,
             fill_color=WHITE,
             fill_opacity=1.0,
         )
-        number_text = self.text(f"{number:02d}", 23, BOLD).move_to(number_box)
-        title_text = self.text(title, 34, BOLD)
-        self.fit(title_text, SAFE_WIDTH - number_box.width - 0.38, 0.56)
+        number_text = self.text(f"{number:02d}", 25, BOLD).move_to(number_box)
+        title_text = self.text(title, 38, BOLD)
+        self.fit(title_text, SAFE_WIDTH - number_box.width - 0.40, 0.64)
         title_row = VGroup(VGroup(number_box, number_text), title_text).arrange(RIGHT, buff=0.25)
-        title_row.to_edge(UP, buff=0.16).to_edge(LEFT, buff=0.48)
+        title_row.to_edge(UP, buff=0.13).to_edge(LEFT, buff=0.48)
 
         rule = Line(LEFT * 7.48, RIGHT * 7.48, color=LIGHT_GRAY, stroke_width=2)
         rule.next_to(title_row, DOWN, buff=0.07)
@@ -122,30 +122,25 @@ class JPClassroomScene(Scene):
                     best = index
                     best_gap = gap
             subtitle_text = VGroup(
-                self.text(" ".join(words[:best]), 20),
-                self.text(" ".join(words[best:]), 20),
+                self.text(" ".join(words[:best]), 22),
+                self.text(" ".join(words[best:]), 22),
             ).arrange(DOWN, aligned_edge=LEFT, buff=0.04)
         else:
-            subtitle_text = self.text(subtitle, 21)
-        self.fit(subtitle_text, 14.25, 0.70)
-        subtitle_text.next_to(rule, DOWN, buff=0.08).align_to(title_row, LEFT)
+            subtitle_text = self.text(subtitle, 23)
+        self.fit(subtitle_text, 14.25, 0.78)
+        subtitle_text.next_to(rule, DOWN, buff=0.07).align_to(title_row, LEFT)
 
         new_header = VGroup(title_row, rule)
-        if self.header_group is None:
-            self.header_group = new_header
-            self.add(new_header)
-        else:
-            old_header = self.header_group
-            self.header_group = new_header
-            self.play(ReplacementTransform(old_header, new_header), run_time=RUN_QUICK)
+        # V2.1: remove the previous header completely before drawing the next one.
+        # This avoids glyph-to-glyph ReplacementTransform collisions during chapter changes.
+        if self.header_group is not None or self.subtitle_group is not None:
+            old_items = [m for m in (self.header_group, self.subtitle_group) if m is not None]
+            if old_items:
+                self.play(*[FadeOut(m) for m in old_items], run_time=0.38)
 
-        if self.subtitle_group is None:
-            self.subtitle_group = subtitle_text
-            self.add(subtitle_text)
-        else:
-            old_subtitle = self.subtitle_group
-            self.subtitle_group = subtitle_text
-            self.play(ReplacementTransform(old_subtitle, subtitle_text), run_time=RUN_QUICK)
+        self.header_group = new_header
+        self.subtitle_group = subtitle_text
+        self.play(FadeIn(new_header), FadeIn(subtitle_text), run_time=0.46)
 
     def clear_stage(self, keep_header: bool = True) -> None:
         keep_family_ids: set[int] = set()
