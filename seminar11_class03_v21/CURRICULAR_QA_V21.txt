@@ -1,0 +1,12 @@
+458:                tag = self.label_box("INITIALIZATION METHOD", width=3.15, height=0.55, size=18, bold=True).move_to(RIGHT * 4.7 + UP * 1.35)
+513:        right_title = self.t("OBJECT STATE", 25, BOLD).move_to(RIGHT * 3.6 + UP * 2.0)
+527:        panel, cl = self.make_code_panel(["def recharge(self, amount):", "    self.energy += amount"], width=6.8, font_size=25, title="METHOD CALL")
+634:        self.set_header(8, "CONSTRUCTOR VS METHOD", "Initialization happens at creation; methods express behavior afterward.")
+658:            self.label_box("METHOD", 2.2, 0.62, 21, True),
+725:            "M09 · CONSTRUCTORS, ATTRIBUTES & METHODS",
+749:            title="M09 · CONSTRUCTOR",
+786:            title="METHOD",
+798:            title="USAGE",
+832:            "OBJECT STATE",
+844:            "METHOD PARAMETER",
+930:        labels = ["CLASS", "ARGUMENTS", "CONSTRUCTOR", "INITIAL STATE", "VALID OBJECT", "METHODS / BEHAVIOR"]
