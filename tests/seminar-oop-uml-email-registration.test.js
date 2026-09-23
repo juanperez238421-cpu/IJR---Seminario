@@ -18,15 +18,15 @@ test('OOP + UML registration contains exactly one student credential field: inst
   assert.doesNotMatch(panel,/id="language"/);
   assert.doesNotMatch(panel,/type="password"/);
   assert.doesNotMatch(panel,/Full name/);
-  assert.match(html,/data-oop-uml-build="20260923-email-v11"/);
-  assert.match(html,/hub\.js\?v=20260923-email-v11/);
+  assert.match(html,/data-oop-uml-build="20260923-email-v12"/);
+  assert.match(html,/hub\.js\?v=20260923-email-v12/);
 });
 
 test('Supabase static host rewrites any legacy OOP + UML registration server-side', async()=>{
   const edge=await readFile('supabase/functions/seminar-t3-host/index.ts','utf8');
 
   assert.match(edge,/rewriteOopUmlHtml/);
-  assert.match(edge,/OOP_UML_EMAIL_BUILD = "20260923-email-v11"/);
+  assert.match(edge,/OOP_UML_EMAIL_BUILD = "20260923-email-v12"/);
   assert.match(edge,/X-IJR-Build/);
   assert.match(edge,/legacyOopUmlFields/);
   assert.match(edge,/Register the student or exact classroom team/);
