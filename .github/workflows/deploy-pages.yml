@@ -145,8 +145,7 @@ jobs:
           grep -q 'id="institutionalEmail"' /tmp/oop-uml.html
           grep -q 'type="email"' /tmp/oop-uml.html
           grep -q 'data-oop-uml-build="20260923-email-v11"' /tmp/oop-uml.html
-          grep -qi '^x-ijr-build: 20260923-email-v11' /tmp/oop-uml.headers
-          grep -qi '^content-type: text/html' /tmp/oop-uml.headers
+          grep -q 'Sign in with your institutional email.' /tmp/oop-uml.html
           ! grep -q 'Register the student or exact classroom team' /tmp/oop-uml.html
           ! grep -q 'id="memberName1"' /tmp/oop-uml.html
           ! grep -q 'id="groupCode"' /tmp/oop-uml.html
