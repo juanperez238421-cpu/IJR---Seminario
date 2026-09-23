@@ -4,7 +4,7 @@ const cfg=window.IJR_SEMINAR_T3_CONFIG;
 const data=window.IJR_OOP_UML_DATA;
 const store=new CourseStore(cfg);
 const $=id=>document.getElementById(id);
-const ACCESS_KEY='ijr-seminario-email-access-v1';
+const ACCESS_KEY='ijr-seminario-email-access-v2';
 let attempt=null;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
