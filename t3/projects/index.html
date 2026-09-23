@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Mi Proyecto · Seminario 11</title>
+  <link rel="stylesheet" href="../css/course.css?v=20260923-2">
+  <link rel="stylesheet" href="projects.css?v=20260923-1">
+  <script defer src="../config.js?v=20260824-1"></script>
+  <script type="module" src="projects.js?v=20260923-1"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">P</div>
+    <div>
+      <div class="eyebrow">Instituto Jorge Robledo · Seminario 11°</div>
+      <h1>Proyecto Personal</h1>
+    </div>
+  </div>
+  <nav class="top-actions">
+    <a href="../index.html" class="button ghost">Seminar Home</a>
+    <a href="../studio/" class="button ghost">Project Studio</a>
+  </nav>
+</header>
+
+<main class="project-shell">
+  <section class="project-intro">
+    <div class="hero-kicker">PERSONAL PROJECT MODULE</div>
+    <h2>Tu ruta. Tus instrucciones. Tu proyecto.</h2>
+    <p>Ingresa tu correo institucional para abrir únicamente el módulo que corresponde a tu proyecto. Si tu tema todavía no está cerrado, el módulo te guía para definirlo hoy sin obligarte a copiar el proyecto de otro estudiante del mismo track.</p>
+  </section>
+
+  <section id="accessPanel" class="access-card">
+    <div>
+      <div class="section-label">STUDENT ACCESS</div>
+      <h3>Correo institucional</h3>
+      <p>Usa tu correo <strong>@ijr.edu.co</strong>. Este acceso es de solo lectura: muestra tu ruta e instrucciones personalizadas.</p>
+    </div>
+    <form id="accessForm" class="access-form">
+      <label for="institutionalEmail">Correo institucional</label>
+      <div class="email-row">
+        <input id="institutionalEmail" type="email" autocomplete="email" inputmode="email" placeholder="nombre.apellido@ijr.edu.co" required>
+        <button class="button primary" type="submit">Abrir mi proyecto</button>
+      </div>
+      <div id="accessStatus" class="access-status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <section id="projectPanel" class="hidden">
+    <section class="student-project-head">
+      <div>
+        <div class="project-badges">
+          <span id="groupBadge" class="route-badge"></span>
+          <span id="trackBadge" class="route-badge soft"></span>
+          <span id="modeBadge" class="route-badge mode"></span>
+        </div>
+        <div class="section-label">YOUR PERSONAL ROUTE</div>
+        <h2 id="studentName"></h2>
+        <h3 id="projectTitle"></h3>
+        <p id="projectSummary" class="project-lead"></p>
+      </div>
+      <button id="changeEmail" class="button ghost" type="button">Cambiar correo</button>
+    </section>
+
+    <section id="defineToday" class="define-card">
+      <div class="define-heading">
+        <div>
+          <div class="section-label">TODAY · PROJECT DEFINITION</div>
+          <h3 id="defineTitle">Define el foco exacto</h3>
+        </div>
+        <span id="decisionBadge" class="decision-badge"></span>
+      </div>
+      <p id="decisionNote" class="define-copy"></p>
+      <ol id="definitionQuestions" class="question-list"></ol>
+    </section>
+
+    <section class="project-grid">
+      <article class="project-card">
+        <div class="section-label">OBJECTIVE</div>
+        <h3>Qué debes lograr</h3>
+        <p id="objective"></p>
+      </article>
+      <article class="project-card">
+        <div class="section-label">TECH STACK</div>
+        <h3>Herramientas base</h3>
+        <div id="stack" class="stack-list"></div>
+      </article>
+    </section>
+
+    <section id="safetyPanel" class="safety-card hidden">
+      <div class="section-label">SCOPE / SAFETY</div>
+      <p id="safetyScope"></p>
+    </section>
+
+    <section class="roadmap-panel">
+      <div class="section-label">8-SPRINT ROADMAP</div>
+      <h3>Desarrollo paso a paso</h3>
+      <p class="roadmap-copy">Cada sprint termina en una evidencia verificable. No avances solo porque el código “corre”: debes poder explicar qué construiste, probarlo y relacionarlo con el objetivo del proyecto.</p>
+      <div id="sprintGrid" class="sprint-grid"></div>
+    </section>
+
+    <section class="final-evidence">
+      <div>
+        <div class="section-label">FINAL DEFENSE</div>
+        <h3>Al final debes poder demostrar</h3>
+      </div>
+      <div class="evidence-grid">
+        <span>Problema y alcance</span>
+        <span>Diseño / UML</span>
+        <span>Repositorio GitHub</span>
+        <span>MVP funcional</span>
+        <span>Pruebas y QA</span>
+        <span>Defensa individual</span>
+      </div>
+    </section>
+  </section>
+</main>
+
+<footer class="course-footer">
+  <span>Seminario de Programación · Third Period 2026</span>
+  <span>Personal Project Module · read-only student access</span>
+</footer>
+</body>
+</html>
