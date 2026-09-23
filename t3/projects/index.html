@@ -6,9 +6,9 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Elige tu Proyecto · Seminario 11</title>
   <link rel="stylesheet" href="../css/course.css?v=20260923-2">
-  <link rel="stylesheet" href="projects.css?v=20260923-3">
+  <link rel="stylesheet" href="projects.css?v=20260923-4">
   <script defer src="../config.js?v=20260824-1"></script>
-  <script type="module" src="projects.js?v=20260923-3"></script>
+  <script type="module" src="projects.js?v=20260923-4"></script>
   <script src="../access-gate.js"></script>
 </head>
 <body>
@@ -30,14 +30,14 @@
   <section class="project-intro">
     <div class="hero-kicker">FINAL PROJECT DECISION</div>
     <h2>Elige, modifica y confirma tu proyecto.</h2>
-    <p>Abre tu perfil, revisa las opciones de tu ruta y decide qué vas a construir. Puedes tomar una propuesta como base y cambiar título, alcance, objetivo y herramientas antes de confirmarla.</p>
+    <p>Abre tu perfil y revisa tu estado. Si ya tienes un proyecto propuesto, puedes ajustarlo. Si aún no está definido, elige una opción entre las rutas disponibles o plantea tu propia idea y concrétala antes de confirmar.</p>
   </section>
 
   <section id="accessPanel" class="access-card">
     <div>
       <div class="section-label">STUDENT ACCESS</div>
       <h3>Abre tu perfil</h3>
-      <p>Usa tu correo institucional <strong>@ijr.edu.co</strong>. Solo verás las opciones asociadas a tu ruta de Seminario.</p>
+      <p>Usa exactamente el correo institucional <strong>@ijr.edu.co</strong> que aparece en el registro del estudiante. No se aceptan correos institucionales distintos al asociado a tu registro.</p>
     </div>
     <form id="accessForm" class="access-form">
       <label for="institutionalEmail">Correo institucional</label>
@@ -54,11 +54,12 @@
       <div>
         <div class="project-badges">
           <span id="groupBadge" class="route-badge"></span>
+          <span id="registeredEmailBadge" class="route-badge email-badge"></span>
           <span id="trackBadge" class="route-badge soft"></span>
           <span id="modeBadge" class="route-badge mode"></span>
           <span id="decisionBadgeTop" class="decision-badge"></span>
         </div>
-        <div class="section-label">CURRENT PROJECT</div>
+        <div id="currentProjectLabel" class="section-label">CURRENT PROJECT</div>
         <h2 id="studentName"></h2>
         <h3 id="projectTitle"></h3>
         <p id="projectSummary" class="project-lead"></p>
@@ -72,7 +73,7 @@
         <div>
           <div class="section-label">STEP 1 · CHOOSE A BASE</div>
           <h3>¿Qué proyecto vas a realizar?</h3>
-          <p>Selecciona una opción. La tarjeta solo carga una base: en el paso 2 puedes modificarla antes de guardarla.</p>
+          <p id="decisionLead">Selecciona una opción. La tarjeta solo carga una base: en el paso 2 puedes modificarla antes de guardarla.</p>
         </div>
         <span id="selectionBadge" class="selection-badge">Sin seleccionar</span>
       </div>
@@ -91,6 +92,19 @@
 
       <form id="decisionForm" class="decision-form">
         <input id="choiceKey" type="hidden">
+
+        <label id="trackField" class="field full">
+          <span>Ruta técnica</span>
+          <select id="trackSlugInput" required>
+            <option value="">Selecciona una ruta</option>
+            <option value="web">Web Development</option>
+            <option value="data-science">Python / Data Analyst</option>
+            <option value="cybersecurity">Defensive Cybersecurity</option>
+            <option value="3d-programming">3D + Printing</option>
+            <option value="robotics">Robotics</option>
+          </select>
+          <small>Al elegir una opción sugerida la ruta queda definida automáticamente. Si eliges “Mi propia idea”, selecciona aquí la ruta que corresponde.</small>
+        </label>
 
         <label class="field full">
           <span>Título del proyecto</span>
@@ -181,7 +195,7 @@
       <div id="contentGrid" class="content-grid"></div>
     </section>
 
-    <section class="roadmap-panel">
+    <section id="roadmapPanel" class="roadmap-panel">
       <div class="section-label">8-SPRINT ROADMAP</div>
       <h3>Desarrollo paso a paso</h3>
       <p class="roadmap-copy">Esta es la ruta base del proyecto. Después de confirmar tu decisión, úsala para construir evidencias verificables y ajusta el detalle con el docente cuando el alcance lo requiera.</p>
