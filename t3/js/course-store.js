@@ -63,6 +63,7 @@ export class CourseStore{
         const s=JSON.parse(sessionRaw);
         const data=await this.rpc(this.cfg.rpc.resume,{p_attempt_id:s.attemptId,p_attempt_token:s.token});
         const attempt=this._fromBackend(data.snapshot||data,s.token);
+        if(s.email)attempt.email=String(s.email).trim().toLowerCase();
         this.backend='supabase';
         this._saveLocal(attempt);
         return this.current();
@@ -119,7 +120,7 @@ export class CourseStore{
       p_session_id:uuid(),
       p_user_agent:navigator.userAgent
     });
-    sessionStorage.setItem(this.cfg.sessionKey,JSON.stringify({attemptId:data.attempt_id,token:data.attempt_token}));
+    sessionStorage.setItem(this.cfg.sessionKey,JSON.stringify({attemptId:data.attempt_id,token:data.attempt_token,email}));
     const attempt=this._fromBackend(data.snapshot,data.attempt_token);
     attempt.email=email;
     this.backend='supabase';

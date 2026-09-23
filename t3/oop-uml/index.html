@@ -13,7 +13,8 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="../config.js?v=20260824-1"></script>
   <script defer src="course-data.js?v=20260831-v1"></script>
-  <script type="module" src="hub.js?v=20260831-v1"></script>
+  <script src="../access-gate.js?v=20260923-email-v9"></script>
+  <script type="module" src="hub.js?v=20260923-email-v9"></script>
 </head>
 <body>
   <header class="topbar">
@@ -31,33 +32,25 @@
   <section id="registrationPanel" class="registration-screen">
     <div class="registration-card">
       <p class="eyebrow">SOFTWARE ENGINEERING STUDIO · COMMON CORE</p>
-      <h1>Model first. Code second.</h1>
-      <p class="registration-lead">Enter only your <strong>institutional email</strong>. The system resolves your official Seminar 11 identity and group automatically from the school roster. No password, name, group or team form is required.</p>
+      <h1>Institutional email only.</h1>
+      <p class="registration-lead">Seminar 11 now uses a single access field: your <strong>@ijr.edu.co institutional email</strong>. The system resolves your official name and group automatically. No password, name, group, language or team registration is requested.</p>
 
       <div class="sequence-rule">
         <strong>10-session progression</strong>
         <span>Objects → State → Constructors → Encapsulation → Relationships → Inheritance → Polymorphism → Architecture → Refactoring → Defense</span>
-        <small>Every session has a dedicated Theory page and a Workshop route. Python and Java share the same design language.</small>
+        <small>Every session has a dedicated Theory page and Workshop. Python is opened automatically for this Common Core route.</small>
       </div>
 
-      <form id="registrationForm" class="hub-registration-form">
-        <div class="registration-grid">
-          <label>Institutional email <small>· Correo institucional</small>
-            <input id="institutionalEmail" type="email" inputmode="email" autocomplete="email"
-                   placeholder="nombre.apellido@ijr.edu.co" required>
-          </label>
-        </div>
-        <div class="sequence-rule">
-          <strong>Automatic identity resolution</strong>
-          <span>Your institutional email is matched server-side against the official Grade 11 roster.</span>
-          <small>No password is requested. Your name and group are resolved automatically after validation.</small>
-        </div>
-        <div class="registration-actions">
-          <div><strong>Common Core rule</strong><span>predict → model → implement → test → explain. A program that only runs is not sufficient evidence of mastery.</span></div>
-          <button id="registerButton" class="button button-dark" type="submit">Enter with institutional email</button>
-        </div>
-        <p id="registrationStatus" class="inline-status" role="status" aria-live="polite"></p>
-      </form>
+      <div class="sequence-rule">
+        <strong>Automatic identity resolution</strong>
+        <span id="registrationStatus">Waiting for institutional email validation…</span>
+        <small>Your email is matched server-side with the official Grade 11 roster before the tracked OOP + UML session opens.</small>
+      </div>
+
+      <div class="registration-actions">
+        <div><strong>Common Core rule</strong><span>predict → model → implement → test → explain. A program that only runs is not sufficient evidence of mastery.</span></div>
+        <button id="retryEmailButton" class="button button-light" type="button">Change institutional email</button>
+      </div>
     </div>
   </section>
 

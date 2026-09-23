@@ -130,7 +130,14 @@ jobs:
           curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/projects.css" -o /tmp/projects.css
           grep -q "save_decision" /tmp/projects.js
           grep -q "option-card" /tmp/projects.css
-          echo "Production Project Decision Center is reachable and current."
+
+          curl -fsS --retry 2 --connect-timeout 10 "$BASE/oop-uml/" -o /tmp/oop-uml.html
+          curl -fsS --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js" -o /tmp/oop-uml-hub.js
+          curl -fsS --retry 2 --connect-timeout 10 "$BASE/access-gate.js" -o /tmp/access-gate.js
+          grep -q "Institutional email only" /tmp/oop-uml.html
+          grep -q "IJRSeminarAccess.ready" /tmp/oop-uml-hub.js
+          grep -q "seminar_email_access_v1" /tmp/access-gate.js
+          echo "Production Project Decision Center and OOP + UML email-only access are reachable and current."
       - name: Publish production routes
         shell: bash
         run: |

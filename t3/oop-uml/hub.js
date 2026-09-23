@@ -4,7 +4,6 @@ const cfg=window.IJR_SEMINAR_T3_CONFIG;
 const data=window.IJR_OOP_UML_DATA;
 const store=new CourseStore(cfg);
 const $=id=>document.getElementById(id);
-const ACCESS_KEY='ijr-seminario-email-access-v1';
 let attempt=null;
 
 function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -15,14 +14,18 @@ function language(){return attempt?.language||'python';}
 function status(topic){if(topicDone(topic))return {label:'Completed',cls:'done'};if(topicStarted(topic))return {label:'In progress',cls:''};return {label:'Available',cls:''};}
 function normalizeEmail(v){return String(v||'').trim().toLowerCase();}
 function institutionalEmail(v){return /^[^\s@]+@ijr\.edu\.co$/i.test(normalizeEmail(v));}
-function savedAccessEmail(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(ACCESS_KEY)||'null');
-    return saved&&institutionalEmail(saved.email)?normalizeEmail(saved.email):'';
-  }catch{return '';}
+function registrationMessage(message,type=''){
+  const el=$('registrationStatus');
+  if(!el)return;
+  el.textContent=message;
+  el.className=type?('inline-status '+type):'inline-status';
 }
-function saveAccessEmail(email){
-  localStorage.setItem(ACCESS_KEY,JSON.stringify({email:normalizeEmail(email),validatedAt:Date.now()}));
+function friendlyError(err){
+  const raw=String(err?.message||'');
+  if(raw.includes('institutional_email_not_registered'))return 'This institutional email is not linked to the official Grade 11 Seminar roster.';
+  if(raw.includes('institutional_email_required'))return 'Use only your institutional @ijr.edu.co email.';
+  if(raw.includes('invalid_student_group'))return 'Your institutional email was found, but the Grade 11 group could not be resolved.';
+  return raw||'The institutional session could not be opened.';
 }
 
 function render(){
@@ -32,6 +35,7 @@ function render(){
   $('sessionBadge').classList.toggle('hidden',!registered);
   $('switchButton').classList.toggle('hidden',!registered);
   if(!registered)return;
+
   const lang=language();
   const done=data.topics.filter(topicDone).length;
   const pct=Math.round(done/data.topics.length*100);
@@ -53,55 +57,51 @@ function render(){
   }).join('');
 }
 
-async function submitRegistration(ev){
-  ev.preventDefault();
-  const email=normalizeEmail($('institutionalEmail').value);
-  $('registrationStatus').className='inline-status';
-  if(!institutionalEmail(email)){
-    $('registrationStatus').classList.add('error');
-    $('registrationStatus').textContent='Use only your institutional @ijr.edu.co email.';
+async function openInstitutionalSession(){
+  render();
+  registrationMessage('Waiting for institutional email validation…');
+
+  if(!window.IJRSeminarAccess?.ready){
+    registrationMessage('Institutional email access gate is unavailable. Reload the page.','error');
     return;
   }
-  $('registrationStatus').textContent='Validating institutional email…';
-  $('registerButton').disabled=true;
+
   try{
-    attempt=await store.startWithEmail({email,language:'python'});
-    saveAccessEmail(email);
-    $('registrationStatus').classList.add('ok');
-    $('registrationStatus').textContent='Institutional identity verified.';
+    const access=await window.IJRSeminarAccess.ready;
+    const email=normalizeEmail(access?.email);
+    if(!institutionalEmail(email))throw new Error('institutional_email_required');
+
+    registrationMessage('Opening your official Seminar 11 profile…');
+
+    let restored=await store.restore();
+    if(restored&&normalizeEmail(restored.email)!==email){
+      store.reset();
+      restored=null;
+    }
+
+    attempt=restored||await store.startWithEmail({email,language:'python'});
+    attempt={...attempt,email};
     render();
   }catch(err){
-    $('registrationStatus').classList.add('error');
-    const raw=String(err?.message||'');
-    $('registrationStatus').textContent=raw.includes('institutional_email_not_registered')
-      ? 'This institutional email is not linked to the official Grade 11 roster.'
-      : raw.includes('institutional_email_required')
-        ? 'Use only your institutional @ijr.edu.co email.'
-        : (raw||'Registration failed.');
-  }finally{
-    $('registerButton').disabled=false;
+    attempt=null;
+    render();
+    registrationMessage(friendlyError(err),'error');
   }
 }
 
-$('registrationForm').addEventListener('submit',submitRegistration);
-$('switchButton').addEventListener('click',()=>{
-  if(confirm('Switch institutional email on this computer? Saved Supabase records are not deleted.')){
-    store.reset();
-    localStorage.removeItem(ACCESS_KEY);
-    attempt=null;
-    $('institutionalEmail').value='';
-    render();
+function changeEmail(){
+  store.reset();
+  if(window.IJRSeminarAccess?.logout){
+    window.IJRSeminarAccess.logout();
+    return;
   }
-});
+  localStorage.removeItem('ijr-seminario-email-access-v1');
+  location.reload();
+}
 
-store.restore().then(a=>{
-  const email=savedAccessEmail();
-  if(a&&email){
-    attempt={...a,email};
-    render();
-  }else{
-    if(a&&!email)store.reset();
-    attempt=null;
-    render();
-  }
-}).catch(()=>render());
+$('switchButton').addEventListener('click',()=>{
+  if(confirm('Switch institutional email on this computer? Saved Supabase records are not deleted.'))changeEmail();
+});
+$('retryEmailButton').addEventListener('click',changeEmail);
+
+openInstitutionalSession();
