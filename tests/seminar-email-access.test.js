@@ -21,10 +21,16 @@ const studentPages = [
   't3/tracks/web/index.html'
 ];
 
-test('all student-facing Seminar T3 pages load the institutional email gate', async () => {
+test('all student-facing Seminar T3 pages require institutional email access', async () => {
   for (const page of studentPages) {
     const html = await readFile(page, 'utf8');
-    assert.match(html, /access-gate\.js/, page + ' must load access-gate.js');
+    if (page === 't3/oop-uml/index.html') {
+      assert.match(html, /id="institutionalEmail"/, page + ' must expose the direct institutional email field');
+      assert.match(html, /type="email"/, page + ' must use an email input');
+      assert.doesNotMatch(html, /id="memberName1"|id="groupCode"|id="registrationMode"/, page + ' must not expose legacy manual identity fields');
+    } else {
+      assert.match(html, /access-gate\.js/, page + ' must load access-gate.js');
+    }
   }
 });
 
