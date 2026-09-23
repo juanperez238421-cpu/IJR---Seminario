@@ -1,7 +1,7 @@
 const FUNCTION_NAME = "seminar-t3-host";
 const UPSTREAM_BASE = "https://raw.githubusercontent.com/juanperez238421-cpu/IJR---Seminario/main/t3/";
 const REPO_HOME = "https://github.com/juanperez238421-cpu/IJR---Seminario";
-const OOP_UML_EMAIL_BUILD = "20260923-email-v11";
+const OOP_UML_EMAIL_BUILD = "20260923-email-v12";
 const OOP_UML_REGISTRATION_PANEL = `  <section id="registrationPanel" class="registration-screen">
     <div class="registration-card">
       <p class="eyebrow">SOFTWARE ENGINEERING STUDIO · COMMON CORE</p>
@@ -178,7 +178,8 @@ Deno.serve(async (req: Request) => {
 
   const isOopUmlIndex = route.path === "oop-uml/index.html";
   const isOopUmlHubJs = route.path === "oop-uml/hub.js";
-  if (isOopUmlIndex || isOopUmlHubJs) {
+  const isEmailGate = route.path === "access-gate.js";
+  if (isOopUmlIndex || isOopUmlHubJs || isEmailGate) {
     headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
     headers.set("Pragma", "no-cache");
     headers.set("Expires", "0");
