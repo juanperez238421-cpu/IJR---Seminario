@@ -1,0 +1,24 @@
+14:- Python __init__ + self + instance attributes
+262:        title = self.text("CONSTRUCTORS & VALID STATE", 49, BOLD).move_to(UP * 0.85)
+408:    # 04 — Python __init__ and parameter -> attribute
+411:        self.set_header(4, "PYTHON: __init__ BUILDS THE INITIAL STATE", "Syntax now follows the mental model: receive required data, then store object state.")
+414:            "    def __init__(self, name, energy, position):",
+415:            "        self.name = name",
+455:            self.mono('atlas = Robot("Atlas", 90, 0)', 26, BOLD),
+459:        class_text = VGroup(self.text("ROBOT CLASS", 22, BOLD), self.mono("same __init__", 20)).arrange(DOWN, buff=0.15).move_to(class_box)
+532:        valid_call = self.mono('Robot("Atlas", 90, 0)', 29, BOLD).move_to(LEFT * 3.80 + UP * 1.70)
+538:        invalid_call = self.mono('Robot("Scout", -25, 0)', 29, BOLD).move_to(RIGHT * 3.80 + UP * 1.70)
+551:            "    def __init__(self, name, energy, position):",
+554:            "        self.name = name",
+561:        bad = self.tag('Robot("Scout", -25, 0)', 3.35, 0.62, 18).next_to(gate, UP, buff=0.34)
+588:            self.mono('Robot("Atlas", 90, 0)', 24), self.text("↓", 28), self.mono("__init__()", 25, BOLD), self.text("↓", 28), self.tag("atlas exists", 2.15, 0.58, 20, filled=True)
+623:        code_line = self.mono("def __init__(self, name, energy, position):", 21, BOLD).move_to(code_box)
+656:            "    def __init__(self, valor, unidad):",
+657:            "        self.valor = valor",
+694:            self.text("WHY DOES self.valor REMAIN AFTER __init__ FINISHES,", 27, BOLD),
+728:            self.mono('Robot("Atlas", 90, 0)', 25, BOLD),
+754:            "WHEN DOES __init__ RUN?",
+756:            'WHY IS Robot("Atlas", 90, 0) SAFER THAN Robot() + PATCHES?',
+757:            'WHAT SHOULD HAPPEN WITH Robot("Scout", -25, 0)?',
+825:            self.text("1 · THREE valid objects", 26),
+836:        cls = self.text("CLASS 03 · CONSTRUCTORS & VALID STATE", 31, BOLD).move_to(UP * 2.25)
