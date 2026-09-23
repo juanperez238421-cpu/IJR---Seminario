@@ -16,7 +16,7 @@ type Option = {
   summary: string;
   objective: string;
   stack: string[];
-  track_slug: string;
+  track_slug?: string;
   kind: "teacher" | "curated" | "custom";
 };
 
