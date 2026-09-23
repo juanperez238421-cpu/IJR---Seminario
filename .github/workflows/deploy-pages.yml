@@ -1,4 +1,4 @@
-name: Deploy Seminar T3 to GitHub Pages
+name: Validate Seminar T3 Production Host
 
 on:
   push:
@@ -21,11 +21,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: seminar-t3-production
   cancel-in-progress: true
 
 jobs:
@@ -108,30 +106,35 @@ jobs:
           grep -q "oop-uml/" t3/index.html
       - name: Run JavaScript contract tests
         run: npm test
-  deploy:
+
+  production-smoke:
     if: github.event_name != 'pull_request'
     needs: validate
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/configure-pages@v6
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: .
-      - id: deployment
-        uses: actions/deploy-pages@v4
-      - name: Publish student URLs
+      - name: Smoke-test live Supabase static host
         shell: bash
         run: |
-          echo "### Seminar T3 student routes" >> "$GITHUB_STEP_SUMMARY"
-          echo "- T3 course: ${{ steps.deployment.outputs.page_url }}t3/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Project Decision Center: ${{ steps.deployment.outputs.page_url }}t3/projects/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- OOP + UML Learning Hub: ${{ steps.deployment.outputs.page_url }}t3/oop-uml/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Software Engineering Studio: ${{ steps.deployment.outputs.page_url }}t3/studio/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Common Core schedule: ${{ steps.deployment.outputs.page_url }}t3/common/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Specialized tracks: ${{ steps.deployment.outputs.page_url }}t3/tracks/" >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          BASE="https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host"
+          ok=0
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/" -o /tmp/projects.html               && grep -q "Project Decision Center" /tmp/projects.html; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          test "$ok" -eq 1
+          curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/projects.js" -o /tmp/projects.js
+          curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/projects.css" -o /tmp/projects.css
+          grep -q "save_decision" /tmp/projects.js
+          grep -q "option-card" /tmp/projects.css
+          echo "Production Project Decision Center is reachable and current."
+      - name: Publish production routes
+        shell: bash
+        run: |
+          echo "### Seminar T3 production routes" >> "$GITHUB_STEP_SUMMARY"
+          echo "- T3 course: https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project Decision Center: https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/projects/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project Studio: https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/studio/" >> "$GITHUB_STEP_SUMMARY"
