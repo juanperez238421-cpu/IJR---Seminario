@@ -127,6 +127,7 @@ function renderOptions(){
         <span class="option-label">${esc(option.label)}</span>
         <span class="option-kind ${esc(option.kind)}">${esc(kindLabel[option.kind]||'Opción')}</span>
       </div>
+      ${option.track_slug?`<div class='option-track'>${esc(trackNames[option.track_slug]||option.track_slug)}</div>`:''}
       <h4>${esc(option.title||'Escribir mi propio proyecto')}</h4>
       <p>${esc(option.summary||'Define libremente qué quieres construir dentro de tu ruta actual.')}</p>
       <div class="option-stack">${(option.stack||[]).slice(0,4).map(x=>`<span>${esc(x)}</span>`).join('')}</div>
@@ -145,11 +146,16 @@ function render(data){
 
   $('studentName').textContent=s.name;
   $('groupBadge').textContent=s.group_code;
-  $('trackBadge').textContent=trackNames[p.track_slug]||p.track_slug;
-  $('modeBadge').textContent=p.project_mode==='fixed'?'Proyecto específico':'Ruta flexible';
+  $('registeredEmailBadge').textContent=s.institutional_email||state.email;
+  $('trackBadge').textContent=p.track_slug?(trackNames[p.track_slug]||p.track_slug):'Ruta por elegir';
+  $('modeBadge').textContent=!p.is_defined?'Proyecto por definir':(p.project_mode==='fixed'?'Proyecto específico':'Ruta flexible');
   $('modeBadge').dataset.mode=p.project_mode||'guided_definition';
+  $('currentProjectLabel').textContent=p.is_defined?'CURRENT PROJECT':'PROJECT STATUS';
   $('projectTitle').textContent=p.project_title;
   $('projectSummary').textContent=p.project_summary;
+  $('decisionLead').textContent=p.is_defined
+    ?'Selecciona una opción de tu ruta. La tarjeta carga una base y en el paso 2 puedes modificarla antes de guardar.'
+    :'Aún no tienes un proyecto definido. Revisa las opciones de las cinco rutas, selecciona una base o usa “Mi propia idea” y después concreta el alcance.';
 
   const decisionText=decisionNames[p.decision_status]||p.decision_status||'Por confirmar';
   $('decisionBadgeTop').textContent=decisionText;
@@ -169,8 +175,10 @@ function render(data){
   $('definitionQuestions').innerHTML=questions.map(q=>'<li>'+esc(q)+'</li>').join('');
   $('defineToday').classList.toggle('hidden',questions.length===0&&!p.decision_note);
 
-  $('objective').textContent=p.objective;
-  $('stack').innerHTML=(p.stack||[]).map(x=>'<span>'+esc(x)+'</span>').join('');
+  $('objective').textContent=p.objective||'Aún por definir.';
+  $('stack').innerHTML=(p.stack||[]).length
+    ?(p.stack||[]).map(x=>'<span>'+esc(x)+'</span>').join('')
+    :'<span class="empty-chip">Aún por definir</span>';
   if(p.safety_scope){
     $('safetyScope').textContent=p.safety_scope;
     $('safetyPanel').classList.remove('hidden');
@@ -194,7 +202,8 @@ function render(data){
   `).join('');
   $('contentPanel').classList.toggle('hidden',contentSections.length===0);
 
-  $('sprintGrid').innerHTML=(p.sprints||[]).map(step=>`
+  const sprints=Array.isArray(p.sprints)?p.sprints:[];
+  $('sprintGrid').innerHTML=sprints.map(step=>`
     <article class="sprint-card">
       <div class="sprint-number">S${esc(step.n)}</div>
       <div>
@@ -204,13 +213,24 @@ function render(data){
       </div>
     </article>
   `).join('');
+  $('roadmapPanel').classList.toggle('hidden',sprints.length===0);
 
   renderOptions();
   selectedKey=p.student_choice_key&&state.options.some(x=>x.key===p.student_choice_key)
     ?p.student_choice_key
-    :'teacher-proposal';
+    :(p.is_defined&&state.options.some(x=>x.key==='teacher-proposal')?'teacher-proposal':'');
   updateSelectionUI();
-  fillEditor(p);
+
+  const route=$('trackSlugInput');
+  route.value=p.track_slug||'';
+  route.disabled=Boolean(p.is_defined);
+
+  if(p.is_defined){
+    fillEditor(p);
+  }else{
+    fillEditor({title:'',summary:'',objective:'',stack:[]});
+    setStatus('decisionStatus','No hay proyecto guardado todavía. Selecciona una opción y concreta tu propuesta.','info');
+  }
   $('studentNote').value=p.student_decision_note||'';
   $('studentCode').value='';
   $('finalConfirm').checked=false;
