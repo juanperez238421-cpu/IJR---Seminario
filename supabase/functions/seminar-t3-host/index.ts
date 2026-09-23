@@ -1,7 +1,7 @@
 const FUNCTION_NAME = "seminar-t3-host";
 const UPSTREAM_BASE = "https://raw.githubusercontent.com/juanperez238421-cpu/IJR---Seminario/main/t3/";
 const REPO_HOME = "https://github.com/juanperez238421-cpu/IJR---Seminario";
-const OOP_UML_EMAIL_BUILD = "20260923-email-v13";
+const OOP_UML_EMAIL_BUILD = "20260923-email-v14";
 const OOP_UML_REGISTRATION_PANEL = `  <section id="registrationPanel" class="registration-screen">
     <div class="registration-card">
       <p class="eyebrow">SOFTWARE ENGINEERING STUDIO · COMMON CORE</p>
