@@ -281,6 +281,7 @@ $('decisionForm').addEventListener('submit',async e=>{
     return;
   }
 
+  const trackSlug=$('trackSlugInput').value.trim();
   const title=$('projectTitleInput').value.trim();
   const summary=$('projectSummaryInput').value.trim();
   const objective=$('objectiveInput').value.trim();
@@ -288,6 +289,11 @@ $('decisionForm').addEventListener('submit',async e=>{
   const editToken=localStorage.getItem(STUDIO_TOKEN_KEY)||'';
   const studentCode=$('studentCode').value.trim();
 
+  if(!trackSlug){
+    setStatus('decisionStatus','Selecciona la ruta técnica del proyecto.','error');
+    $('trackSlugInput').focus();
+    return;
+  }
   if(title.length<3||summary.length<10||objective.length<10){
     setStatus('decisionStatus','Completa título, descripción y objetivo con suficiente detalle.','error');
     return;
@@ -306,6 +312,7 @@ $('decisionForm').addEventListener('submit',async e=>{
       action:'save_decision',
       email:state.email,
       choice_key:selectedKey,
+      track_slug:trackSlug,
       project_title:title,
       project_summary:summary,
       objective,
@@ -315,7 +322,7 @@ $('decisionForm').addEventListener('submit',async e=>{
       student_code:studentCode||null
     });
     render(data);
-    setStatus('decisionStatus','Proyecto confirmado. Tu elección y esta versión quedaron registradas.','ok');
+    setStatus('decisionStatus','Proyecto confirmado. La ruta, la opción elegida y esta versión quedaron registradas.','ok');
   }catch(error){
     setStatus('decisionStatus',friendlyError(error.code||error.message),'error');
   }finally{
