@@ -240,6 +240,7 @@ function projectPayload(project: ProjectRow) {
     objective: project.objective,
     stack: project.stack,
     safety_scope: project.safety_scope,
+    content_sections: project.content_sections,
     sprints: project.sprints,
     assignment_status: project.assignment_status,
     decision_status: project.decision_status,
@@ -310,7 +311,7 @@ Deno.serve(async (req: Request) => {
       return json(origin, 404, { error: "project_access_denied" });
     }
 
-    const projectSelect = "group_code,student_name,project_slug,track_slug,project_title,project_summary,objective,stack,initial_project_title,initial_project_summary,initial_objective,initial_stack,safety_scope,sprints,assignment_status,decision_status,decision_note,project_mode,definition_questions,student_choice_key,student_decision_note,student_decided_at,student_revision_count,updated_at";
+    const projectSelect = "group_code,student_name,project_slug,track_slug,project_title,project_summary,objective,stack,initial_project_title,initial_project_summary,initial_objective,initial_stack,safety_scope,content_sections,sprints,assignment_status,decision_status,decision_note,project_mode,definition_questions,student_choice_key,student_decision_note,student_decided_at,student_revision_count,updated_at";
     const [projectResult, rosterResult] = await Promise.all([
       admin.from("seminar_student_projects").select(projectSelect).eq("student_registry_id", identity.student_registry_id).maybeSingle(),
       admin.from("student_registry").select("display_name,group_code,active").eq("id", identity.student_registry_id).maybeSingle(),
