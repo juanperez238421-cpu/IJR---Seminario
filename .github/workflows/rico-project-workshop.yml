@@ -114,4 +114,4 @@ jobs:
 
           check_route "https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/projects/index.html" "student-workshops/rico-paramo/theory.html?class=1"
           check_route "$base/rico-course-data.js" "IJR_RICO_PROJECT_DATA"
-          check_route "$base/rico-pages.js" "data-rico-page"
+          check_route "$base/rico-pages.js" "dataset.ricoPage"
