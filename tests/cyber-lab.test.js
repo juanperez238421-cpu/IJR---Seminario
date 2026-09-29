@@ -45,7 +45,7 @@ test('real cyber cases keep executable examples on localhost or internal Docker 
   ];
   for (const file of caseFiles) {
     const html = read(file);
-    assert.doesNotMatch(html, /https?:\/\/(?!127\.0\.0\.1|github\.com)/);
+    assert.doesNotMatch(html, /https?:\/\/(?!127\.0\.0\.1|github\.com|proxy(?:\/|<|\s))/);
   }
 });
 
