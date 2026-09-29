@@ -62,13 +62,24 @@ test('Rico Theory and Workshop subpages use the senior Seminar format', () => {
   assert.match(workshop, /id="workshopStages"/);
 });
 
-test('Rico hub exposes explicit Theory and Workshop links for all four classes', () => {
+test('Rico hub exposes the complete eight-stage build process and all four class entry points', () => {
   const hub = fs.readFileSync(path.join(RICO, 'index.html'), 'utf8');
+  const progress = fs.readFileSync(path.join(RICO, 'hub.js'), 'utf8');
 
+  assert.match(hub, /Build the complete project, stage by stage/);
+  assert.match(hub, /8 stages · 4 construction classes/);
+  for (let n = 1; n <= 8; n += 1) {
+    assert.match(hub, new RegExp(`id="stage-0?${n}"`));
+    assert.match(hub, new RegExp(`data-stage="${n}"`));
+  }
   for (let n = 1; n <= 4; n += 1) {
     assert.match(hub, new RegExp(`theory\\.html\\?class=${n}`));
     assert.match(hub, new RegExp(`workshop\\.html\\?class=${n}`));
   }
+  assert.match(hub, /SCOPE \/ SAFETY/);
+  assert.match(hub, /No hidden autorun, persistence, control evasion or malware-like behavior/);
+  assert.match(progress, /ijr-rico-portable-build-progress-v1/);
+  assert.match(progress, /localStorage/);
 });
 
 test('Project Decision Center renders dedicated Rico Theory and Workshop actions', () => {
@@ -93,6 +104,7 @@ test('Rico page scripts and all referenced local senior assets exist', () => {
     't3/projects/student-workshops/rico-paramo/rico-course-data.js',
     't3/projects/student-workshops/rico-paramo/rico-pages.js',
     't3/projects/student-workshops/rico-paramo/rico-pages.css',
+    't3/projects/student-workshops/rico-paramo/hub.js',
     't3/oop-uml/styles.css',
     't3/oop-uml/workshop-colab.css',
     't3/access-gate.js'
