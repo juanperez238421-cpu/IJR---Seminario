@@ -88,6 +88,11 @@ jobs:
           grep -q 'seminar-project-access' t3/projects/projects.js
           grep -q 'save_decision' t3/projects/projects.js
           grep -q 'Project Decision Center' t3/projects/index.html
+          grep -q 'PERSONAL PROJECT BUILD · 4 CONSTRUCTION CLASSES' t3/projects/index.html
+          ! grep -Eqi '8 STAGES / 4 CLASSES|eight-stage build|8-sprint personal roadmap' t3/projects/index.html
+          grep -q 'Build the complete project in four construction classes' t3/projects/student-workshops/rico-paramo/index.html
+          ! grep -Eqi '8 stages · 4 construction classes|eight engineering stages|8-sprint personal roadmap' t3/projects/student-workshops/rico-paramo/index.html
+          grep -q 'Development route · 4 construction classes' t3/studio/app.js
           for track in web data-science cybersecurity 3d-programming robotics; do test -s "t3/tracks/$track/index.html"; done
       - name: Validate OOP + UML Learning Hub
         shell: bash
@@ -143,6 +148,15 @@ jobs:
           curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/projects.css" -o /tmp/projects.css
           grep -q "save_decision" /tmp/projects.js
           grep -q "option-card" /tmp/projects.css
+
+          grep -q 'PERSONAL PROJECT BUILD · 4 CONSTRUCTION CLASSES' /tmp/projects.html
+          ! grep -Eqi '8 STAGES / 4 CLASSES|eight-stage build|8-sprint personal roadmap' /tmp/projects.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/projects/student-workshops/rico-paramo/index.html?v=20260929-class-v5" -o /tmp/rico-project.html
+          grep -q 'Build the complete project in four construction classes' /tmp/rico-project.html
+          grep -q '4 construction classes · 4 class gates' /tmp/rico-project.html
+          ! grep -Eqi '8 stages · 4 construction classes|eight engineering stages|8-sprint personal roadmap' /tmp/rico-project.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/studio/app.js?v=20260929-class-v5" -o /tmp/studio-app.js
+          grep -q 'Development route · 4 construction classes' /tmp/studio-app.js
 
           curl -fsS -D /tmp/oop-uml.headers -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/?v=20260923-email-v14" -o /tmp/oop-uml.html
           curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js?v=20260923-email-v14" -o /tmp/oop-uml-hub.js
