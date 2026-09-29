@@ -71,6 +71,12 @@ function updateSelectionUI(){
   $('selectionBadge').classList.toggle('active',Boolean(option));
   $('choiceKey').value=selectedKey;
 }
+function updateCyberCaseLibrary(trackSlug=''){
+  const panel=$('cyberCaseLibrary');
+  if(!panel)return;
+  panel.classList.toggle('hidden',trackSlug!=='cybersecurity');
+}
+
 function fillEditor(values,{clearNote=false}={}){
   $('projectTitleInput').value=values?.title??values?.project_title??'';
   $('projectSummaryInput').value=values?.summary??values?.project_summary??'';
@@ -90,6 +96,7 @@ function chooseOption(key,{silent=false}={}){
   if(option.track_slug)route.value=option.track_slug;
   else if(!route.value&&state.project?.track_slug)route.value=state.project.track_slug;
   route.disabled=Boolean(state.project?.is_defined)||option.kind!=='custom';
+  updateCyberCaseLibrary(option.track_slug||route.value||'');
 
   if(key==='custom'){
     $('projectTitleInput').focus();
@@ -115,6 +122,7 @@ function restoreCurrent(){
   const route=$('trackSlugInput');
   route.value=p.track_slug||'';
   route.disabled=Boolean(p.is_defined);
+  updateCyberCaseLibrary(route.value||'');
 
   $('studentNote').value=p.student_decision_note||'';
   setStatus('decisionStatus',p.is_defined?'Se recuperó la última versión guardada.':'Aún no hay proyecto guardado. Selecciona una opción para comenzar.','info');
@@ -148,6 +156,7 @@ function render(data){
   $('groupBadge').textContent=s.group_code;
   $('registeredEmailBadge').textContent=s.institutional_email||state.email;
   $('trackBadge').textContent=p.track_slug?(trackNames[p.track_slug]||p.track_slug):'Ruta por elegir';
+  updateCyberCaseLibrary(p.track_slug||'');
   $('modeBadge').textContent=!p.is_defined?'Proyecto por definir':(p.project_mode==='fixed'?'Proyecto específico':'Ruta flexible');
   $('modeBadge').dataset.mode=p.project_mode||'guided_definition';
   $('currentProjectLabel').textContent=p.is_defined?'CURRENT PROJECT':'PROJECT STATUS';
@@ -330,6 +339,7 @@ $('decisionForm').addEventListener('submit',async e=>{
   }
 });
 
+$('trackSlugInput').addEventListener('change',e=>updateCyberCaseLibrary(e.target.value));
 $('restoreCurrent').addEventListener('click',restoreCurrent);
 $('changeEmail').addEventListener('click',()=>{
   $('institutionalEmail').value='';
