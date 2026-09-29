@@ -1,0 +1,57 @@
+name: Rico Project Workshop QA
+
+on:
+  pull_request:
+    paths:
+      - "t3/projects/student-workshops/rico-paramo/**"
+      - "t3/projects/index.html"
+      - "t3/projects/projects.js"
+      - "t3/projects/projects.css"
+      - ".github/workflows/rico-project-workshop.yml"
+  push:
+    branches: [main]
+    paths:
+      - "t3/projects/student-workshops/rico-paramo/**"
+      - ".github/workflows/rico-project-workshop.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: t3/projects/student-workshops/rico-paramo/reference_project
+    env:
+      SDL_VIDEODRIVER: dummy
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: t3/projects/student-workshops/rico-paramo/reference_project/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest==8.4.2
+
+      - name: Compile Python source
+        run: python -m compileall -q .
+
+      - name: Headless functional tests
+        run: python -m pytest -q tests
+
+      - name: Verify four workshop classes exist
+        working-directory: t3/projects/student-workshops/rico-paramo
+        run: |
+          test -s class-01-foundation.html
+          test -s class-02-engine.html
+          test -s class-03-portable.html
+          test -s class-04-qa-defense.html
+          grep -q "Class 1 gate" class-01-foundation.html
+          grep -q "Class 2 gate" class-02-engine.html
+          grep -q "Class 3 gate" class-03-portable.html
+          grep -q "Final project gate" class-04-qa-defense.html

@@ -88,6 +88,19 @@ function updateTrackProjectLibraries(trackSlug=''){
   updatePythonAnimationProject(trackSlug);
 }
 
+function updateStudentWorkshop(student,project){
+  const panel=$('ricoWorkshopPanel');
+  if(!panel)return;
+
+  const name=String(student?.name||'').trim().toUpperCase();
+  const title=String(project?.project_title||'').trim();
+
+  const isRico=name==='RICO PARAMO ALEJANDRO'
+    && title==='Portable Python Visual Show — USB Launcher & Procedural Animation';
+
+  panel.classList.toggle('hidden',!isRico);
+}
+
 function fillEditor(values,{clearNote=false}={}){
   $('projectTitleInput').value=values?.title??values?.project_title??'';
   $('projectSummaryInput').value=values?.summary??values?.project_summary??'';
@@ -165,6 +178,7 @@ function render(data){
 
   $('studentName').textContent=s.name;
   $('groupBadge').textContent=s.group_code;
+  updateStudentWorkshop(s,p);
   $('registeredEmailBadge').textContent=s.institutional_email||state.email;
   $('trackBadge').textContent=p.track_slug?(trackNames[p.track_slug]||p.track_slug):'Ruta por elegir';
   updateTrackProjectLibraries(p.track_slug||'');
