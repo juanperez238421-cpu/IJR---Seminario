@@ -347,9 +347,9 @@ function render(data){
 
   const sprints=Array.isArray(p.sprints)?p.sprints:[];
   if(ricoProject){
-    $('roadmapLabel').textContent='4-CLASS CONSTRUCTION ROADMAP';
-    $('roadmapTitle').textContent='Theory → workshop → test → evidence';
-    $('roadmapCopy').textContent='This project is structured as exactly four construction classes. Every class combines theory, workshop implementation, testing, evidence and a mandatory gate before the next class.';
+    $('roadmapLabel').textContent='4 CONSTRUCTION CLASSES · 8-STAGE BUILD';
+    $('roadmapTitle').textContent='Four class gates organize the complete build process';
+    $('roadmapCopy').textContent='The dedicated Rico build page expands these four classes into eight sequential stages. Use this class roadmap for Theory/Workshop entry points, then complete each stage test, evidence check and gate in the full build process.';
     $('sprintGrid').innerHTML=renderRicoRoadmap(sprints);
   }else{
     $('roadmapLabel').textContent='PROJECT ROADMAP';
