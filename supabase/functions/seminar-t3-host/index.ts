@@ -54,7 +54,7 @@ const MIME: Record<string, string> = {
 
 function headersFor(path: string): Headers {
   const ext = path.split(".").pop()?.toLowerCase() ?? "";
-  const noStore = ext === "html" || path.startsWith("oop-uml/") || path === "access-gate.js";
+  const noStore = ext === "html" || path.startsWith("oop-uml/") || path.startsWith("projects/") || path.startsWith("studio/") || path === "access-gate.js";
   return new Headers({
     "Content-Type": MIME[ext] ?? "application/octet-stream",
     "X-Content-Type-Options": "nosniff",
