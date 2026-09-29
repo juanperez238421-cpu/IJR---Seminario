@@ -58,10 +58,10 @@
         ]
       },
       {
-        "slug":"3d-programming","title":"3D Design + Programming","stack":["Python/Three.js/CAD scripting","coordinates","parametric geometry","transformations","assemblies"],"project":"Parametric 3D Generator","examples":["Mechanical part","Room","Furniture","Structure","Geometric solid system"],
+        "slug":"3d-programming","title":"3D Design + Programming","stack":["Autodesk Fusion","parametric CAD","3D printing","Python/Three.js/CAD scripting","coordinates","transformations","assemblies"],"project":"Parametric 3D Generator","examples":["Mechanical part","Room","Furniture","Structure","Geometric solid system"],
         "sprints":[
-          {"n":1,"title":"Geometry requirement","goal":"Define dimensions, parameters and expected generated object.","deliverable":"Dimension sheet + MVP"},
-          {"n":2,"title":"Geometry objects + UML V1","goal":"Model Shape, Solid, Transform and Assembly.","deliverable":"UML V1 + coordinate convention"},
+          {"n":1,"title":"Fusion onboarding + design brief","goal":"Create/verify Autodesk access, identify the Fusion interface and parametric CAD concepts, complete the first dimension-driven part, then define the project dimensions and parameters.","deliverable":"Fusion access verified + parametric keychain plate evidence + dimension sheet + MVP"},
+          {"n":2,"title":"Geometry objects + UML V1","goal":"Model Shape, Solid, Transform and Assembly responsibilities and define the coordinate convention before expanding the CAD model.","deliverable":"UML V1 + coordinate convention"},
           {"n":3,"title":"Primitive generator","goal":"Create parameter-driven base geometry.","deliverable":"First generated model"},
           {"n":4,"title":"OOP transformations","goal":"Encapsulate translation, rotation, scale or extrusion behavior.","deliverable":"Reusable geometry classes"},
           {"n":5,"title":"Composition","goal":"Build a larger object from reusable parts.","deliverable":"Assembly model + UML relation"},
