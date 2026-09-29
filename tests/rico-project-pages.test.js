@@ -62,35 +62,39 @@ test('Rico Theory and Workshop subpages use the senior Seminar format', () => {
   assert.match(workshop, /id="workshopStages"/);
 });
 
-test('Rico hub exposes the complete eight-stage build process and all four class entry points', () => {
+test('Rico hub exposes exactly four construction classes and no legacy eight-stage roadmap', () => {
   const hub = fs.readFileSync(path.join(RICO, 'index.html'), 'utf8');
   const progress = fs.readFileSync(path.join(RICO, 'hub.js'), 'utf8');
 
-  assert.match(hub, /Build the complete project, stage by stage/);
-  assert.match(hub, /8 stages · 4 construction classes/);
-  for (let n = 1; n <= 8; n += 1) {
-    assert.match(hub, new RegExp(`id="stage-0?${n}"`));
-    assert.match(hub, new RegExp(`data-stage="${n}"`));
-  }
+  assert.match(hub, /Build the complete project in four construction classes/);
+  assert.match(hub, /4 construction classes · 4 class gates/);
   for (let n = 1; n <= 4; n += 1) {
+    assert.match(hub, new RegExp(`id="class-0?${n}"`));
+    assert.match(hub, new RegExp(`data-class="${n}"`));
     assert.match(hub, new RegExp(`theory\\.html\\?class=${n}`));
     assert.match(hub, new RegExp(`workshop\\.html\\?class=${n}`));
   }
+  assert.doesNotMatch(hub, /8-sprint personal roadmap|8 stages · 4 construction classes|eight engineering stages|data-stage=/i);
   assert.match(hub, /SCOPE \/ SAFETY/);
   assert.match(hub, /No hidden autorun, persistence, control evasion or malware-like behavior/);
-  assert.match(progress, /ijr-rico-portable-build-progress-v1/);
+  assert.match(progress, /ijr-rico-four-class-progress-v2/);
+  assert.match(progress, /All four construction classes are complete/);
   assert.match(progress, /localStorage/);
 });
 
-test('Project Decision Center renders dedicated Rico Theory and Workshop actions', () => {
+test('Project Decision Center renders the consolidated four-class Rico route', () => {
   const index = read('t3/projects/index.html');
   const js = read('t3/projects/projects.js');
 
+  assert.match(index, /PERSONAL PROJECT BUILD · 4 CONSTRUCTION CLASSES/);
+  assert.doesNotMatch(index, /8 STAGES \/ 4 CLASSES|eight-stage build|8-sprint personal roadmap/i);
   for (let n = 1; n <= 4; n += 1) {
     assert.match(index, new RegExp(`rico-paramo/theory\\.html\\?class=${n}`));
     assert.match(index, new RegExp(`rico-paramo/workshop\\.html\\?class=${n}`));
   }
 
+  assert.match(js, /4 CONSTRUCTION CLASSES/);
+  assert.match(js, /there is no separate eight-sprint roadmap for this student/);
   assert.match(js, /theory_href/);
   assert.match(js, /workshop_href/);
   assert.match(js, /theory-page-link/);
