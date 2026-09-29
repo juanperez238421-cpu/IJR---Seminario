@@ -127,6 +127,15 @@ function curatedOptions(track: string): Option[] {
         stack: ["Python", "Pandas", "NumPy", "Matplotlib", "optional scikit-learn"],
         kind: "curated",
       },
+      {
+        key: "python-animated-message",
+        label: "Opción D · Python creativo",
+        title: "Animated Message Studio — Flores, corazón y texto con Python",
+        summary: "Proyecto de creative coding que genera una animación completa por frames: fondo dinámico, partículas, flores, corazón paramétrico, tipografía animada y exportación MP4/GIF. Puede trabajarse desde Terminal o Google Colab y terminar como entrega en USB.",
+        objective: "Construir una animación modular y original en Python, explicar al menos un componente matemático de movimiento, renderizar un video final reproducible y entregar código, pruebas, Colab/Terminal y paquete final.",
+        stack: ["Python", "Pillow", "NumPy", "ImageIO/FFmpeg", "Google Colab", "Terminal", "Git", "PyInstaller"],
+        kind: "curated",
+      },
     ],
     cybersecurity: [
       {
