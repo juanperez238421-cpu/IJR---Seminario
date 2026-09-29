@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Rico · Class 4 · QA & Defense</title>
-  <link rel="stylesheet" href="workshop.css?v=20260929-1">
+  <link rel="stylesheet" href="workshop.css?v=20260929-2">
   <script src="../../../access-gate.js?v=20260923-email-v12"></script>
 </head>
 <body>
 <main class="workshop-shell">
   <section class="class-hero">
-    <div class="workshop-kicker">CLASS 4 · SPRINTS 7–8</div>
+    <div class="workshop-kicker">CLASS 4 · QA + LIVE DEFENSE</div>
     <h1>USB/offline QA + live project defense</h1>
     <p>The project is now treated as a product. The student runs a controlled failure matrix, fixes portability defects, documents the final architecture and performs a live defense from portable media or a clean folder.</p>
     <div class="class-badges"><span>QA matrix</span><span>fault injection</span><span>offline</span><span>USB</span><span>performance</span><span>live defense</span></div>
@@ -53,6 +53,22 @@ Observed: PASS / FAIL + screenshot/log</code></pre>
       </ol>
     </article>
   </section>
+
+  <figure class="senior-diagram">
+    <figcaption><span>QA FEEDBACK LOOP</span><strong>Evidence-driven final hardening cycle</strong></figcaption>
+    <div class="diagram-chain">
+      <div class="diagram-box"><b>Inject condition</b><small>Move folder, disconnect network, corrupt config or remove an optional asset.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Observe</b><small>Capture output, FPS, error behavior and exact reproduction steps.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Diagnose</b><small>Identify the violated assumption or failing component.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Fix</b><small>Change code/configuration with the smallest justified correction.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Retest</b><small>Repeat the same condition and record PASS/FAIL evidence.</small></div>
+    </div>
+    <p class="diagram-note">Final defense follows the same logic: make a controlled parameter change, predict the effect, relaunch and verify that the observed result matches the architecture explanation.</p>
+  </figure>
 
   <section class="class-panel">
     <h2>Mandatory QA matrix</h2>
