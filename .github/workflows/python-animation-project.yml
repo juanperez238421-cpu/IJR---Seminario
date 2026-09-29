@@ -1,0 +1,48 @@
+name: Python Animation Project QA
+
+on:
+  pull_request:
+    paths:
+      - "t3/projects/python-message-animation/**"
+      - ".github/workflows/python-animation-project.yml"
+  push:
+    branches: [main]
+    paths:
+      - "t3/projects/python-message-animation/**"
+      - ".github/workflows/python-animation-project.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: t3/projects/python-message-animation
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: t3/projects/python-message-animation/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest==8.4.2
+
+      - name: Unit smoke tests
+        run: python -m pytest -q tests
+
+      - name: Render small GIF
+        run: python run.py --title "QA" --subtitle "Python animation" --out output/qa.gif --width 320 --height 180 --fps 6 --seconds 1
+
+      - name: Render small MP4
+        run: python run.py --title "QA" --subtitle "Python animation" --out output/qa.mp4 --width 320 --height 180 --fps 6 --seconds 1
+
+      - name: Verify outputs
+        run: |
+          test -s output/qa.gif
+          test -s output/qa.mp4
+          ls -lh output/qa.gif output/qa.mp4
