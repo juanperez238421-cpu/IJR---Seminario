@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 const read = p => fs.readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
@@ -54,4 +55,10 @@ test('target app contains only synthetic access-control records and local board 
   assert.match(app, /\/api\/records/);
   assert.match(app, /\/board/);
   assert.match(app, /INTENTIONAL LAB STARTING POINT/);
+});
+
+
+test('target lab server passes Node syntax validation', () => {
+  const serverPath = new URL('../t3/tracks/cybersecurity/lab/app/server.js', import.meta.url);
+  execFileSync(process.execPath, ['--check', serverPath.pathname], { stdio: 'pipe' });
 });
