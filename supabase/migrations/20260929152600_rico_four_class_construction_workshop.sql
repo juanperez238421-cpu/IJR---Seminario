@@ -25,7 +25,9 @@ set
     "workshop": "Create the repository, storyboard, acceptance criteria, UML/responsibility map and a main.py that opens, animates and closes cleanly.",
     "deliverable": "Storyboard + 5 acceptance criteria + UML + runnable baseline + first Git commit",
     "gate": "The Python window must run a visible animation and close cleanly; the student must explain the final product contract and architecture.",
-    "href": "student-workshops/rico-paramo/class-01-foundation.html",
+    "href": "student-workshops/rico-paramo/theory.html?class=1",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=1",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=1",
     "diagram": {
       "kicker": "CLASS FLOW",
       "title": "Idea to executable baseline",
@@ -42,7 +44,9 @@ set
     "workshop": "Implement App + Scene plus OrbitEffect, PulseEffect and ParticleField; test parameters, FPS invariance and reproducibility.",
     "deliverable": "Runnable scene + 3 reusable effects + parameter comparison + FPS/seed verification",
     "gate": "The same effect class must be reusable with different parameters and motion must remain approximately consistent across frame-rate changes.",
-    "href": "student-workshops/rico-paramo/class-02-engine.html",
+    "href": "student-workshops/rico-paramo/theory.html?class=2",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=2",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=2",
     "diagram": {
       "kicker": "FRAME PIPELINE",
       "title": "Real-time animation loop",
@@ -59,7 +63,9 @@ set
     "workshop": "Create config.json, resource_path(), fallback behavior, PortableVisualShow.exe, launch.bat and a PORTABLE_BUILD folder; test from a renamed clean path without internet.",
     "deliverable": "Portable build + config + visible launcher + clean-path test + offline test",
     "gate": "The copied/renamed build must launch manually with the network disconnected and without absolute developer paths.",
-    "href": "student-workshops/rico-paramo/class-03-portable.html",
+    "href": "student-workshops/rico-paramo/theory.html?class=3",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=3",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=3",
     "diagram": {
       "kicker": "PORTABILITY",
       "title": "Source to offline runtime",
@@ -76,7 +82,9 @@ set
     "workshop": "Execute the 8-case QA matrix, repair defects, finalize README/UML/evidence, launch from portable media or a clean folder and change one visual parameter live.",
     "deliverable": "QA matrix + fixes + final portable demo + UML + README + live parameter defense",
     "gate": "The build must pass the documented offline/portable tests and the student must predict, execute and explain a live parameter change.",
-    "href": "student-workshops/rico-paramo/class-04-qa-defense.html",
+    "href": "student-workshops/rico-paramo/theory.html?class=4",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=4",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=4",
     "diagram": {
       "kicker": "QA LOOP",
       "title": "Evidence-driven hardening",
@@ -116,7 +124,9 @@ $json$::jsonb,
     },
     "evidence": ["storyboard", "5 acceptance criteria", "UML/responsibility map", "running main.py", "first Git commit"],
     "gate": "Do not advance unless the window opens, animates and closes cleanly and the student can explain each responsibility.",
-    "href": "student-workshops/rico-paramo/class-01-foundation.html"
+    "href": "student-workshops/rico-paramo/theory.html?class=1",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=1",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=1"
   },
   {
     "class": 2,
@@ -146,7 +156,9 @@ $json$::jsonb,
     },
     "evidence": ["App + Scene", "OrbitEffect", "PulseEffect", "ParticleField", "FPS comparison", "parameter test"],
     "gate": "The student must reuse one effect class with different parameters and explain why delta time makes the motion approximately frame-rate independent.",
-    "href": "student-workshops/rico-paramo/class-02-engine.html"
+    "href": "student-workshops/rico-paramo/theory.html?class=2",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=2",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=2"
   },
   {
     "class": 3,
@@ -176,7 +188,9 @@ $json$::jsonb,
     },
     "evidence": ["config.json", "relative paths", "PortableVisualShow.exe", "launch.bat", "clean-path run", "offline run"],
     "gate": "The renamed/copy build must launch with no internet and no reference to the original development path.",
-    "href": "student-workshops/rico-paramo/class-03-portable.html"
+    "href": "student-workshops/rico-paramo/theory.html?class=3",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=3",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=3"
   },
   {
     "class": 4,
@@ -206,7 +220,9 @@ $json$::jsonb,
     },
     "evidence": ["8-case QA matrix", "fixed defect", "offline/USB run", "final UML", "README", "live parameter change"],
     "gate": "The project is complete only when the portable build passes the documented tests and the student can explain architecture and live behavior.",
-    "href": "student-workshops/rico-paramo/class-04-qa-defense.html"
+    "href": "student-workshops/rico-paramo/theory.html?class=4",
+    "theory_href": "student-workshops/rico-paramo/theory.html?class=4",
+    "workshop_href": "student-workshops/rico-paramo/workshop.html?class=4"
   }
 ]
 $json$::jsonb,
@@ -218,7 +234,7 @@ $json$::jsonb,
   "Class 4: Which QA failure did you reproduce, fix and retest with evidence?"
 ]
 $json$::jsonb,
-  decision_note = 'Proyecto específico: exactamente 4 clases de construcción. Cada clase combina teoría funcional, workshop sobre el código real, diagrama técnico, evidencia verificable y un gate obligatorio.',
+  decision_note = 'Proyecto específico: exactamente 4 clases. Cada clase tiene subpágina Theory y subpágina Workshop, construcción sobre el proyecto real, ejecución verificable, evidencia y gate obligatorio.',
   updated_at = now()
 where upper(trim(student_name)) = 'RICO PARAMO ALEJANDRO'
   and group_code = '11B'
