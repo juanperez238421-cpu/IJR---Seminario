@@ -97,3 +97,21 @@
   .diagram-arrow{transform:rotate(90deg);justify-self:center}
   .diagram-node{min-width:0}
 }
+
+
+/* Rico dedicated Theory / Workshop navigation */
+.rico-workshop-grid article{display:grid;grid-template-columns:46px 1fr;column-gap:12px;row-gap:4px;color:var(--ink);border:1px solid #d8d5cf;border-radius:14px;padding:14px;background:#fff}
+.rico-workshop-grid article>span{grid-row:1/4;width:42px;height:42px;border-radius:12px;background:#111;color:#fff;display:grid;place-items:center;font:850 .72rem/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.rico-workshop-grid article>strong{font-size:.9rem;align-self:end}
+.rico-workshop-grid article>small{color:#667085;font-size:.74rem;line-height:1.35}
+.rico-workshop-grid article>div{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.rico-workshop-grid article>div a{display:inline-flex;align-items:center;min-height:32px;padding:0 9px;border-radius:8px;text-decoration:none;font-size:.72rem;font-weight:800}
+.rico-workshop-grid article>div a:first-child{background:#eef4ff;color:#175cd3;border:1px solid #b9ccf6}
+.rico-workshop-grid article>div a:last-child{background:#111;color:#fff;border:1px solid #111}
+.rico-workshop-grid>a{display:none}
+.class-page-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.class-title-link{color:inherit;text-decoration:none}
+.class-title-link:hover{text-decoration:underline;text-underline-offset:3px}
+.class-open-link.theory-page-link{background:#eef4ff;color:#175cd3;border:1px solid #b9ccf6}
+.class-open-link.workshop-page-link{background:#111;color:#fff;border:1px solid #111}
+.class-open-link.workshop-page-link:hover{background:#344054}

@@ -122,13 +122,24 @@ function renderFlowDiagram(diagram){
   `;
 }
 
+function ricoPageLinks(record,index){
+  const classN=Number(record?.class||record?.n||index+1)||index+1;
+  return {
+    classN,
+    theory: record?.theory_href || `student-workshops/rico-paramo/theory.html?class=${classN}`,
+    workshop: record?.workshop_href || `student-workshops/rico-paramo/workshop.html?class=${classN}`
+  };
+}
+
 function renderRicoContentSections(contentSections){
-  return contentSections.map((section,index)=>`
+  return contentSections.map((section,index)=>{
+    const links=ricoPageLinks(section,index);
+    return `
     <article class="content-card senior-content-card">
-      <div class="content-step">C${esc(section?.class||index+1)}</div>
+      <div class="content-step">C${esc(links.classN)}</div>
       <div class="content-body">
         <div class="content-kicker">${esc(section?.kicker||`CLASS ${index+1}`)}</div>
-        <h4>${esc(section?.title||'Construction class')}</h4>
+        <h4><a class="class-title-link" href="${esc(links.theory)}">${esc(section?.title||'Construction class')}</a></h4>
         ${section?.body?`<p>${esc(section.body)}</p>`:''}
         <div class="theory-workshop-grid">
           <section class="theory-block">
@@ -151,19 +162,25 @@ function renderRicoContentSections(contentSections){
           ?`<div class="class-evidence"><strong>REQUIRED EVIDENCE</strong><div>${section.evidence.map(item=>`<span>${esc(item)}</span>`).join('')}</div></div>`
           :''}
         ${section?.gate?`<div class="class-gate"><strong>CLASS GATE</strong><span>${esc(section.gate)}</span></div>`:''}
-        ${section?.href?`<a class="class-open-link" href="${esc(section.href)}">Open full Class ${esc(section?.class||index+1)} workshop →</a>`:''}
+        <div class="class-page-actions">
+          <a class="class-open-link theory-page-link" href="${esc(links.theory)}">Open Class ${esc(links.classN)} Theory →</a>
+          <a class="class-open-link workshop-page-link" href="${esc(links.workshop)}">Open Class ${esc(links.classN)} Workshop →</a>
+        </div>
       </div>
     </article>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function renderRicoRoadmap(sprints){
-  return sprints.map((step,index)=>`
+  return sprints.map((step,index)=>{
+    const links=ricoPageLinks(step,index);
+    return `
     <article class="sprint-card class-roadmap-card">
-      <div class="sprint-number">C${esc(step.n||index+1)}</div>
+      <div class="sprint-number">C${esc(links.classN)}</div>
       <div>
-        <div class="class-roadmap-kicker">${esc(step.phase||`CLASS ${step.n||index+1}`)}</div>
-        <h4>${esc(step.title)}</h4>
+        <div class="class-roadmap-kicker">${esc(step.phase||`CLASS ${links.classN}`)}</div>
+        <h4><a class="class-title-link" href="${esc(links.theory)}">${esc(step.title)}</a></h4>
         <p>${esc(step.goal)}</p>
         <div class="mini-theory-workshop">
           <div><strong>Theory</strong><span>${esc(step.theory||'Concepts required for this build step.')}</span></div>
@@ -172,10 +189,14 @@ function renderRicoRoadmap(sprints){
         ${renderFlowDiagram(step?.diagram)}
         <div class="deliverable"><strong>Evidence</strong><span>${esc(step.deliverable)}</span></div>
         ${step?.gate?`<div class="roadmap-gate"><strong>Gate</strong><span>${esc(step.gate)}</span></div>`:''}
-        ${step?.href?`<a class="class-open-link" href="${esc(step.href)}">Theory + workshop + implementation →</a>`:''}
+        <div class="class-page-actions">
+          <a class="class-open-link theory-page-link" href="${esc(links.theory)}">Theory →</a>
+          <a class="class-open-link workshop-page-link" href="${esc(links.workshop)}">Workshop →</a>
+        </div>
       </div>
     </article>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function fillEditor(values,{clearNote=false}={}){

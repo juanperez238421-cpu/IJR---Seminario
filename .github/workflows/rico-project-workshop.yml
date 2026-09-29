@@ -7,19 +7,21 @@ on:
       - "t3/projects/index.html"
       - "t3/projects/projects.js"
       - "t3/projects/projects.css"
+      - "tests/rico-project-pages.test.js"
       - ".github/workflows/rico-project-workshop.yml"
   push:
     branches: [main]
     paths:
       - "t3/projects/student-workshops/rico-paramo/**"
+      - "t3/projects/index.html"
+      - "t3/projects/projects.js"
+      - "t3/projects/projects.css"
+      - "tests/rico-project-pages.test.js"
       - ".github/workflows/rico-project-workshop.yml"
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: t3/projects/student-workshops/rico-paramo/reference_project
     env:
       SDL_VIDEODRIVER: dummy
 
@@ -32,26 +34,82 @@ jobs:
           cache: "pip"
           cache-dependency-path: t3/projects/student-workshops/rico-paramo/reference_project/requirements.txt
 
-      - name: Install dependencies
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install reference-project dependencies
+        working-directory: t3/projects/student-workshops/rico-paramo/reference_project
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest==8.4.2
 
       - name: Compile Python source
+        working-directory: t3/projects/student-workshops/rico-paramo/reference_project
         run: python -m compileall -q .
 
-      - name: Headless functional tests
+      - name: Headless functional reference-project tests
+        working-directory: t3/projects/student-workshops/rico-paramo/reference_project
         run: python -m pytest -q tests
 
-      - name: Verify four workshop classes exist
-        working-directory: t3/projects/student-workshops/rico-paramo
+      - name: JavaScript syntax checks
         run: |
-          test -s class-01-foundation.html
-          test -s class-02-engine.html
-          test -s class-03-portable.html
-          test -s class-04-qa-defense.html
-          grep -q "Class 1 gate" class-01-foundation.html
-          grep -q "Class 2 gate" class-02-engine.html
-          grep -q "Class 3 gate" class-03-portable.html
-          grep -q "Final project gate" class-04-qa-defense.html
+          node --check t3/projects/student-workshops/rico-paramo/rico-course-data.js
+          node --check t3/projects/student-workshops/rico-paramo/rico-pages.js
+          node --check t3/projects/projects.js
+
+      - name: Auditable page contract tests
+        run: node --test tests/rico-project-pages.test.js
+
+      - name: Local HTTP smoke test
+        run: |
+          set -euo pipefail
+          python -m http.server 8765 --directory t3 >/tmp/rico-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          sleep 2
+
+          base="http://127.0.0.1:8765/projects/student-workshops/rico-paramo"
+          curl -fsS "$base/" | grep -q "4-class construction workshop"
+
+          for n in 1 2 3 4; do
+            curl -fsS "$base/theory.html?class=$n" | grep -q "Project Theory"
+            curl -fsS "$base/workshop.html?class=$n" | grep -q "Real Construction Workshop"
+          done
+
+      - name: Verify legacy detailed class pages remain reachable
+        run: |
+          test -s t3/projects/student-workshops/rico-paramo/class-01-foundation.html
+          test -s t3/projects/student-workshops/rico-paramo/class-02-engine.html
+          test -s t3/projects/student-workshops/rico-paramo/class-03-portable.html
+          test -s t3/projects/student-workshops/rico-paramo/class-04-qa-defense.html
+
+  production-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke exact Supabase production routes
+        run: |
+          set -euo pipefail
+          base="https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/projects/student-workshops/rico-paramo"
+
+          check_route () {
+            url="$1"
+            marker="$2"
+            headers="$(mktemp)"
+            body="$(mktemp)"
+            curl --retry 4 --retry-delay 2 --retry-all-errors -fsS -D "$headers" -o "$body" "$url"
+            grep -qi "^content-type: text/html" "$headers"
+            grep -qi "^x-ijr-source: GitHub-main:t3" "$headers"
+            grep -q "$marker" "$body"
+            echo "PASS $url"
+          }
+
+          check_route "$base/" "4-class construction workshop"
+
+          for n in 1 2 3 4; do
+            check_route "$base/theory.html?class=$n" "Project Theory"
+            check_route "$base/workshop.html?class=$n" "Real Construction Workshop"
+          done
