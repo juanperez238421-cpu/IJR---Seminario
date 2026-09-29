@@ -38,3 +38,16 @@ test('Private teacher view uses MFA gateway instead of direct table reads',()=>{
   assert.match(js,/getAuthenticatorAssuranceLevel/);
   assert.doesNotMatch(js,/from\(['"]seminar_studio_profiles/);
 });
+
+
+test('Specific Rico assignment overrides generic sprint framing with four construction classes',()=>{
+  const html=read('t3/studio/index.html');
+  const js=read('t3/studio/app.js');
+  assert.match(html,/id="metricUnitLabel"/);
+  assert.match(html,/id="assignmentRoadmapTitle"/);
+  assert.doesNotMatch(html,/project sprints|Desarrollo paso a paso · 8 sprints|>1\/8</i);
+  assert.match(js,/isRicoAssignment/);
+  assert.match(js,/rico\?'Class':'Sprint'/);
+  assert.match(js,/Development route · 4 construction classes/);
+  assert.match(js,/setProjectUnitControls/);
+});

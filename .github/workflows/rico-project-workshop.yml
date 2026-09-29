@@ -7,6 +7,8 @@ on:
       - "t3/projects/index.html"
       - "t3/projects/projects.js"
       - "t3/projects/projects.css"
+      - "t3/studio/index.html"
+      - "t3/studio/app.js"
       - "tests/rico-project-pages.test.js"
       - ".github/workflows/rico-project-workshop.yml"
   push:
@@ -16,6 +18,8 @@ on:
       - "t3/projects/index.html"
       - "t3/projects/projects.js"
       - "t3/projects/projects.css"
+      - "t3/studio/index.html"
+      - "t3/studio/app.js"
       - "tests/rico-project-pages.test.js"
       - ".github/workflows/rico-project-workshop.yml"
 
@@ -72,7 +76,8 @@ jobs:
           sleep 2
 
           base="http://127.0.0.1:8765/projects/student-workshops/rico-paramo"
-          curl -fsS "$base/index.html" | grep -q "Build the complete project, stage by stage"
+          curl -fsS "$base/index.html" | grep -q "Build the complete project in four construction classes"
+          ! curl -fsS "$base/index.html" | grep -Eqi "8-sprint personal roadmap|8 stages · 4 construction classes|eight engineering stages"
 
           for n in 1 2 3 4; do
             curl -fsS "$base/theory.html?class=$n" | grep -q "Project Theory"
@@ -106,7 +111,10 @@ jobs:
             echo "PASS [$code] $url"
           }
 
-          check_route "$base/index.html" "Build the complete project, stage by stage"
+          check_route "$base/index.html" "Build the complete project in four construction classes"
+          body="$(mktemp)"
+          curl -fsS "$base/index.html" -o "$body"
+          ! grep -Eqi "8-sprint personal roadmap|8 stages · 4 construction classes|eight engineering stages" "$body"
 
           for n in 1 2 3 4; do
             check_route "$base/theory.html?class=$n" "Project Theory"
@@ -116,4 +124,4 @@ jobs:
           check_route "https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/projects/index.html" "student-workshops/rico-paramo/theory.html?class=1"
           check_route "$base/rico-course-data.js" "IJR_RICO_PROJECT_DATA"
           check_route "$base/rico-pages.js" "dataset.ricoPage"
-          check_route "$base/hub.js" "ijr-rico-portable-build-progress-v1"
+          check_route "$base/hub.js" "ijr-rico-four-class-progress-v2"
