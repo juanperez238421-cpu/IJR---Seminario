@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Rico · Class 3 · Portable Build</title>
-  <link rel="stylesheet" href="workshop.css?v=20260929-1">
+  <link rel="stylesheet" href="workshop.css?v=20260929-2">
   <script src="../../../access-gate.js?v=20260923-email-v12"></script>
 </head>
 <body>
 <main class="workshop-shell">
   <section class="class-hero">
-    <div class="workshop-kicker">CLASS 3 · SPRINTS 5–6</div>
+    <div class="workshop-kicker">CLASS 3 · PORTABLE BUILD</div>
     <h1>Relative paths + portable build + launcher</h1>
     <p>Today the project stops depending on the development computer. Configuration and assets must resolve through relative project paths, then the visual show is packaged into a portable build with a visible manual launcher.</p>
     <div class="class-badges"><span>pathlib</span><span>JSON config</span><span>relative paths</span><span>PyInstaller</span><span>launcher</span><span>portable folder</span></div>
@@ -71,6 +71,22 @@ def resource_path(relative):
       <p>The application should run after the whole folder is moved to a different location.</p>
     </article>
   </section>
+
+  <figure class="senior-diagram">
+    <figcaption><span>PORTABILITY DIAGRAM</span><strong>Development source to clean offline runtime</strong></figcaption>
+    <div class="diagram-chain">
+      <div class="diagram-box"><b>Source project</b><small>Python package, config and optional local assets.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>PyInstaller</b><small>Bundles interpreter and Python dependencies into the Windows build.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Portable folder</b><small>EXE + config + launcher + README using relative resources only.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>USB / clean path</b><small>Folder is moved or renamed; no developer path may be assumed.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Offline run</b><small>Manual launch succeeds without network access.</small></div>
+    </div>
+    <p class="diagram-note">A successful build is not yet a portable product. Portability is demonstrated only after moving the folder and executing it in a clean/offline condition.</p>
+  </figure>
 
   <section class="class-panel">
     <h2>Build 01 · Load config safely</h2>

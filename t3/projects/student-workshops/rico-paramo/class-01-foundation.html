@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <title>Rico · Class 1 · Foundation</title>
-  <link rel="stylesheet" href="workshop.css?v=20260929-1">
+  <link rel="stylesheet" href="workshop.css?v=20260929-2">
   <script src="../../../access-gate.js?v=20260923-email-v12"></script>
 </head>
 <body>
 <main class="workshop-shell">
   <section class="class-hero">
-    <div class="workshop-kicker">CLASS 1 · SPRINTS 1–2</div>
+    <div class="workshop-kicker">CLASS 1 · FOUNDATION + ARCHITECTURE</div>
     <h1>Project contract + animation architecture</h1>
     <p>Today the idea becomes an engineering contract. The class finishes with a real repository, a runnable Python visual baseline, acceptance criteria, and an architecture that explains how the final USB project will be built.</p>
     <div class="class-badges"><span>Storyboard</span><span>Acceptance criteria</span><span>Pygame</span><span>Event loop</span><span>UML</span><span>Git</span></div>
@@ -63,6 +63,22 @@
       <p>Example acceptance criterion: “The application starts offline from a portable folder and shows the first scene in under 5 seconds.”</p>
     </article>
   </section>
+
+  <figure class="senior-diagram">
+    <figcaption><span>ARCHITECTURE DIAGRAM</span><strong>Portable visual show responsibility flow</strong></figcaption>
+    <div class="diagram-chain">
+      <div class="diagram-box"><b>Launcher</b><small>Manual entry point. Starts the packaged application from its own folder.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>App</b><small>Owns window, clock, event loop and clean shutdown.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Scene</b><small>Coordinates the active visual composition and delegates work.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Effects</b><small>Reusable procedural behaviors with parameters and update/draw contracts.</small></div>
+      <div class="diagram-arrow">→</div>
+      <div class="diagram-box"><b>Surface</b><small>Final pixels displayed by Pygame every frame.</small></div>
+    </div>
+    <p class="diagram-note">Config is read by App/Scene but remains external data: changing a parameter should alter behavior without rewriting the effect algorithm.</p>
+  </figure>
 
   <section class="class-panel">
     <h2>Build 01 · Create the real repository baseline</h2>

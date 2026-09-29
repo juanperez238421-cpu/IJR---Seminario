@@ -88,17 +88,94 @@ function updateTrackProjectLibraries(trackSlug=''){
   updatePythonAnimationProject(trackSlug);
 }
 
+function isRicoProject(student,project){
+  const name=String(student?.name||'').trim().toUpperCase();
+  const title=String(project?.project_title||'').trim();
+  return name==='RICO PARAMO ALEJANDRO'
+    && title==='Portable Python Visual Show — USB Launcher & Procedural Animation';
+}
+
 function updateStudentWorkshop(student,project){
   const panel=$('ricoWorkshopPanel');
   if(!panel)return;
+  panel.classList.toggle('hidden',!isRicoProject(student,project));
+}
 
-  const name=String(student?.name||'').trim().toUpperCase();
-  const title=String(project?.project_title||'').trim();
+function renderFlowDiagram(diagram){
+  if(!diagram||!Array.isArray(diagram.nodes)||diagram.nodes.length===0)return'';
+  const nodes=diagram.nodes.map((node,index)=>`
+    <div class="diagram-node">
+      <span class="diagram-index">${String(index+1).padStart(2,'0')}</span>
+      <strong>${esc(node)}</strong>
+    </div>
+    ${index<diagram.nodes.length-1?'<div class="diagram-arrow" aria-hidden="true">→</div>':''}
+  `).join('');
+  return `
+    <figure class="project-diagram">
+      <figcaption>
+        <span>${esc(diagram.kicker||'SYSTEM DIAGRAM')}</span>
+        <strong>${esc(diagram.title||'Technical flow')}</strong>
+      </figcaption>
+      <div class="diagram-flow">${nodes}</div>
+      ${diagram.note?`<p>${esc(diagram.note)}</p>`:''}
+    </figure>
+  `;
+}
 
-  const isRico=name==='RICO PARAMO ALEJANDRO'
-    && title==='Portable Python Visual Show — USB Launcher & Procedural Animation';
+function renderRicoContentSections(contentSections){
+  return contentSections.map((section,index)=>`
+    <article class="content-card senior-content-card">
+      <div class="content-step">C${esc(section?.class||index+1)}</div>
+      <div class="content-body">
+        <div class="content-kicker">${esc(section?.kicker||`CLASS ${index+1}`)}</div>
+        <h4>${esc(section?.title||'Construction class')}</h4>
+        ${section?.body?`<p>${esc(section.body)}</p>`:''}
+        <div class="theory-workshop-grid">
+          <section class="theory-block">
+            <div class="block-label">THEORY</div>
+            <p>${esc(section?.theory_intro||'Understand only the concepts required for the next construction step.')}</p>
+            ${Array.isArray(section?.theory)&&section.theory.length
+              ?`<ul>${section.theory.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`
+              :''}
+          </section>
+          <section class="workshop-block">
+            <div class="block-label">WORKSHOP · BUILD</div>
+            <p>${esc(section?.workshop_intro||'Apply the theory immediately in the real project.')}</p>
+            ${Array.isArray(section?.workshop)&&section.workshop.length
+              ?`<ol>${section.workshop.map(item=>`<li>${esc(item)}</li>`).join('')}</ol>`
+              :''}
+          </section>
+        </div>
+        ${renderFlowDiagram(section?.diagram)}
+        ${Array.isArray(section?.evidence)&&section.evidence.length
+          ?`<div class="class-evidence"><strong>REQUIRED EVIDENCE</strong><div>${section.evidence.map(item=>`<span>${esc(item)}</span>`).join('')}</div></div>`
+          :''}
+        ${section?.gate?`<div class="class-gate"><strong>CLASS GATE</strong><span>${esc(section.gate)}</span></div>`:''}
+        ${section?.href?`<a class="class-open-link" href="${esc(section.href)}">Open full Class ${esc(section?.class||index+1)} workshop →</a>`:''}
+      </div>
+    </article>
+  `).join('');
+}
 
-  panel.classList.toggle('hidden',!isRico);
+function renderRicoRoadmap(sprints){
+  return sprints.map((step,index)=>`
+    <article class="sprint-card class-roadmap-card">
+      <div class="sprint-number">C${esc(step.n||index+1)}</div>
+      <div>
+        <div class="class-roadmap-kicker">${esc(step.phase||`CLASS ${step.n||index+1}`)}</div>
+        <h4>${esc(step.title)}</h4>
+        <p>${esc(step.goal)}</p>
+        <div class="mini-theory-workshop">
+          <div><strong>Theory</strong><span>${esc(step.theory||'Concepts required for this build step.')}</span></div>
+          <div><strong>Workshop</strong><span>${esc(step.workshop||'Implement and verify the project increment.')}</span></div>
+        </div>
+        ${renderFlowDiagram(step?.diagram)}
+        <div class="deliverable"><strong>Evidence</strong><span>${esc(step.deliverable)}</span></div>
+        ${step?.gate?`<div class="roadmap-gate"><strong>Gate</strong><span>${esc(step.gate)}</span></div>`:''}
+        ${step?.href?`<a class="class-open-link" href="${esc(step.href)}">Theory + workshop + implementation →</a>`:''}
+      </div>
+    </article>
+  `).join('');
 }
 
 function fillEditor(values,{clearNote=false}={}){
@@ -220,33 +297,54 @@ function render(data){
     $('safetyPanel').classList.add('hidden');
   }
 
+  const ricoProject=isRicoProject(s,p);
   const contentSections=Array.isArray(p.content_sections)?p.content_sections:[];
-  $('contentGrid').innerHTML=contentSections.map((section,index)=>`
-    <article class="content-card">
-      <div class="content-step">${String(index+1).padStart(2,'0')}</div>
-      <div class="content-body">
-        <div class="content-kicker">${esc(section?.kicker||'PROJECT')}</div>
-        <h4>${esc(section?.title||'Contenido del proyecto')}</h4>
-        ${section?.body?`<p>${esc(section.body)}</p>`:''}
-        ${Array.isArray(section?.items)&&section.items.length
-          ?`<ul>${section.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`
-          :''}
-      </div>
-    </article>
-  `).join('');
+  if(ricoProject){
+    $('contentGrid').innerHTML=renderRicoContentSections(contentSections);
+    $('contentPanel').querySelector('.section-label').textContent='4-CLASS THEORY + WORKSHOP PLAYBOOK';
+    $('contentPanel').querySelector('h3').textContent='Build the final project during class';
+    $('contentPanel').querySelector('.roadmap-copy').textContent='Each class has a theory block, a real workshop, a technical diagram, required evidence and a gate. The project must advance during the session.';
+  }else{
+    $('contentGrid').innerHTML=contentSections.map((section,index)=>`
+      <article class="content-card">
+        <div class="content-step">${String(index+1).padStart(2,'0')}</div>
+        <div class="content-body">
+          <div class="content-kicker">${esc(section?.kicker||'PROJECT')}</div>
+          <h4>${esc(section?.title||'Contenido del proyecto')}</h4>
+          ${section?.body?`<p>${esc(section.body)}</p>`:''}
+          ${Array.isArray(section?.items)&&section.items.length
+            ?`<ul>${section.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`
+            :''}
+        </div>
+      </article>
+    `).join('');
+    $('contentPanel').querySelector('.section-label').textContent='PROJECT PLAYBOOK';
+    $('contentPanel').querySelector('h3').textContent='Contenido para empezar a construir';
+    $('contentPanel').querySelector('.roadmap-copy').textContent='Este contenido es específico de tu ruta/proyecto. Úsalo como guía de trabajo: qué construir, qué probar y qué evidencia debes conservar.';
+  }
   $('contentPanel').classList.toggle('hidden',contentSections.length===0);
 
   const sprints=Array.isArray(p.sprints)?p.sprints:[];
-  $('sprintGrid').innerHTML=sprints.map(step=>`
-    <article class="sprint-card">
-      <div class="sprint-number">S${esc(step.n)}</div>
-      <div>
-        <h4>${esc(step.title)}</h4>
-        <p>${esc(step.goal)}</p>
-        <div class="deliverable"><strong>Evidencia</strong><span>${esc(step.deliverable)}</span></div>
-      </div>
-    </article>
-  `).join('');
+  if(ricoProject){
+    $('roadmapLabel').textContent='4-CLASS CONSTRUCTION ROADMAP';
+    $('roadmapTitle').textContent='Theory → workshop → test → evidence';
+    $('roadmapCopy').textContent='This project is structured as exactly four construction classes. Every class combines theory, workshop implementation, testing, evidence and a mandatory gate before the next class.';
+    $('sprintGrid').innerHTML=renderRicoRoadmap(sprints);
+  }else{
+    $('roadmapLabel').textContent='PROJECT ROADMAP';
+    $('roadmapTitle').textContent='Desarrollo paso a paso';
+    $('roadmapCopy').textContent='Esta es la ruta base del proyecto. Después de confirmar tu decisión, úsala para construir evidencias verificables y ajusta el detalle con el docente cuando el alcance lo requiera.';
+    $('sprintGrid').innerHTML=sprints.map(step=>`
+      <article class="sprint-card">
+        <div class="sprint-number">S${esc(step.n)}</div>
+        <div>
+          <h4>${esc(step.title)}</h4>
+          <p>${esc(step.goal)}</p>
+          <div class="deliverable"><strong>Evidencia</strong><span>${esc(step.deliverable)}</span></div>
+        </div>
+      </article>
+    `).join('');
+  }
   $('roadmapPanel').classList.toggle('hidden',sprints.length===0);
 
   renderOptions();
