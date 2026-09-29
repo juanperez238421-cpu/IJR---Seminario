@@ -328,7 +328,7 @@ function render(data){
   if(ricoProject){
     $('roadmapLabel').textContent='4-CLASS CONSTRUCTION ROADMAP';
     $('roadmapTitle').textContent='Theory → workshop → test → evidence';
-    $('roadmapCopy').textContent='The previous 8-sprint plan is consolidated into four real construction classes. Each class closes two former sprint objectives and produces a working increment of the final product.';
+    $('roadmapCopy').textContent='This project is structured as exactly four construction classes. Every class combines theory, workshop implementation, testing, evidence and a mandatory gate before the next class.';
     $('sprintGrid').innerHTML=renderRicoRoadmap(sprints);
   }else{
     $('roadmapLabel').textContent='PROJECT ROADMAP';
