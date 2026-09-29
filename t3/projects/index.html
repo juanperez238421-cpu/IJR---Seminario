@@ -80,6 +80,43 @@
       <div id="optionGrid" class="option-grid" role="radiogroup" aria-label="Opciones de proyecto"></div>
     </section>
 
+    <section id="cyberCaseLibrary" class="cyber-case-library hidden">
+      <div class="cyber-case-heading">
+        <div>
+          <div class="section-label">DEFENSIVE CYBERSECURITY · REAL LAB CASES</div>
+          <h3>Casos reales que debes reproducir, medir y defender</h3>
+          <p>Estos casos ejecutan peticiones y fallos reales sobre el laboratorio local del curso. Usa Terminal para ejecutar, DevTools para inspeccionar HTML/HTTP y Colab para comparar evidencia antes/después.</p>
+        </div>
+        <a class="button ghost small" href="cyber-cases/">Abrir biblioteca completa</a>
+      </div>
+      <div class="cyber-case-grid">
+        <a class="cyber-case-card" href="cyber-cases/case-01-http-flood.html">
+          <span class="cyber-case-id">CASE 01</span>
+          <strong>HTTP Flood / Application-layer DoS</strong>
+          <p>Degradación real, RPS, p95, Nginx y recuperación del servicio.</p>
+          <small>Terminal · Docker · Colab</small>
+        </a>
+        <a class="cyber-case-card" href="cyber-cases/case-02-auth-abuse.html">
+          <span class="cyber-case-id">CASE 02</span>
+          <strong>Credential Abuse / Login Defense</strong>
+          <p>Intentos inválidos reales contra cuentas ficticias y controles de autenticación.</p>
+          <small>HTTP · Logs · DevTools</small>
+        </a>
+        <a class="cyber-case-card" href="cyber-cases/case-03-broken-access-control.html">
+          <span class="cyber-case-id">CASE 03</span>
+          <strong>Broken Access Control / IDOR</strong>
+          <p>Modificar un identificador de objeto y corregir autorización server-side.</p>
+          <small>curl · Network · REST</small>
+        </a>
+        <a class="cyber-case-card" href="cyber-cases/case-04-stored-xss.html">
+          <span class="cyber-case-id">CASE 04</span>
+          <strong>Stored HTML / XSS Defense</strong>
+          <p>Inspección DOM, salida no escapada, encoding y CSP en localhost.</p>
+          <small>HTML · Elements · CSP</small>
+        </a>
+      </div>
+    </section>
+
     <section class="editor-card">
       <div class="editor-heading">
         <div>
