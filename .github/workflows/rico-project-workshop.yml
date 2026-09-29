@@ -71,7 +71,7 @@ jobs:
           sleep 2
 
           base="http://127.0.0.1:8765/projects/student-workshops/rico-paramo"
-          curl -fsS "$base/" | grep -q "4-class construction workshop"
+          curl -fsS "$base/index.html" | grep -q "4-class construction workshop"
 
           for n in 1 2 3 4; do
             curl -fsS "$base/theory.html?class=$n" | grep -q "Project Theory"
@@ -107,7 +107,7 @@ jobs:
             echo "PASS $url"
           }
 
-          check_route "$base/" "4-class construction workshop"
+          check_route "$base/index.html" "4-class construction workshop"
 
           for n in 1 2 3 4; do
             check_route "$base/theory.html?class=$n" "Project Theory"
