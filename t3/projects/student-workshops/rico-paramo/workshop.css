@@ -97,3 +97,10 @@ td{color:#475467;font-size:.88rem;line-height:1.5}
   .diagram-arrow{transform:rotate(90deg);min-height:20px}
   .diagram-lane{grid-template-columns:1fr}
 }
+
+
+/* Explicit Theory / Workshop buttons in the 4-class hub */
+.rico-roadmap-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.rico-roadmap-actions a{display:inline-flex;align-items:center;min-height:34px;padding:0 10px;border-radius:8px;text-decoration:none;font-size:.74rem;font-weight:800}
+.rico-roadmap-actions .theory-link{background:#eef4ff;color:#175cd3;border:1px solid #b9ccf6}
+.rico-roadmap-actions .workshop-link{background:#111;color:#fff;border:1px solid #111}
