@@ -2,74 +2,281 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light">
   <meta name="robots" content="noindex,nofollow">
-  <title>Rico · 4-Class Construction Workshop</title>
-  <link rel="stylesheet" href="workshop.css?v=20260929-3">
-  <script src="../../../access-gate.js?v=20260923-email-v12"></script>
+  <title>Rico · Portable Python Visual Show · Project Build</title>
+  <link rel="stylesheet" href="workshop.css?v=20260929-build-v4">
+  <script defer src="hub.js?v=20260929-build-v4"></script>
+  <script src="../../../access-gate.js?v=20260923-email-v14"></script>
 </head>
 <body>
-<main class="workshop-shell">
-  <section class="workshop-top">
-    <div>
+<main class="workshop-shell build-shell">
+  <section class="build-hero">
+    <div class="build-hero-main">
       <div class="workshop-kicker">RICO PARAMO ALEJANDRO · 11B · FIXED PROJECT</div>
-      <h1>4-class construction workshop</h1>
-      <p><strong>Portable Python Visual Show — USB Launcher & Procedural Animation.</strong> Four classes convert the project roadmap into real construction work. Each class combines functional theory, code, verification, and evidence. Nothing counts as “finished” until it runs.</p>
+      <h1>Build the complete project, stage by stage.</h1>
+      <p class="build-lead"><strong>Portable Python Visual Show — USB Launcher & Procedural Animation.</strong> The final product is built through eight engineering stages grouped into four construction classes. Each stage ends with an observable output, a real test and evidence that can be independently repeated.</p>
+      <div class="build-meta">
+        <span>Python + Pygame</span>
+        <span>procedural animation</span>
+        <span>PyInstaller</span>
+        <span>offline / portable QA</span>
+      </div>
+      <div class="build-flow">define → architect → build → refactor → configure → package → test → defend</div>
     </div>
-    <div class="workflow">theory → code → run → test → evidence → gate</div>
+    <aside class="build-progress-card" aria-label="Project progress">
+      <div class="build-progress-head">
+        <span>PROJECT PROGRESS</span>
+        <strong id="progressText">0 / 8 stages</strong>
+      </div>
+      <div class="build-progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+      <p id="nextStageText">Start with Stage 01: Project contract.</p>
+      <button id="resetProgress" type="button" class="build-reset">Reset local progress</button>
+    </aside>
   </section>
 
-  <section class="roadmap-grid">
-    <article class="roadmap-card">
-      <div class="roadmap-code">C1</div>
-      <div>
-        <a href="theory.html?class=1"><h3>Project contract + animation architecture</h3></a>
-        <p>Foundation class. Convert the visual idea into measurable acceptance criteria, choose the rendering model, create the repository and build the first real window/event loop.</p>
-        <div class="evidence-line"><strong>Evidence</strong> Storyboard + acceptance criteria + UML + runnable baseline</div><div class="rico-roadmap-actions"><a class="theory-link" href="theory.html?class=1">Theory</a><a class="workshop-link" href="workshop.html?class=1">Workshop</a></div>
-      </div>
-    </article>
-
-    <article class="roadmap-card">
-      <div class="roadmap-code">C2</div>
-      <div>
-        <a href="theory.html?class=2"><h3>Animation engine + reusable effects</h3></a>
-        <p>Engine class. Build a frame-rate-independent procedural scene with Scene/Effect responsibilities, configurable parameters and at least three reusable visual effects.</p>
-        <div class="evidence-line"><strong>Evidence</strong> Runnable scene + 3 effects + parameter test</div><div class="rico-roadmap-actions"><a class="theory-link" href="theory.html?class=2">Theory</a><a class="workshop-link" href="workshop.html?class=2">Workshop</a></div>
-      </div>
-    </article>
-
-    <article class="roadmap-card">
-      <div class="roadmap-code">C3</div>
-      <div>
-        <a href="theory.html?class=3"><h3>Relative paths + portable build + launcher</h3></a>
-        <p>Portability class. Remove machine-specific assumptions, load config/assets safely, create a visible launcher and build a distributable folder/executable.</p>
-        <div class="evidence-line"><strong>Evidence</strong> Portable folder + launcher + clean-path run</div><div class="rico-roadmap-actions"><a class="theory-link" href="theory.html?class=3">Theory</a><a class="workshop-link" href="workshop.html?class=3">Workshop</a></div>
-      </div>
-    </article>
-
-    <article class="roadmap-card">
-      <div class="roadmap-code">C4</div>
-      <div>
-        <a href="theory.html?class=4"><h3>Offline QA + live project defense</h3></a>
-        <p>QA class. Run fault tests, verify offline operation, test from another path/removable media and prepare a live parameter change with technical explanation.</p>
-        <div class="evidence-line"><strong>Evidence</strong> QA matrix + fixes + final demo + UML + README</div><div class="rico-roadmap-actions"><a class="theory-link" href="theory.html?class=4">Theory</a><a class="workshop-link" href="workshop.html?class=4">Workshop</a></div>
-      </div>
-    </article>
+  <section class="build-safety" aria-label="Scope and safety">
+    <div>
+      <span>SCOPE / SAFETY</span>
+      <strong>Portable does not mean automatic or hidden execution.</strong>
+    </div>
+    <p>The USB version must be started visibly by the user through a manual launcher. No hidden autorun, persistence, control evasion or malware-like behavior is part of this project.</p>
   </section>
 
-  <section class="class-panel">
-    <h2>Construction rule</h2>
-    <p>The four classes are not lectures followed by a future project. <strong>The project is built during the workshop.</strong> Every theory block immediately produces a code change, every code change is executed, and every class closes with a gate that must pass before continuing.</p>
-    <div class="evidence-grid">
-      <span>real repository</span>
-      <span>real executable code</span>
-      <span>real visual output</span>
-      <span>real portability test</span>
-      <span>real QA evidence</span>
-      <span>real final defense</span>
+  <section class="build-overview">
+    <div>
+      <p class="build-eyebrow">PROJECT MAP</p>
+      <h2>8 stages · 4 construction classes</h2>
+      <p>Two stages are completed in each class. Theory exists only to support the next implementation decision; the project must advance in the same session.</p>
+    </div>
+    <div class="class-map">
+      <a href="#stage-01"><span>C1</span><strong>Contract + architecture</strong><small>Stages 01–02</small></a>
+      <a href="#stage-03"><span>C2</span><strong>Engine + reusable effects</strong><small>Stages 03–04</small></a>
+      <a href="#stage-05"><span>C3</span><strong>Config + portable build</strong><small>Stages 05–06</small></a>
+      <a href="#stage-07"><span>C4</span><strong>QA + final defense</strong><small>Stages 07–08</small></a>
+    </div>
+  </section>
+
+  <section class="build-layout">
+    <aside class="build-nav" aria-label="Project stages">
+      <div class="build-nav-title">STAGE NAVIGATION</div>
+      <a href="#stage-01"><span>01</span>Project contract</a>
+      <a href="#stage-02"><span>02</span>Architecture baseline</a>
+      <a href="#stage-03"><span>03</span>Procedural engine</a>
+      <a href="#stage-04"><span>04</span>Reusable effects</a>
+      <a href="#stage-05"><span>05</span>Config + resources</a>
+      <a href="#stage-06"><span>06</span>Portable package</a>
+      <a href="#stage-07"><span>07</span>Offline QA</a>
+      <a href="#stage-08"><span>08</span>Live defense</a>
+      <div class="build-nav-rule"><strong>Gate rule</strong><span>Do not advance because code exists. Advance only after the test passes and evidence is saved.</span></div>
+    </aside>
+
+    <div class="build-stage-list">
+      <article id="stage-01" class="build-stage" data-stage="1">
+        <div class="build-stage-index">01</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 1 · DEFINE</p><h2>Project contract + acceptance criteria</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">Turn the visual idea into a product contract that another person can verify without interpreting your intention.</p>
+          <div class="build-columns">
+            <section><h3>Build</h3><ul><li>Create a 6–10 panel storyboard.</li><li>Define resolution, target FPS and offline requirement.</li><li>Name at least three effects and one live-change parameter.</li><li>Write five measurable acceptance criteria.</li></ul></section>
+            <section><h3>Verify</h3><p>Every acceptance criterion must have an observable PASS/FAIL condition.</p><div class="build-command">README.md → “Acceptance criteria”</div></section>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="1-a"> Storyboard exists</label>
+            <label><input type="checkbox" data-check="1-b"> 5 measurable criteria written</label>
+            <label><input type="checkbox" data-check="1-c"> FPS / resolution / offline behavior defined</label>
+          </div>
+          <div class="build-gate"><strong>GATE 01</strong><span>The final behavior can be tested from the written contract.</span></div>
+          <div class="build-links"><a href="theory.html?class=1">Class 1 Theory</a><a class="dark" href="workshop.html?class=1">Class 1 Workshop</a></div>
+        </div>
+      </article>
+
+      <article id="stage-02" class="build-stage" data-stage="2">
+        <div class="build-stage-index">02</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 1 · ARCHITECT</p><h2>Responsibility model + runnable baseline</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">Separate App, Scene, Effect, Config and Launcher responsibilities, then prove the architecture with the smallest real Pygame loop.</p>
+          <div class="build-architecture">
+            <span>Launcher</span><i>→</i><span>VisualApp</span><i>→</i><span>VisualScene</span><i>→</i><span>Effect[]</span><i>→</i><span>Surface</span>
+          </div>
+          <div class="build-columns">
+            <section><h3>Build</h3><ul><li>Initialize Git and a Python virtual environment.</li><li>Create responsibility/UML diagram.</li><li>Implement a Pygame window, event loop and one time-based motion.</li></ul></section>
+            <section><h3>Run</h3><div class="build-command">python -m venv .venv<br>.venv\Scripts\activate<br>pip install pygame==2.6.1<br>python main.py</div></section>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="2-a"> UML/responsibility diagram saved</label>
+            <label><input type="checkbox" data-check="2-b"> Window opens and animates</label>
+            <label><input type="checkbox" data-check="2-c"> Close event exits without traceback</label>
+          </div>
+          <div class="build-gate"><strong>GATE 02</strong><span>Three clean runs + first Git commit + architecture explanation.</span></div>
+        </div>
+      </article>
+
+      <article id="stage-03" class="build-stage" data-stage="3">
+        <div class="build-stage-index">03</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 2 · ENGINE</p><h2>Frame-rate-independent procedural engine</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">Move from “pixels per frame” to state updated from elapsed time. The scene must behave approximately the same at different render frequencies.</p>
+          <div class="build-columns">
+            <section><h3>Core rule</h3><div class="build-command">dt = clock.tick(fps) / 1000.0<br>x += speed_px_s * dt</div><p>Simulation state changes in units per second, not a fixed amount per frame.</p></section>
+            <section><h3>Test</h3><ul><li>Run at 30 FPS.</li><li>Run at 120 FPS.</li><li>Compare motion duration over the same interval.</li><li>Record the observed difference.</li></ul></section>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="3-a"> update(dt) implemented</label>
+            <label><input type="checkbox" data-check="3-b"> draw(surface) separated from update</label>
+            <label><input type="checkbox" data-check="3-c"> 30 vs 120 FPS test recorded</label>
+          </div>
+          <div class="build-gate"><strong>GATE 03</strong><span>Motion timing remains approximately consistent across the FPS comparison.</span></div>
+          <div class="build-links"><a href="theory.html?class=2">Class 2 Theory</a><a class="dark" href="workshop.html?class=2">Class 2 Workshop</a></div>
+        </div>
+      </article>
+
+      <article id="stage-04" class="build-stage" data-stage="4">
+        <div class="build-stage-index">04</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 2 · REFACTOR</p><h2>Reusable effects + parameter-driven behavior</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">Create a small engine instead of copied drawing commands. One effect class must be reusable with different parameters.</p>
+          <div class="build-effects">
+            <div><strong>OrbitEffect</strong><span>sin / cos · radius · speed</span></div>
+            <div><strong>PulseEffect</strong><span>periodic scale / alpha</span></div>
+            <div><strong>ParticleField</strong><span>seeded particles · reproducible state</span></div>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="4-a"> 3 reusable effects implemented</label>
+            <label><input type="checkbox" data-check="4-b"> Same effect instantiated with different parameters</label>
+            <label><input type="checkbox" data-check="4-c"> Fixed random seed reproduces the same initial layout</label>
+          </div>
+          <div class="build-gate"><strong>GATE 04</strong><span>Parameter changes alter behavior without duplicating the effect algorithm.</span></div>
+        </div>
+      </article>
+
+      <article id="stage-05" class="build-stage" data-stage="5">
+        <div class="build-stage-index">05</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 3 · CONFIGURE</p><h2>External config + relative resources</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">Remove development-computer assumptions before packaging. Parameters become data; resources resolve from the runtime location.</p>
+          <div class="build-columns">
+            <section><h3>config.json</h3><div class="build-command">{<br>&nbsp;&nbsp;"fps": 60,<br>&nbsp;&nbsp;"particle_count": 180,<br>&nbsp;&nbsp;"orbit_speed": 0.8<br>}</div></section>
+            <section><h3>Resource rule</h3><div class="build-command">base = Path(__file__).resolve().parent<br>asset = base / "assets" / "..."</div><p>No <code>C:\Users\...</code> dependency is allowed.</p></section>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="5-a"> No absolute developer paths remain</label>
+            <label><input type="checkbox" data-check="5-b"> Runtime parameters load from JSON</label>
+            <label><input type="checkbox" data-check="5-c"> Missing/invalid config has safe fallback behavior</label>
+          </div>
+          <div class="build-gate"><strong>GATE 05</strong><span>The same source project runs after its folder is renamed or moved.</span></div>
+          <div class="build-links"><a href="theory.html?class=3">Class 3 Theory</a><a class="dark" href="workshop.html?class=3">Class 3 Workshop</a></div>
+        </div>
+      </article>
+
+      <article id="stage-06" class="build-stage" data-stage="6">
+        <div class="build-stage-index">06</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 3 · PACKAGE</p><h2>Portable build + visible manual launcher</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">Package the working application, then prove portability from a clean destination. A successful build command alone is not evidence.</p>
+          <div class="build-tree">
+            <strong>PORTABLE_BUILD/</strong>
+            <span>├─ PortableVisualShow.exe</span>
+            <span>├─ config.json</span>
+            <span>├─ launch.bat</span>
+            <span>├─ assets/</span>
+            <span>└─ README.txt</span>
+          </div>
+          <div class="build-columns">
+            <section><h3>Package</h3><div class="build-command">pip install pyinstaller==6.16.0<br>pyinstaller --noconfirm --clean --onefile --name PortableVisualShow main.py</div></section>
+            <section><h3>Launcher contract</h3><p>The launcher is explicit, visible and user-initiated. It starts the packaged program and does not modify system startup or persistence settings.</p></section>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="6-a"> EXE built successfully</label>
+            <label><input type="checkbox" data-check="6-b"> Visible launch.bat works</label>
+            <label><input type="checkbox" data-check="6-c"> Copied/renamed portable folder runs offline</label>
+          </div>
+          <div class="build-gate"><strong>GATE 06</strong><span>Manual launch succeeds from a moved folder with the network disconnected.</span></div>
+        </div>
+      </article>
+
+      <article id="stage-07" class="build-stage" data-stage="7">
+        <div class="build-stage-index">07</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 4 · QA</p><h2>Fault injection + regression testing</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">Treat the visual show as a product. Reproduce controlled failures, diagnose them, fix them and repeat the same condition.</p>
+          <div class="qa-grid">
+            <div><span>QA-01</span><strong>Cold start</strong><small>launch from clean path</small></div>
+            <div><span>QA-02</span><strong>Offline</strong><small>network disconnected</small></div>
+            <div><span>QA-03</span><strong>Config missing</strong><small>fallback / clear error</small></div>
+            <div><span>QA-04</span><strong>Config invalid</strong><small>validation</small></div>
+            <div><span>QA-05</span><strong>Asset missing</strong><small>controlled handling</small></div>
+            <div><span>QA-06</span><strong>Shutdown</strong><small>clean exit</small></div>
+            <div><span>QA-07</span><strong>Performance</strong><small>stable visual loop</small></div>
+            <div><span>QA-08</span><strong>Relocation</strong><small>renamed / USB path</small></div>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="7-a"> 8-case QA matrix executed</label>
+            <label><input type="checkbox" data-check="7-b"> At least one observed defect documented</label>
+            <label><input type="checkbox" data-check="7-c"> Same failed condition passes after the fix</label>
+          </div>
+          <div class="build-gate"><strong>GATE 07</strong><span>No open portability blocker remains and every fix has regression evidence.</span></div>
+          <div class="build-links"><a href="theory.html?class=4">Class 4 Theory</a><a class="dark" href="workshop.html?class=4">Class 4 Workshop</a></div>
+        </div>
+      </article>
+
+      <article id="stage-08" class="build-stage" data-stage="8">
+        <div class="build-stage-index">08</div>
+        <div class="build-stage-body">
+          <div class="build-stage-head">
+            <div><p class="build-eyebrow">CLASS 4 · DEFEND</p><h2>Final evidence package + live technical defense</h2></div>
+            <span class="build-status">NOT COMPLETE</span>
+          </div>
+          <p class="build-stage-lead">The final defense demonstrates ownership of the architecture, not memorization of a presentation.</p>
+          <div class="build-final-grid">
+            <div><strong>Repository</strong><span>clean history + final commit</span></div>
+            <div><strong>README</strong><span>run / build / test instructions</span></div>
+            <div><strong>Architecture</strong><span>final UML / responsibility flow</span></div>
+            <div><strong>QA evidence</strong><span>matrix + screenshots / logs</span></div>
+            <div><strong>Portable demo</strong><span>clean-path or removable-media launch</span></div>
+            <div><strong>Live change</strong><span>predict → edit parameter → relaunch → explain</span></div>
+          </div>
+          <div class="build-checks">
+            <label><input type="checkbox" data-check="8-a"> Final README and UML match the actual build</label>
+            <label><input type="checkbox" data-check="8-b"> Portable demo passes</label>
+            <label><input type="checkbox" data-check="8-c"> Live parameter change is predicted and explained</label>
+          </div>
+          <div class="build-gate final"><strong>FINAL GATE</strong><span>Project is reproducible, portable, tested and technically defensible.</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="build-finish">
+    <div><p class="build-eyebrow">FINAL DEFINITION OF DONE</p><h2>What must exist at the end</h2></div>
+    <div class="build-finish-grid">
+      <span>working source</span><span>reusable architecture</span><span>3+ procedural effects</span><span>external config</span><span>portable build</span><span>visible launcher</span><span>8-case QA evidence</span><span>live defense</span>
     </div>
     <div class="workshop-nav">
-      <a class="primary" href="theory.html?class=1">Start Class 1 Theory →</a><a href="workshop.html?class=1">Open Class 1 Workshop</a>
+      <a class="primary" href="theory.html?class=1">Start Class 1 Theory →</a>
+      <a href="workshop.html?class=1">Open Class 1 Workshop</a>
       <a href="https://github.com/juanperez238421-cpu/IJR---Seminario/tree/main/t3/projects/student-workshops/rico-paramo/reference_project" target="_blank" rel="noopener noreferrer">Reference implementation</a>
       <a href="../../">Project Decision Center</a>
     </div>
