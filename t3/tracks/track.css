@@ -193,3 +193,149 @@
     min-height:auto;
   }
 }
+
+
+/* Cybersecurity defensive web lab */
+.cyber-lab{
+  margin-bottom:16px;
+}
+
+.cyber-lab .notice{
+  margin-top:10px;
+}
+
+.cyber-architecture{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+  align-items:stretch;
+  margin-top:16px;
+}
+
+.cyber-node{
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  padding:13px;
+  min-height:112px;
+}
+
+.cyber-node strong{
+  display:block;
+  margin-bottom:5px;
+}
+
+.cyber-node span{
+  font-size:.88rem;
+  color:var(--muted);
+}
+
+.cyber-arrow{
+  display:none;
+}
+
+.cyber-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:16px;
+}
+
+.cyber-card{
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  padding:15px;
+}
+
+.cyber-card h3{
+  margin-top:0;
+}
+
+.cyber-card ul,
+.cyber-card ol{
+  padding-left:1.2rem;
+  margin-bottom:0;
+}
+
+.cyber-card li + li{
+  margin-top:.42rem;
+}
+
+.cyber-metrics{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+
+.metric-box{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  background:var(--soft);
+}
+
+.metric-box strong{
+  display:block;
+  font-size:.82rem;
+  margin-bottom:3px;
+}
+
+.cyber-rules{
+  margin-top:16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:15px;
+  background:#fff;
+}
+
+.cyber-rules strong{
+  display:block;
+  margin-bottom:8px;
+}
+
+.cyber-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:var(--soft);
+  font-size:.78rem;
+  font-weight:800;
+  margin:3px 4px 3px 0;
+}
+
+.cyber-score{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  font-size:.92rem;
+}
+
+.cyber-score th,
+.cyber-score td{
+  border-bottom:1px solid var(--line);
+  text-align:left;
+  vertical-align:top;
+  padding:9px 10px;
+}
+
+@media(max-width:960px){
+  .cyber-architecture{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .cyber-metrics{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:760px){
+  .cyber-grid,
+  .cyber-architecture,
+  .cyber-metrics{
+    grid-template-columns:1fr;
+  }
+}
