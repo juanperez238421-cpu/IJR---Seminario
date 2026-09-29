@@ -37,6 +37,8 @@ test('OOP + UML email is resolved through the dedicated Supabase roster RPC', as
   const store=await readFile('t3/js/course-store.js','utf8');
 
   assert.match(hub,/ensureEmailOnlyRegistration/);
+  assert.doesNotMatch(hub,/\brepairLegacyMarkup\s*\(\s*\)/, 'registration boot must not call a removed helper');
+  assert.match(hub,/function bindRegistration\(\)[\s\S]*ensureEmailOnlyRegistration\(\)[\s\S]*addEventListener\('submit',submitRegistration\)/);
   assert.match(hub,/startWithEmail\(\{email,language:'python'\}\)/);
   assert.doesNotMatch(hub,/store\.start\(\{language,group,names/);
   assert.match(store,/seminar_oop_uml_start_email_v8/);
