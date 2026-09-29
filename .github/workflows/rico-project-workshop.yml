@@ -57,6 +57,7 @@ jobs:
         run: |
           node --check t3/projects/student-workshops/rico-paramo/rico-course-data.js
           node --check t3/projects/student-workshops/rico-paramo/rico-pages.js
+          node --check t3/projects/student-workshops/rico-paramo/hub.js
           node --check t3/projects/projects.js
 
       - name: Auditable page contract tests
@@ -71,7 +72,7 @@ jobs:
           sleep 2
 
           base="http://127.0.0.1:8765/projects/student-workshops/rico-paramo"
-          curl -fsS "$base/index.html" | grep -q "4-class construction workshop"
+          curl -fsS "$base/index.html" | grep -q "Build the complete project, stage by stage"
 
           for n in 1 2 3 4; do
             curl -fsS "$base/theory.html?class=$n" | grep -q "Project Theory"
@@ -105,7 +106,7 @@ jobs:
             echo "PASS [$code] $url"
           }
 
-          check_route "$base/index.html" "4-class construction workshop"
+          check_route "$base/index.html" "Build the complete project, stage by stage"
 
           for n in 1 2 3 4; do
             check_route "$base/theory.html?class=$n" "Project Theory"
@@ -115,3 +116,4 @@ jobs:
           check_route "https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/projects/index.html" "student-workshops/rico-paramo/theory.html?class=1"
           check_route "$base/rico-course-data.js" "IJR_RICO_PROJECT_DATA"
           check_route "$base/rico-pages.js" "dataset.ricoPage"
+          check_route "$base/hub.js" "ijr-rico-portable-build-progress-v1"
