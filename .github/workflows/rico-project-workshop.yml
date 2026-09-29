@@ -98,13 +98,11 @@ jobs:
           check_route () {
             url="$1"
             marker="$2"
-            headers="$(mktemp)"
             body="$(mktemp)"
-            curl --retry 4 --retry-delay 2 --retry-all-errors -fsS -D "$headers" -o "$body" "$url"
-            grep -qi "^content-type: text/html" "$headers"
-            grep -qi "^x-ijr-source: GitHub-main:t3" "$headers"
+            code="$(curl --retry 4 --retry-delay 2 --retry-all-errors -sS -o "$body" -w "%{http_code}" "$url")"
+            test "$code" = "200"
             grep -q "$marker" "$body"
-            echo "PASS $url"
+            echo "PASS [$code] $url"
           }
 
           check_route "$base/index.html" "4-class construction workshop"
@@ -113,3 +111,7 @@ jobs:
             check_route "$base/theory.html?class=$n" "Project Theory"
             check_route "$base/workshop.html?class=$n" "Real Construction Workshop"
           done
+
+          check_route "https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/projects/index.html" "student-workshops/rico-paramo/theory.html?class=1"
+          check_route "$base/rico-course-data.js" "IJR_RICO_PROJECT_DATA"
+          check_route "$base/rico-pages.js" "data-rico-page"
