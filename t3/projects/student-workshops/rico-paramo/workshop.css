@@ -73,3 +73,27 @@ td{color:#475467;font-size:.88rem;line-height:1.5}
   .roadmap-code{width:42px;height:42px}
   .evidence-grid{grid-template-columns:1fr}
 }
+
+
+/* Senior explanatory diagrams */
+.senior-diagram{margin-top:16px;border:1px solid #d0d5dd;border-radius:16px;background:#fcfcfd;padding:18px}
+.senior-diagram figcaption{display:flex;justify-content:space-between;gap:16px;align-items:baseline;margin-bottom:14px}
+.senior-diagram figcaption span{font:850 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;color:var(--workshop-purple)}
+.senior-diagram figcaption strong{font-size:.92rem}
+.diagram-chain{display:flex;align-items:stretch;gap:8px;overflow-x:auto}
+.diagram-box{min-width:150px;flex:1;border:1px solid #cfd4dc;border-radius:12px;background:#fff;padding:12px;box-shadow:0 2px 8px rgba(16,24,40,.04)}
+.diagram-box b{display:block;font-size:.82rem;margin-bottom:5px}
+.diagram-box small{display:block;color:#667085;line-height:1.4;font-size:.72rem}
+.diagram-arrow{display:grid;place-items:center;color:#98a2b3;font-weight:900;font-size:1.15rem}
+.diagram-note{margin:12px 0 0!important;color:#667085!important;font-size:.79rem!important;line-height:1.5!important}
+.diagram-stack{display:grid;gap:8px}
+.diagram-stack .diagram-box{min-width:0}
+.diagram-row{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:stretch}
+.diagram-lane{margin-top:12px;display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:start}
+.diagram-lane>strong{font-size:.74rem;padding-top:10px;color:#344054}
+.diagram-lane .diagram-chain{overflow:visible}
+@media(max-width:760px){
+  .diagram-chain,.diagram-row{display:grid;grid-template-columns:1fr}
+  .diagram-arrow{transform:rotate(90deg);min-height:20px}
+  .diagram-lane{grid-template-columns:1fr}
+}
