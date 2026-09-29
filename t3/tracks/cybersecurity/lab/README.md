@@ -33,6 +33,18 @@ The target application exposes:
 
 The starting reverse-proxy configuration is intentionally minimal. Students must diagnose first and only then decide what to change.
 
+
+## Real defensive case library
+
+The Project Decision Center now includes four guided cases that use this same lab:
+
+1. **HTTP Flood / Application-layer DoS** — real concurrent requests against `/api/report`, followed by before/after availability analysis.
+2. **Credential Abuse** — repeated invalid login attempts against fictitious accounts, followed by rate limiting/backoff and legitimate-user validation.
+3. **Broken Access Control / IDOR** — the starting `/api/records/:id` endpoint intentionally omits object ownership checks so students can reproduce and then fix authorization.
+4. **Stored HTML / XSS** — the starting `/board` renderer intentionally inserts comment text as markup so students can reproduce a harmless DOM marker and then fix output encoding/CSP.
+
+The intentionally vulnerable routes exist only in this localhost/internal-network lab. They use synthetic data and are designed to be repaired by students.
+
 ## Start the lab
 
 From this directory:
