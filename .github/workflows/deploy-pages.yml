@@ -84,7 +84,7 @@ jobs:
           test -s t3/projects/projects.js
           test -s t3/projects/projects.css
           node --check t3/projects/projects.js
-          grep -q 'href="projects/"' t3/index.html
+          grep -q 'href="projects/?v=20260929-class-v5"' t3/index.html
           grep -q 'seminar-project-access' t3/projects/projects.js
           grep -q 'save_decision' t3/projects/projects.js
           grep -q 'Project Decision Center' t3/projects/index.html
