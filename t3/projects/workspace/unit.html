@@ -8,9 +8,9 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <title>Seminario 11 · Project Unit</title>
   <link rel="stylesheet" href="../../css/course.css?v=20260923-2">
-  <link rel="stylesheet" href="workspace.css?v=20260930-v1">
+  <link rel="stylesheet" href="workspace.css?v=20260930-code-v2">
   <script defer src="../../config.js?v=20260824-1"></script>
-  <script type="module" src="workspace.js?v=20260930-v1"></script>
+  <script type="module" src="workspace.js?v=20260930-code-v2"></script>
   <script src="../../access-gate.js?v=20260923-email-v14"></script>
 </head>
 <body data-project-workspace-page="unit">
@@ -50,6 +50,47 @@
         <h3>Build, verify and preserve evidence</h3>
         <p id="workshopInstruction"></p>
         <div class="deliverable-box"><strong>Unit deliverable</strong><span id="workshopDeliverable"></span></div>
+      </section>
+
+      <section id="codeLabPanel" class="specific-card code-lab hidden">
+        <div class="code-lab-head">
+          <div>
+            <div class="eyebrow">LIVE PROJECT WORKSPACE</div>
+            <h3>Build the real project here</h3>
+            <p id="codeLabLead">Your source files persist across project units. Edit, run or validate, then continue from the same code next class.</p>
+          </div>
+          <div class="code-sync">
+            <span id="codeRuntimeBadge" class="runtime-badge">Runtime: —</span>
+            <span id="codeSaveBadge" class="runtime-badge soft">Supabase: loading</span>
+          </div>
+        </div>
+
+        <div class="code-workspace-shell">
+          <aside class="file-rail">
+            <div class="file-rail-head"><strong>PROJECT FILES</strong><button id="addCodeFile" type="button" class="file-add">+ file</button></div>
+            <div id="codeFileTabs" class="code-file-tabs"></div>
+            <div class="file-rule"><strong>Persistent project</strong><span>These are project-wide files, not disposable exercise cells. The same files reopen in the next unit.</span></div>
+          </aside>
+          <div class="code-main">
+            <div class="code-toolbar">
+              <div><strong id="activeFileLabel">Source</strong><small id="activeFileMeta">revision —</small></div>
+              <div class="code-actions">
+                <button id="saveCodeFile" type="button" class="button ghost">Save</button>
+                <button id="runCode" type="button" class="button primary">Run / validate</button>
+              </div>
+            </div>
+            <textarea id="projectCodeEditor" class="project-code-editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Project source code"></textarea>
+            <div id="codeOutputPanel" class="code-output">
+              <div class="code-output-head"><strong>Runtime output</strong><span id="codeRunStatus">Not run</span></div>
+              <pre id="codeOutput">Run the current project when you are ready.</pre>
+            </div>
+            <iframe id="webPreview" class="web-preview hidden" sandbox="allow-scripts" title="Sandboxed project preview"></iframe>
+          </div>
+        </div>
+        <div class="code-lab-footer">
+          <span id="codeLabStatus">Code changes are auto-saved after a short pause and explicitly saved before every run.</span>
+          <strong id="codeGateStatus"></strong>
+        </div>
       </section>
 
       <section class="specific-card">

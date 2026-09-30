@@ -56,3 +56,39 @@ test('Seminar home routes hour 2 to the specific project workspace',()=>{
   assert.match(html,/projects\/workspace/);
   assert.match(html,/Abrir mi Proyecto Específico/);
 });
+
+test('coding projects expose a persistent interactive source workspace',()=>{
+  const unit=read('t3/projects/workspace/unit.html');
+  const js=read('t3/projects/workspace/workspace.js');
+  assert.match(unit,/id="codeLabPanel"/);
+  assert.match(unit,/id="projectCodeEditor"/);
+  assert.match(unit,/id="runCode"/);
+  assert.match(unit,/id="webPreview"/);
+  assert.match(js,/save_code_file/);
+  assert.match(js,/record_code_run/);
+  assert.match(js,/loadPyodide/);
+  assert.match(js,/buildWebSrcdoc/);
+  assert.match(js,/TODO_BUILD/);
+  assert.match(js,/scheduleCodeSave/);
+});
+
+test('live code backend persists files, runtime state and gate snapshots',()=>{
+  const edge=read('supabase/functions/seminar-project-access/index.ts');
+  const migration=read('supabase/migrations/20260930153000_seminar_specific_project_live_code_v2.sql');
+  for(const table of ['seminar_project_code_files','seminar_project_code_runtime','seminar_project_code_snapshots']) {
+    assert.match(migration,new RegExp('create table if not exists public\\.'+table));
+    assert.match(edge,new RegExp(table));
+  }
+  assert.match(edge,/project_code_run_required/);
+  assert.match(edge,/project_code_incomplete/);
+  assert.match(edge,/last_run_ok/);
+  assert.match(migration,/seminar_master_dashboard_v5/);
+});
+
+test('teacher master surfaces saved project code and runtime status',()=>{
+  const master=read('t3/js/teacher.js');
+  assert.match(master,/sp\.code/);
+  assert.match(master,/Code workspaces/);
+  assert.match(master,/runtime PASS/);
+  assert.match(master,/snapshot_count/);
+});

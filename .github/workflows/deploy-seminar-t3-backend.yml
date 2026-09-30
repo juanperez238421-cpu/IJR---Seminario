@@ -110,10 +110,14 @@ jobs:
           test -s t3/projects/workspace/workspace.js
           test -s supabase/functions/seminar-project-access/index.ts
           test -s supabase/migrations/20260930134500_seminar_specific_project_workspace_v1.sql
+          test -s supabase/migrations/20260930153000_seminar_specific_project_live_code_v2.sql
           node --check t3/projects/workspace/workspace.js
           grep -q "save_progress" supabase/functions/seminar-project-access/index.ts
+          grep -q "save_code_file" supabase/functions/seminar-project-access/index.ts
+          grep -q "record_code_run" supabase/functions/seminar-project-access/index.ts
           grep -q "seminar_project_unit_progress" supabase/migrations/20260930134500_seminar_specific_project_workspace_v1.sql
-          grep -q "seminar_master_dashboard_v4" supabase/migrations/20260930134500_seminar_specific_project_workspace_v1.sql
+          grep -q "seminar_project_code_files" supabase/migrations/20260930153000_seminar_specific_project_live_code_v2.sql
+          grep -q "seminar_master_dashboard_v5" supabase/migrations/20260930153000_seminar_specific_project_live_code_v2.sql
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1

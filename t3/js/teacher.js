@@ -67,7 +67,7 @@ function latestOopSession(s){
 }
 function projectHasEvidence(s){
   const p=s.specific_project;
-  if(p&&(Number(p.started_units||0)>0||Number(p.completed_units||0)>0))return true;
+  if(p&&(Number(p.started_units||0)>0||Number(p.completed_units||0)>0||Number(p.code?.file_count||0)>0||Number(p.code?.run_count||0)>0))return true;
   const x=s.studio;if(!x)return false;
   return !!(x.project_title||x.repo_full_name||x.uml_url||x.next_goal||Number(x.progress_percent||0)>0||Number(x.sprint_current||1)>1)
 }
@@ -75,7 +75,7 @@ function viewLastActivity(s){
   let vals=[];
   if(activeView==='oop') vals=[...(s.oop_uml||[]).map(x=>x.updated_at||x.completed_at),...(s.oop_labs||[]).map(x=>x.last_activity_at)];
   else if(activeView==='topics') vals=[s.studio?.last_student_activity_at,s.diagnostic?.completed_at,s.diagnostic?.updated_at];
-  else vals=[s.specific_project?.last_activity_at,s.studio?.last_student_activity_at,s.studio?.updated_at];
+  else vals=[s.specific_project?.code?.last_code_saved_at,s.specific_project?.code?.last_run_at,s.specific_project?.last_activity_at,s.studio?.last_student_activity_at,s.studio?.updated_at];
   const ts=vals.filter(Boolean).map(x=>new Date(x).getTime()).filter(Number.isFinite);
   return ts.length?new Date(Math.max(...ts)).toISOString():null
 }
@@ -163,8 +163,8 @@ function renderMetrics(){
       ['Specific projects',all.filter(s=>s.specific_project).length],
       ['Project evidence',all.filter(projectHasEvidence).length],
       ['Unit gates passed',all.reduce((n,s)=>n+Number(s.specific_project?.completed_units||0),0)],
-      ['GitHub repos',all.filter(s=>s.studio?.repo_full_name).length],
-      ['Progress > 0%',all.filter(s=>Number(s.specific_project?.progress_percent||s.studio?.progress_percent||0)>0).length]
+      ['Code workspaces',all.filter(s=>Number(s.specific_project?.code?.file_count||0)>0).length],
+      ['Runtime PASS',all.filter(s=>s.specific_project?.code?.last_run_ok===true).length]
     ];
   }
   $('metrics').innerHTML=vals.map(([k,v])=>'<div class="metric"><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('');
@@ -247,7 +247,7 @@ function projectRow(s){
     '<td>'+(p?'<span class="pill '+(Number(p.completed_units||0)>0?'partial':'none')+'">Unit '+esc(current||1)+'/'+esc(unitCount)+'</span>':st?'<span class="pill none">Sprint '+esc(st.sprint_current||1)+'</span>':'<span class="pill none">—</span>')+'</td>'+
     '<td>'+(p||st?'<span class="cell-main">'+esc(progress)+'%</span><div class="progress-mini"><i style="width:'+Math.max(0,Math.min(100,progress))+'%"></i></div>':'<span class="pill none">—</span>')+'</td>'+
     '<td>'+(p?'<span class="pill '+(Number(p.completed_units||0)>0?'done':Number(p.started_units||0)>0?'partial':'none')+'">'+esc(p.completed_units||0)+'/'+esc(unitCount)+' gates</span>':'<span class="pill none">No gates</span>')+'</td>'+
-    '<td>'+(st?.repo_full_name?'<span class="pill done">GitHub linked</span>':'<span class="pill none">No repo</span>')+'</td>'+
+    '<td>'+(p?.code?'<span class="pill '+(p.code.last_run_ok?'done':Number(p.code.file_count||0)>0?'partial':'none')+'">'+esc(p.code.file_count||0)+' file(s)</span><span class="cell-sub">'+(p.code.last_run_ok?'runtime PASS':Number(p.code.run_count||0)>0?'last run failed':'not run')+' · '+esc(p.code.runtime_kind||'source')+'</span>':'<span class="pill none">No code</span>')+'</td>'+
     '<td>'+(p?'<span class="cell-sub">'+esc(p.decision_status||p.assignment_status||'assigned')+'</span>':st?.next_goal?'<span class="cell-sub">'+esc(st.next_goal)+'</span>':'<span class="pill none">No state</span>')+'</td>'+
     '<td class="time">'+esc(fmtTime(last))+'</td>'+
     '<td><span class="pill '+(evidence?'partial':p||st?'active':'none')+'">'+(evidence?'Evidence started':p?'Project assigned':st?'Profile only':'No activity')+'</span></td>'+
@@ -260,7 +260,7 @@ function render(){
   const heads={
     oop:['Grupo','#','Estudiante','Identidad','Workshop session','Última sesión','UML evidence','Code runtime','OOP labs','Última actividad','Estado',''],
     topics:['Grupo','#','Estudiante','Identidad','Track','Selección','Diagnóstico','Resultado','Última actividad','Estado',''],
-    project:['Grupo','#','Estudiante','Identidad','Proyecto específico','Unidad','Avance','Gates','Repositorio','Estado proyecto','Última actividad','Estado','']
+    project:['Grupo','#','Estudiante','Identidad','Proyecto específico','Unidad','Avance','Gates','Código','Estado proyecto','Última actividad','Estado','']
   }[activeView];
   $('studentHead').innerHTML=heads.map(x=>'<th>'+esc(x)+'</th>').join('');
   $('studentBody').innerHTML=rows.map(s=>activeView==='oop'?oopRow(s):activeView==='topics'?topicsRow(s):projectRow(s)).join('')
@@ -294,7 +294,9 @@ function openDetail(id){
   if(!sp)$('detailSpecificProject').innerHTML=detailEmpty('No specific project assigned.');
   else{
     const units=sp.units||[];
+    const code=sp.code||{};
     $('detailSpecificProject').innerHTML='<div class="detail-card"><span class="label">'+esc(sp.track_slug||'Project')+' · '+esc(sp.project_mode||'')+'</span><strong>'+esc(sp.project_title||'Specific project')+'</strong><div class="cell-sub">Progress '+esc(sp.progress_percent||0)+'% · '+esc(sp.completed_units||0)+'/'+esc(sp.unit_count||0)+' gates passed · current unit '+esc(sp.current_unit||'—')+' · '+esc(sp.decision_status||sp.assignment_status||'')+'</div></div>'+
+      '<div class="detail-card"><span class="label">Persistent code workspace</span><strong>'+esc(code.file_count||0)+' file(s) · '+(code.last_run_ok?'runtime PASS':'runtime pending')+'</strong><div class="cell-sub">'+esc(code.runtime_kind||'—')+' · '+esc(code.successful_run_count||0)+'/'+esc(code.run_count||0)+' successful runs · snapshots '+esc(code.snapshot_count||0)+' · last saved '+esc(fmtTime(code.last_code_saved_at))+'</div></div>'+
       (units.length?'<div class="detail-list">'+units.map(u=>'<div class="detail-row"><div><strong>Unit '+esc(u.unit_no)+' · '+esc(u.status||'not_started')+'</strong><span class="cell-sub">Theory '+(u.theory_viewed?'✓':'—')+' · Workshop '+(u.workshop_started?'✓':'—')+' · Gate '+(u.gate_passed?'✓':'—')+'</span></div><span>'+esc(fmtTime(u.updated_at))+'</span></div>').join('')+'</div>':'<div class="detail-empty">No unit evidence recorded yet.</div>');
   }
   const st=s.studio;if(!st)$('detailStudio').innerHTML=detailEmpty('No Software Engineering Studio profile.');

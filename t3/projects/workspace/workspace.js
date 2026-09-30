@@ -56,7 +56,8 @@ const TRACK_GUIDANCE={
     workshop:'Implement or simulate the current control increment, run a defined scenario, verify expected state/output behavior and preserve code, serial/log, video or test-matrix evidence.'
   }
 };
-let state={email:'',student:null,project:null,progress:null};
+let state={email:'',student:null,project:null,progress:null,codeWorkspace:null};
+const codeState={files:new Map(),dirty:new Set(),activeKey:'',saveTimer:null,pyodide:null,runtimePromise:null,wired:false};
 
 function setBoot(message){if($('bootStatus'))$('bootStatus').textContent=message}
 function friendlyError(code){
@@ -69,7 +70,17 @@ function friendlyError(code){
     previous_project_unit_incomplete:'Debes aprobar la unidad anterior antes de cerrar esta.',
     project_gate_requirements_missing:'Para aprobar el gate debes revisar Theory, iniciar Workshop, completar los cuatro checks y registrar evidencia verificable.',
     backend_unavailable:'El backend del proyecto no está disponible en este momento.',
-    invalid_client:'La configuración del cliente no coincide con producción.'
+    invalid_client:'La configuración del cliente no coincide con producción.',
+    project_code_not_available:'Este proyecto no usa un workspace de código.',
+    invalid_code_file_key:'El nombre del archivo no es válido.',
+    invalid_code_language:'Ese tipo de archivo no está habilitado para este proyecto.',
+    code_file_too_large:'El archivo supera el tamaño permitido.',
+    code_file_limit_reached:'Este proyecto alcanzó el máximo de archivos del workspace.',
+    project_runtime_not_available:'Este proyecto guarda código, pero no tiene ejecución completa dentro del navegador.',
+    runtime_mismatch:'El runtime no coincide con el tipo de proyecto.',
+    project_code_required:'Guarda código real del proyecto antes de ejecutar.',
+    project_code_incomplete:'Aún quedan marcadores TODO_BUILD o WRITE_HERE en el código ejecutable.',
+    project_code_run_required:'Antes de aprobar este gate debes guardar y ejecutar/validar correctamente la versión actual del código.'
   };
   return map[code]||'No fue posible sincronizar el proyecto. Intenta nuevamente.';
 }
@@ -107,6 +118,7 @@ async function load(){
   state.student=data.student;
   state.project=data.project;
   state.progress=data.progress||{unit_count:0,completed_units:0,started_units:0,current_unit:null,progress_percent:0,units:[]};
+  state.codeWorkspace=data.code_workspace||null;
   return data;
 }
 function unitMeta(n){
@@ -264,6 +276,7 @@ function renderUnit(){
     $('evidenceNote').value=row.evidence_note||'';
     $('evidenceUrl').value=row.evidence_url||'';
     $('repoRef').value=row.repo_ref||'';
+    initCodeLab(unit);
 
     const previousLocked=unit>1&&!progressRow(unit-1).gate_passed;
     $('gateLock').classList.toggle('hidden',!previousLocked);
@@ -277,9 +290,382 @@ function renderUnit(){
     $('passGate').addEventListener('click',()=>saveWorkshop(unit,true));
   }
 }
-function workshopPayload(){
+
+const CODE_LANGUAGE_BY_EXT={
+  html:'html',htm:'html',css:'css',js:'javascript',mjs:'javascript',
+  py:'python',scad:'openscad',json:'json',md:'markdown',txt:'text'
+};
+
+function codeProfile(){
+  return state.codeWorkspace||{enabled:false,required_for_gate:false,runtime_kind:'source',allowed_languages:[],starter_files:[],files:[],runtime:null};
+}
+
+function codeDisplayRuntime(kind){
+  return ({web:'Web sandbox','python-browser':'Python · Pyodide','python-syntax':'Python syntax validator',source:'Source workspace'})[kind]||kind||'—';
+}
+
+function codeStarterContent(spec,unit){
+  const title=state.project?.project_title||'Specific Project';
+  const goal=unitMeta(unit)?.goal||state.project?.objective||'Build the next project increment.';
+  if(spec.language==='html'){
+    return '<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width,initial-scale=1">\n  <title>'+title.replace(/[<>]/g,'')+'</title>\n</head>\n<body>\n  <main id="app">\n    <h1>'+title.replace(/[<>]/g,'')+'</h1>\n    <p id="status">Project workspace ready.</p>\n    <button id="primaryAction" type="button">Run project action</button>\n  </main>\n</body>\n</html>\n';
+  }
+  if(spec.language==='css'){
+    return 'body {\n  font-family: system-ui, sans-serif;\n  margin: 0;\n  padding: 2rem;\n}\n\n#app {\n  max-width: 760px;\n  margin: 0 auto;\n}\n';
+  }
+  if(spec.language==='javascript'){
+    return '/* TODO_BUILD: replace this starter behavior with the real Unit '+unit+' feature. */\nconst status = document.querySelector("#status");\nconst button = document.querySelector("#primaryAction");\n\nbutton?.addEventListener("click", () => {\n  status.textContent = "Build the real project behavior for: '+goal.replace(/\n/g,' ').replace(/"/g,'\\"')+'";\n  console.log("project action", { unit: '+unit+' });\n});\n';
+  }
+  if(spec.language==='python'){
+    if(spec.key==='tests.py'){
+      return '"""Project verification file. Add real assertions as the project grows."""\n\n# Example: import functions/classes from main.py and assert expected behavior.\nprint("tests.py loaded — add project-specific checks when required")\n';
+    }
+    return '"""'+title.replace(/"""/g,'')+'\nUnit '+unit+' project source.\n"""\n\nPROJECT_TITLE = '+JSON.stringify(title)+'\nUNIT_GOAL = '+JSON.stringify(goal)+'\n\n# TODO_BUILD: replace this starter function with the real project increment.\ndef build_increment():\n    print(PROJECT_TITLE)\n    print("Unit goal:", UNIT_GOAL)\n    return {"unit": '+unit+', "status": "starter"}\n\nif __name__ == "__main__":\n    result = build_increment()\n    print("result", result)\n';
+  }
+  if(spec.language==='openscad'){
+    return '// '+title.replace(/\n/g,' ')+'\n// Unit '+unit+': '+goal.replace(/\n/g,' ')+'\n// TODO_BUILD: replace this starter geometry with the real parametric model.\nwidth = 40;\ndepth = 30;\nheight = 8;\n\ncube([width, depth, height]);\n';
+  }
+  if(spec.language==='markdown'){
+    return '# '+title+'\n\n## Unit '+unit+'\n\n'+goal+'\n\nRecord design decisions, dimensions, assumptions and test evidence here.\n';
+  }
+  if(spec.language==='json')return '{\n  "project": '+JSON.stringify(title)+',\n  "unit": '+unit+'\n}\n';
+  return title+'\nUnit '+unit+'\n'+goal+'\n';
+}
+
+function resetCodeLocal(unit){
+  codeState.files.clear();
+  codeState.dirty.clear();
+  codeState.activeKey='';
+  const workspace=codeProfile();
+  const saved=Array.isArray(workspace.files)?workspace.files:[];
+  if(saved.length){
+    saved.forEach(row=>codeState.files.set(row.file_key,{
+      file_key:row.file_key,language:row.language,content:row.content||'',revision:Number(row.revision||1),
+      updated_at:row.updated_at||null,last_run_ok:row.last_run_ok===true,last_run_at:row.last_run_at||null
+    }));
+  }else{
+    (workspace.starter_files||[]).forEach(spec=>{
+      codeState.files.set(spec.key,{file_key:spec.key,language:spec.language,content:codeStarterContent(spec,unit),revision:0,updated_at:null,last_run_ok:false,last_run_at:null});
+      codeState.dirty.add(spec.key);
+    });
+  }
+  codeState.activeKey=codeState.files.keys().next().value||'';
+}
+
+function renderCodeTabs(){
+  const wrap=$('codeFileTabs');if(!wrap)return;
+  wrap.innerHTML=[...codeState.files.values()].map(file=>{
+    const active=file.file_key===codeState.activeKey;
+    const dirty=codeState.dirty.has(file.file_key);
+    return '<button type="button" class="code-file-tab '+(active?'active':'')+'" data-code-file="'+esc(file.file_key)+'"><span>'+esc(file.file_key)+'</span><span class="dirty">'+(dirty?'unsaved':'r'+Number(file.revision||0))+'</span></button>';
+  }).join('');
+  wrap.querySelectorAll('[data-code-file]').forEach(btn=>btn.addEventListener('click',()=>selectCodeFile(btn.dataset.codeFile)));
+}
+
+function selectCodeFile(key){
+  if(!codeState.files.has(key))return;
+  codeState.activeKey=key;
+  const file=codeState.files.get(key);
+  $('projectCodeEditor').value=file.content||'';
+  $('activeFileLabel').textContent=file.file_key;
+  $('activeFileMeta').textContent=file.language+' · revision '+Number(file.revision||0)+(file.updated_at?' · saved '+new Date(file.updated_at).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}):'');
+  renderCodeTabs();
+}
+
+function setCodeBadge(message,kind=''){
+  const el=$('codeSaveBadge');if(!el)return;
+  el.textContent=message;
+  el.className='runtime-badge soft'+(kind?' '+kind:'');
+}
+
+function setCodeOutput(message,status=''){
+  const panel=$('codeOutputPanel'),pre=$('codeOutput');
+  panel.classList.remove('error','success');
+  if(status==='error')panel.classList.add('error');
+  if(status==='success')panel.classList.add('success');
+  pre.textContent=String(message||'');
+  $('codeRunStatus').textContent=status==='success'?'PASS':status==='error'?'ERROR':'Ready';
+}
+
+function currentCodeFile(){
+  return codeState.files.get(codeState.activeKey)||null;
+}
+
+async function saveCodeFile(key){
+  const file=codeState.files.get(key);
+  if(!file)return;
+  setCodeBadge('Supabase: saving','warn');
+  const result=await api({
+    action:'save_code_file',
+    email:state.email,
+    unit_no:query().unit,
+    file_key:file.file_key,
+    language:file.language,
+    content:file.content
+  });
+  const workspace=result.code_workspace;
+  state.codeWorkspace=workspace;
+  const saved=(workspace?.files||[]).find(row=>row.file_key===key);
+  if(saved){
+    file.revision=Number(saved.revision||file.revision||1);
+    file.updated_at=saved.updated_at||new Date().toISOString();
+    file.last_run_ok=saved.last_run_ok===true;
+    file.last_run_at=saved.last_run_at||null;
+  }
+  codeState.dirty.delete(key);
+  setCodeBadge('Supabase: saved','ok');
+  if(codeState.activeKey===key)selectCodeFile(key);else renderCodeTabs();
+}
+
+async function saveAllCodeFiles(){
+  const keys=[...codeState.dirty];
+  for(const key of keys)await saveCodeFile(key);
+}
+
+function scheduleCodeSave(){
+  clearTimeout(codeState.saveTimer);
+  codeState.saveTimer=setTimeout(()=>{
+    const key=codeState.activeKey;
+    if(key&&codeState.dirty.has(key))saveCodeFile(key).catch(err=>setCodeBadge(friendlyError(err.code||err.message),'warn'));
+  },1200);
+}
+
+function updateActiveCode(){
+  const file=currentCodeFile();if(!file)return;
+  file.content=$('projectCodeEditor').value;
+  codeState.dirty.add(file.file_key);
+  setCodeBadge('Supabase: unsaved','warn');
+  renderCodeTabs();
+  scheduleCodeSave();
+}
+
+function inferCodeLanguage(name){
+  const ext=String(name||'').split('.').pop().toLowerCase();
+  return CODE_LANGUAGE_BY_EXT[ext]||'text';
+}
+
+function addCodeFile(){
+  const workspace=codeProfile();
+  const name=(window.prompt('New project file name (example: utils.py, data.json, component.js)')||'').trim();
+  if(!name)return;
+  if(codeState.files.has(name)){selectCodeFile(name);return}
+  const language=inferCodeLanguage(name);
+  if(!(workspace.allowed_languages||[]).includes(language)){
+    $('codeLabStatus').textContent='This file type is not enabled for this project runtime.';
+    return;
+  }
+  const spec={key:name,language,label:name};
+  codeState.files.set(name,{file_key:name,language,content:codeStarterContent(spec,query().unit),revision:0,updated_at:null,last_run_ok:false,last_run_at:null});
+  codeState.dirty.add(name);
+  codeState.activeKey=name;
+  renderCodeTabs();
+  selectCodeFile(name);
+  setCodeBadge('Supabase: unsaved','warn');
+}
+
+async function ensurePyodide(){
+  if(codeState.pyodide)return codeState.pyodide;
+  if(codeState.runtimePromise)return codeState.runtimePromise;
+  codeState.runtimePromise=(async()=>{
+    $('codeRuntimeBadge').textContent='Runtime: loading Python…';
+    if(typeof globalThis.loadPyodide!=='function'){
+      await new Promise((resolve,reject)=>{
+        const script=document.createElement('script');
+        script.src='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
+        script.onload=resolve;script.onerror=()=>reject(new Error('Could not load Pyodide runtime.'));
+        document.head.appendChild(script);
+      });
+    }
+    codeState.pyodide=await globalThis.loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'});
+    $('codeRuntimeBadge').textContent='Runtime: Python ready';
+    return codeState.pyodide;
+  })();
+  try{return await codeState.runtimePromise}catch(err){codeState.runtimePromise=null;throw err}
+}
+
+function executableFiles(){
+  return [...codeState.files.values()].filter(file=>['python','html','css','javascript','openscad'].includes(file.language));
+}
+
+function hasIncompleteMarker(){
+  return executableFiles().some(file=>/TODO_BUILD|WRITE_HERE/.test(file.content||''));
+}
+
+async function runPythonWorkspace(kind){
+  const py=await ensurePyodide();
+  try{py.FS.mkdirTree('/project')}catch{}
+  const pyFiles=[...codeState.files.values()].filter(file=>file.language==='python');
+  pyFiles.forEach(file=>py.FS.writeFile('/project/'+file.file_key,file.content||''));
+  const allSource=pyFiles.map(file=>file.content||'').join('\n');
+  const stdout=[],stderr=[];
+  py.setStdout({batched:text=>stdout.push(text)});
+  py.setStderr({batched:text=>stderr.push(text)});
+  try{
+    if(kind==='python-browser'){
+      if(typeof py.loadPackagesFromImports==='function')await py.loadPackagesFromImports(allSource);
+      const main=pyFiles.find(file=>file.file_key==='main.py')||pyFiles[0];
+      if(!main)throw new Error('No Python source file is available.');
+      await py.runPythonAsync(
+        'import sys, runpy, pathlib\n'+
+        'root="/project"\n'+
+        'sys.path.insert(0, root) if root not in sys.path else None\n'+
+        'runpy.run_path("/project/'+main.file_key.replace(/"/g,'')+'", run_name="__main__")\n'+
+        'tests=pathlib.Path("/project/tests.py")\n'+
+        'runpy.run_path(str(tests), run_name="__main__") if tests.exists() and tests.read_text().strip() else None'
+      );
+    }else{
+      await py.runPythonAsync(
+        'import pathlib\n'+
+        'files=sorted(pathlib.Path("/project").glob("*.py"))\n'+
+        'assert files, "No Python files found"\n'+
+        'for p in files:\n'+
+        '    compile(p.read_text(), str(p), "exec")\n'+
+        '    print("syntax OK", p.name)'
+      );
+    }
+    return {ok:true,output:stdout.join('\n').trim()||'Python completed successfully.',error:''};
+  }catch(err){
+    stderr.push(String(err?.message||err));
+    return {ok:false,output:stdout.join('\n').trim(),error:stderr.join('\n').trim()};
+  }
+}
+
+function buildWebSrcdoc(channel){
+  const get=(name)=>codeState.files.get(name)?.content||'';
+  const html=get('index.html')||'<!doctype html><html><body><main id="app"></main></body></html>';
+  const css=get('styles.css');
+  const js=get('app.js');
+  const guard='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data: blob:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'; font-src data:;">';
+  const instrument='<script>(function(){const channel='+JSON.stringify(channel)+';let errors=0;const logs=[];const send=(type,payload)=>parent.postMessage({channel,type,payload},"*");["log","warn","error"].forEach(k=>{const original=console[k];console[k]=(...args)=>{logs.push(k.toUpperCase()+" "+args.map(v=>{try{return typeof v==="string"?v:JSON.stringify(v)}catch{return String(v)}}).join(" "));original.apply(console,args)}});window.addEventListener("error",e=>{errors++;logs.push("ERROR "+e.message)});window.addEventListener("unhandledrejection",e=>{errors++;logs.push("ERROR "+String(e.reason))});setTimeout(()=>send("done",{ok:errors===0,output:logs.join("\\n"),errors}),900)})();<\/script>';
+  const style='<style>'+css.replace(/<\/style/gi,'<\\/style')+'</style>';
+  const app='<script>'+js.replace(/<\/script/gi,'<\\/script')+'<\/script>';
+  const addon=guard+style+instrument+app;
+  if(/<\/head>/i.test(html))return html.replace(/<\/head>/i,guard+style+'</head>').replace(/<\/body>/i,instrument+app+'</body>');
+  return '<!doctype html><html><head>'+guard+style+'</head><body>'+html+instrument+app+'</body></html>';
+}
+
+async function runWebWorkspace(){
+  const frame=$('webPreview');
+  frame.classList.remove('hidden');
+  const channel='ijr-project-'+Date.now()+'-'+Math.random().toString(16).slice(2);
+  return await new Promise(resolve=>{
+    let finished=false;
+    const done=result=>{
+      if(finished)return;finished=true;
+      window.removeEventListener('message',listener);
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const listener=event=>{
+      if(event.source!==frame.contentWindow||event.data?.channel!==channel||event.data?.type!=='done')return;
+      const payload=event.data.payload||{};
+      done({ok:payload.ok===true,output:payload.output||'Preview rendered.',error:payload.ok===true?'':'Browser runtime reported an error.'});
+    };
+    window.addEventListener('message',listener);
+    const timer=setTimeout(()=>done({ok:false,output:'',error:'Preview did not finish its validation handshake.'}),3500);
+    frame.srcdoc=buildWebSrcdoc(channel);
+  });
+}
+
+function runSourceWorkspace(){
+  const files=executableFiles();
+  if(!files.length)return {ok:false,output:'',error:'No source file is available.'};
+  for(const file of files){
+    const text=file.content||'';
+    let braces=0,parens=0;
+    for(const ch of text){if(ch==='{')braces++;if(ch==='}')braces--;if(ch==='(')parens++;if(ch===')')parens--}
+    if(braces!==0||parens!==0)return {ok:false,output:'',error:file.file_key+': unbalanced braces or parentheses.'};
+  }
+  return {ok:true,output:files.map(file=>'source check OK '+file.file_key).join('\n'),error:''};
+}
+
+function currentChecklist(){
   const checklist={};
   document.querySelectorAll('[data-check]').forEach(input=>{checklist[input.dataset.check]=input.checked});
+  return checklist;
+}
+
+async function runProjectCode(unit){
+  const button=$('runCode');
+  button.disabled=true;button.classList.add('working');
+  setCodeOutput('Saving current project files before runtime…');
+  $('codeLabStatus').textContent='Saving current files…';
+  try{
+    updateActiveCode();
+    await saveAllCodeFiles();
+    if(hasIncompleteMarker())throw Object.assign(new Error('project_code_incomplete'),{code:'project_code_incomplete'});
+    const kind=codeProfile().runtime_kind;
+    $('codeRuntimeBadge').textContent='Runtime: '+codeDisplayRuntime(kind)+' · running';
+    let result;
+    if(kind==='web')result=await runWebWorkspace();
+    else if(kind==='python-browser'||kind==='python-syntax')result=await runPythonWorkspace(kind);
+    else result=runSourceWorkspace();
+
+    const recorded=await api({
+      action:'record_code_run',
+      email:state.email,
+      unit_no:unit,
+      runtime_kind:kind,
+      run_ok:result.ok,
+      output:result.output||'',
+      error:result.error||''
+    });
+    state.codeWorkspace=recorded.code_workspace||state.codeWorkspace;
+    setCodeOutput(result.ok?(result.output||'Validation passed.'):(result.error||result.output||'Runtime failed.'),result.ok?'success':'error');
+    $('codeRuntimeBadge').textContent='Runtime: '+codeDisplayRuntime(kind)+(result.ok?' · PASS':' · ERROR');
+    $('codeRuntimeBadge').className='runtime-badge '+(result.ok?'ok':'warn');
+    $('codeLabStatus').textContent=result.ok?'Current code version executed/validated and recorded in Supabase.':'The failed run was recorded. Fix the code and run again.';
+    if(result.ok){
+      const built=document.querySelector('[data-check="built"]'),tested=document.querySelector('[data-check="tested"]');
+      if(built)built.checked=true;if(tested)tested.checked=true;
+      const partial=await saveUnit(unit,{
+        workshop_started:true,
+        checklist:currentChecklist(),
+        evidence_note:$('evidenceNote').value.trim(),
+        evidence_url:$('evidenceUrl').value.trim(),
+        repo_ref:$('repoRef').value.trim()
+      });
+      state.progress=partial.progress||state.progress;
+      state.codeWorkspace=partial.code_workspace||state.codeWorkspace;
+      setUnitStatus(progressRow(unit));
+      $('codeGateStatus').textContent='Build + Test validated by the current runtime.';
+    }
+  }catch(error){
+    setCodeOutput(friendlyError(error.code||error.message),'error');
+    $('codeLabStatus').textContent=friendlyError(error.code||error.message);
+    $('codeRuntimeBadge').className='runtime-badge warn';
+  }finally{
+    button.disabled=false;button.classList.remove('working');
+  }
+}
+
+function initCodeLab(unit){
+  const panel=$('codeLabPanel');if(!panel)return;
+  const workspace=codeProfile();
+  panel.classList.toggle('hidden',!workspace.enabled);
+  if(!workspace.enabled)return;
+  resetCodeLocal(unit);
+  $('codeRuntimeBadge').textContent='Runtime: '+codeDisplayRuntime(workspace.runtime_kind);
+  $('codeSaveBadge').textContent='Supabase: synchronized';
+  $('codeSaveBadge').className='runtime-badge soft ok';
+  $('codeGateStatus').textContent=workspace.required_for_gate
+    ?'A successful run/validation of the current saved code is required before the unit gate.'
+    :'Source is saved continuously; external artifact verification remains part of the evidence gate.';
+  $('runCode').textContent=workspace.runtime_kind==='web'?'Run live preview':workspace.runtime_kind==='python-browser'?'Run Python':workspace.runtime_kind==='python-syntax'?'Validate Python syntax':'Validate source';
+  $('webPreview').classList.add('hidden');
+  renderCodeTabs();
+  if(codeState.activeKey)selectCodeFile(codeState.activeKey);
+  if(!codeState.wired){
+    codeState.wired=true;
+    $('projectCodeEditor').addEventListener('input',updateActiveCode);
+    $('saveCodeFile').addEventListener('click',()=>{const key=codeState.activeKey;if(key)saveCodeFile(key).catch(err=>$('codeLabStatus').textContent=friendlyError(err.code||err.message))});
+    $('runCode').addEventListener('click',()=>runProjectCode(query().unit));
+    $('addCodeFile').addEventListener('click',addCodeFile);
+  }
+}
+
+function workshopPayload(){
+  const checklist=currentChecklist();
   return {
     workshop_started:true,
     checklist,
@@ -309,6 +695,7 @@ async function saveWorkshop(unit,pass){
   try{
     const data=await saveUnit(unit,{...workshopPayload(),gate_passed:pass});
     state.progress=data.progress;
+    state.codeWorkspace=data.code_workspace||state.codeWorkspace;
     const row=progressRow(unit);
     setUnitStatus(row);
     status.textContent=pass?'Gate passed. Progress is visible in the teacher Master panel.':'Partial progress saved in Supabase.';
