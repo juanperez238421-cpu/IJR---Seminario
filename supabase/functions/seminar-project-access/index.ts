@@ -327,6 +327,62 @@ function projectPayload(project: ProjectRow) {
   };
 }
 
+const WORKSPACE_CHECKS = ["defined", "built", "tested", "evidence"] as const;
+function normalizeChecklist(value: unknown) {
+  const source = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+  return Object.fromEntries(WORKSPACE_CHECKS.map((key) => [key, source[key] === true]));
+}
+function progressPayload(project: ProjectRow | null, rows: Record<string, any>[]) {
+  const units = Array.isArray(project?.sprints) ? project!.sprints.length : 0;
+  const byUnit = new Map(rows.map((row) => [Number(row.unit_no), row]));
+  const normalized = Array.from({ length: units }, (_, index) => {
+    const unitNo = index + 1;
+    const row = byUnit.get(unitNo);
+    return row ? {
+      unit_no: unitNo,
+      status: row.status,
+      theory_viewed: row.theory_viewed === true,
+      workshop_started: row.workshop_started === true,
+      gate_passed: row.gate_passed === true,
+      checklist: normalizeChecklist(row.checklist),
+      evidence_note: row.evidence_note ?? "",
+      evidence_url: row.evidence_url ?? "",
+      repo_ref: row.repo_ref ?? "",
+      started_at: row.started_at,
+      completed_at: row.completed_at,
+      updated_at: row.updated_at,
+    } : {
+      unit_no: unitNo,
+      status: "not_started",
+      theory_viewed: false,
+      workshop_started: false,
+      gate_passed: false,
+      checklist: normalizeChecklist({}),
+      evidence_note: "",
+      evidence_url: "",
+      repo_ref: "",
+      started_at: null,
+      completed_at: null,
+      updated_at: null,
+    };
+  });
+  const completed = normalized.filter((row) => row.gate_passed).length;
+  const started = normalized.filter((row) => row.status !== "not_started" || row.theory_viewed || row.workshop_started).length;
+  const current = units
+    ? (normalized.find((row) => !row.gate_passed)?.unit_no ?? units)
+    : null;
+  return {
+    unit_count: units,
+    completed_units: completed,
+    started_units: started,
+    current_unit: current,
+    progress_percent: units ? Math.round((completed / units) * 100) : 0,
+    units: normalized,
+  };
+}
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") {
@@ -415,6 +471,105 @@ Deno.serve(async (req: Request) => {
       return json(origin, 404, { error: "project_access_denied" });
     }
 
+    const loadProgress = async (projectRow: ProjectRow | null) => {
+      if (!projectRow?.project_slug) return progressPayload(projectRow, []);
+      const result = await admin
+        .from("seminar_project_unit_progress")
+        .select("unit_no,status,theory_viewed,workshop_started,gate_passed,checklist,evidence_note,evidence_url,repo_ref,started_at,completed_at,updated_at")
+        .eq("student_registry_id", identity.student_registry_id)
+        .eq("project_slug", projectRow.project_slug)
+        .order("unit_no", { ascending: true });
+      if (result.error) throw result.error;
+      return progressPayload(projectRow, result.data || []);
+    };
+
+    if (action === "save_progress") {
+      if (!project?.project_slug) return json(origin, 409, { error: "project_not_defined" });
+      const unitCount = Array.isArray(project.sprints) ? project.sprints.length : 0;
+      const unitNo = Number(body?.unit_no);
+      if (!Number.isInteger(unitNo) || unitNo < 1 || unitNo > unitCount) {
+        return json(origin, 400, { error: "invalid_project_unit" });
+      }
+
+      const existingProgress = await loadProgress(project);
+      const currentUnit = existingProgress.units.find((row: any) => row.unit_no === unitNo);
+      const theoryViewed = body?.theory_viewed === true || currentUnit?.theory_viewed === true;
+      const workshopStarted = body?.workshop_started === true || currentUnit?.workshop_started === true;
+      const checklist = normalizeChecklist(body?.checklist ?? currentUnit?.checklist);
+      const evidenceNote = cleanText(body?.evidence_note ?? currentUnit?.evidence_note, 2000);
+      const evidenceUrl = cleanText(body?.evidence_url ?? currentUnit?.evidence_url, 1000);
+      const repoRef = cleanText(body?.repo_ref ?? currentUnit?.repo_ref, 300);
+      const gateRequested = body?.gate_passed === true;
+      const allChecks = WORKSPACE_CHECKS.every((key) => checklist[key] === true);
+      const hasEvidence = Boolean(evidenceNote || evidenceUrl || repoRef);
+
+      if (gateRequested && unitNo > 1) {
+        const previous = existingProgress.units.find((row: any) => row.unit_no === unitNo - 1);
+        if (!previous?.gate_passed) return json(origin, 409, { error: "previous_project_unit_incomplete" });
+      }
+      if (gateRequested && (!theoryViewed || !workshopStarted || !allChecks || !hasEvidence)) {
+        return json(origin, 409, { error: "project_gate_requirements_missing" });
+      }
+
+      const now = new Date().toISOString();
+      const activity = theoryViewed || workshopStarted || Object.values(checklist).some(Boolean) || hasEvidence;
+      const gatePassed = gateRequested || currentUnit?.gate_passed === true;
+      const status = gatePassed ? "completed" : activity ? "in_progress" : "not_started";
+      const payload = {
+        student_registry_id: identity.student_registry_id,
+        project_slug: project.project_slug,
+        unit_no: unitNo,
+        status,
+        theory_viewed: theoryViewed,
+        workshop_started: workshopStarted,
+        gate_passed: gatePassed,
+        checklist,
+        evidence_note: evidenceNote || null,
+        evidence_url: evidenceUrl || null,
+        repo_ref: repoRef || null,
+        started_at: currentUnit?.started_at || (activity ? now : null),
+        completed_at: gatePassed ? (currentUnit?.completed_at || now) : null,
+        updated_at: now,
+      };
+
+      const savedProgress = await admin
+        .from("seminar_project_unit_progress")
+        .upsert(payload, { onConflict: "student_registry_id,project_slug,unit_no" })
+        .select("unit_no")
+        .single();
+      if (savedProgress.error) throw savedProgress.error;
+
+      const refreshedProgress = await loadProgress(project);
+      const profileResult = await admin
+        .from("seminar_studio_profiles")
+        .select("id")
+        .eq("student_registry_id", identity.student_registry_id)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (profileResult.error) throw profileResult.error;
+      if (profileResult.data?.id) {
+        const studioUpdate = await admin
+          .from("seminar_studio_profiles")
+          .update({
+            sprint_current: Math.max(1, Number(refreshedProgress.current_unit || 1)),
+            progress_percent: refreshedProgress.progress_percent,
+            last_student_activity_at: now,
+            updated_at: now,
+          })
+          .eq("id", profileResult.data.id);
+        if (studioUpdate.error) throw studioUpdate.error;
+      }
+
+      return json(origin, 200, {
+        ok: true,
+        saved: true,
+        student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
+        project: projectPayload(project),
+        progress: refreshedProgress,
+      });
+    }
+
     if (action === "save_decision") {
       let authorized = false;
       const editToken = cleanText(body?.edit_token, 160);
@@ -497,6 +652,7 @@ Deno.serve(async (req: Request) => {
         saved: true,
         student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
         project: projectPayload(project),
+        progress: await loadProgress(project),
         options: buildOptions(project, preferredTrack),
       });
     }
@@ -515,6 +671,7 @@ Deno.serve(async (req: Request) => {
       ok: true,
       student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
       project: projectPayload(project ?? virtualProject(roster, preferredTrack)),
+      progress: await loadProgress(project),
       options: buildOptions(project, preferredTrack),
     });
   } catch (error) {
