@@ -64,6 +64,7 @@ function friendlyError(code){
     project_access_denied:'Tu correo institucional no está vinculado a un estudiante activo de Seminario 11.',
     institutional_email_required:'No se encontró una identidad institucional válida.',
     project_not_defined:'Primero debes confirmar un proyecto en Project Decision Center.',
+    project_not_confirmed:'Tu ruta todavía está en modo de definición. Confirma primero el tema, alcance, objetivo y herramientas en Project Decision Center.',
     invalid_project_unit:'La unidad solicitada no existe en este proyecto.',
     previous_project_unit_incomplete:'Debes aprobar la unidad anterior antes de cerrar esta.',
     project_gate_requirements_missing:'Para aprobar el gate debes revisar Theory, iniciar Workshop, completar los cuatro checks y registrar evidencia verificable.',
@@ -118,6 +119,10 @@ function progressRow(n){
     checklist:{defined:false,built:false,tested:false,evidence:false},evidence_note:'',evidence_url:'',repo_ref:''
   };
 }
+function projectReady(){
+  const p=state.project;
+  return Boolean(p?.is_defined && (p.project_mode==='fixed' || p.decision_status==='confirmed'));
+}
 function projectUnitLabel(){
   return state.project?.project_slug==='rico-portable-python-visual-show'?'Class':'Unit';
 }
@@ -152,8 +157,12 @@ function renderResources(){
 function renderHub(){
   const p=state.project,s=state.student,progress=state.progress;
   $('bootPanel').classList.add('hidden');
-  if(!p?.is_defined){
+  if(!projectReady()){
     $('noProjectPanel').classList.remove('hidden');
+    if(p?.is_defined&&p?.project_mode==='guided_definition'){
+      $('noProjectPanel').querySelector('h2').textContent='Tu proyecto aún está por definir.';
+      $('noProjectPanel').querySelector('p').textContent='Tu ruta técnica existe, pero todavía debes confirmar un tema, producto, objetivo y herramientas concretas en Project Decision Center antes de registrar progreso de construcción.';
+    }
     return;
   }
   $('workspacePanel').classList.remove('hidden');
@@ -204,7 +213,14 @@ function setUnitStatus(row){
 function renderUnit(){
   const p=state.project,s=state.student,{unit,mode}=query();
   $('bootPanel').classList.add('hidden');
-  if(!p?.is_defined){$('noProjectPanel').classList.remove('hidden');return}
+  if(!projectReady()){
+    $('noProjectPanel').classList.remove('hidden');
+    if(p?.is_defined&&p?.project_mode==='guided_definition'){
+      $('noProjectPanel').querySelector('h2').textContent='Project definition required.';
+      $('noProjectPanel').querySelector('p').textContent='Confirm the concrete project in Project Decision Center before opening tracked units.';
+    }
+    return;
+  }
   const meta=unitMeta(unit);
   if(!meta){$('noProjectPanel').classList.remove('hidden');$('noProjectPanel').querySelector('h2').textContent='This project unit does not exist.';return}
   const row=progressRow(unit),guide=TRACK_GUIDANCE[p.track_slug]||TRACK_GUIDANCE.web,label=projectUnitLabel();
