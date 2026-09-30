@@ -383,6 +383,163 @@ function progressPayload(project: ProjectRow | null, rows: Record<string, any>[]
   };
 }
 
+type CodeFileSpec = { key: string; language: string; label: string };
+type CodeProfile = {
+  enabled: boolean;
+  required_for_gate: boolean;
+  runtime_kind: "web" | "python-browser" | "python-syntax" | "source";
+  allowed_languages: string[];
+  starter_files: CodeFileSpec[];
+};
+
+function projectCodeProfile(project: ProjectRow | null): CodeProfile {
+  const track = String(project?.track_slug || "");
+  const stack = (Array.isArray(project?.stack) ? project!.stack : []).join(" ").toLowerCase();
+  const title = String(project?.project_title || "").toLowerCase();
+
+  if (track === "web") {
+    return {
+      enabled: true,
+      required_for_gate: true,
+      runtime_kind: "web",
+      allowed_languages: ["html", "css", "javascript", "json", "markdown"],
+      starter_files: [
+        { key: "index.html", language: "html", label: "HTML" },
+        { key: "styles.css", language: "css", label: "CSS" },
+        { key: "app.js", language: "javascript", label: "JavaScript" },
+      ],
+    };
+  }
+
+  if (track === "data-science") {
+    const syntaxOnly = /pygame|manim|pyinstaller/.test(stack + " " + title);
+    return {
+      enabled: true,
+      required_for_gate: true,
+      runtime_kind: syntaxOnly ? "python-syntax" : "python-browser",
+      allowed_languages: ["python", "json", "markdown", "text"],
+      starter_files: [
+        { key: "main.py", language: "python", label: "main.py" },
+        { key: "tests.py", language: "python", label: "tests.py" },
+      ],
+    };
+  }
+
+  if (track === "cybersecurity") {
+    const webBased = /html|javascript|node\.js|dom|csp/.test(stack) && !/python|fastapi|flask/.test(stack);
+    return {
+      enabled: true,
+      required_for_gate: true,
+      runtime_kind: webBased ? "web" : (/fastapi|flask|docker|nginx/.test(stack) ? "python-syntax" : "python-browser"),
+      allowed_languages: webBased
+        ? ["html", "css", "javascript", "json", "markdown"]
+        : ["python", "json", "markdown", "text"],
+      starter_files: webBased
+        ? [
+            { key: "index.html", language: "html", label: "HTML" },
+            { key: "styles.css", language: "css", label: "CSS" },
+            { key: "app.js", language: "javascript", label: "JavaScript" },
+          ]
+        : [
+            { key: "main.py", language: "python", label: "main.py" },
+            { key: "tests.py", language: "python", label: "tests.py" },
+          ],
+    };
+  }
+
+  if (track === "robotics") {
+    return {
+      enabled: true,
+      required_for_gate: true,
+      runtime_kind: "python-browser",
+      allowed_languages: ["python", "json", "markdown", "text"],
+      starter_files: [
+        { key: "main.py", language: "python", label: "main.py" },
+        { key: "tests.py", language: "python", label: "tests.py" },
+      ],
+    };
+  }
+
+  if (track === "3d-programming") {
+    const pythonDriven = /python/.test(stack);
+    return {
+      enabled: true,
+      required_for_gate: pythonDriven,
+      runtime_kind: pythonDriven ? "python-browser" : "source",
+      allowed_languages: pythonDriven
+        ? ["python", "json", "markdown", "text"]
+        : ["openscad", "python", "json", "markdown", "text"],
+      starter_files: pythonDriven
+        ? [{ key: "main.py", language: "python", label: "main.py" }]
+        : [
+            { key: "model.scad", language: "openscad", label: "model.scad" },
+            { key: "README.md", language: "markdown", label: "README" },
+          ],
+    };
+  }
+
+  return {
+    enabled: false,
+    required_for_gate: false,
+    runtime_kind: "source",
+    allowed_languages: ["text"],
+    starter_files: [],
+  };
+}
+
+function validCodeFileKey(value: string) {
+  return value.length >= 1
+    && value.length <= 120
+    && /^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(value)
+    && !value.includes("..")
+    && !value.startsWith("/");
+}
+
+function codeWorkspacePayload(profile: CodeProfile, files: Record<string, any>[], runtime: Record<string, any> | null) {
+  return {
+    enabled: profile.enabled,
+    required_for_gate: profile.required_for_gate,
+    runtime_kind: profile.runtime_kind,
+    allowed_languages: profile.allowed_languages,
+    starter_files: profile.starter_files,
+    files: files.map((row) => ({
+      file_key: row.file_key,
+      language: row.language,
+      content: row.content,
+      revision: row.revision,
+      last_unit_no: row.last_unit_no,
+      last_run_ok: row.last_run_ok === true,
+      last_run_at: row.last_run_at,
+      last_run_output: row.last_run_output ?? "",
+      content_sha256: row.content_sha256,
+      updated_at: row.updated_at,
+    })),
+    runtime: runtime ? {
+      runtime_kind: runtime.runtime_kind,
+      run_count: runtime.run_count,
+      successful_run_count: runtime.successful_run_count,
+      last_run_ok: runtime.last_run_ok === true,
+      last_run_output: runtime.last_run_output ?? "",
+      last_run_error: runtime.last_run_error ?? "",
+      last_run_at: runtime.last_run_at,
+      bundle_sha256: runtime.bundle_sha256,
+      last_unit_no: runtime.last_unit_no,
+      updated_at: runtime.updated_at,
+    } : {
+      runtime_kind: profile.runtime_kind,
+      run_count: 0,
+      successful_run_count: 0,
+      last_run_ok: false,
+      last_run_output: "",
+      last_run_error: "",
+      last_run_at: null,
+      bundle_sha256: null,
+      last_unit_no: null,
+      updated_at: null,
+    },
+  };
+}
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") {
@@ -483,6 +640,181 @@ Deno.serve(async (req: Request) => {
       return progressPayload(projectRow, result.data || []);
     };
 
+    const loadCodeWorkspace = async (projectRow: ProjectRow | null) => {
+      const profile = projectCodeProfile(projectRow);
+      if (!projectRow?.project_slug || !profile.enabled) return codeWorkspacePayload(profile, [], null);
+      const [filesResult, runtimeResult] = await Promise.all([
+        admin
+          .from("seminar_project_code_files")
+          .select("file_key,language,content,revision,last_unit_no,last_run_ok,last_run_at,last_run_output,content_sha256,updated_at")
+          .eq("student_registry_id", identity.student_registry_id)
+          .eq("project_slug", projectRow.project_slug)
+          .order("file_key", { ascending: true }),
+        admin
+          .from("seminar_project_code_runtime")
+          .select("runtime_kind,run_count,successful_run_count,last_run_ok,last_run_output,last_run_error,last_run_at,bundle_sha256,last_unit_no,updated_at")
+          .eq("student_registry_id", identity.student_registry_id)
+          .eq("project_slug", projectRow.project_slug)
+          .maybeSingle(),
+      ]);
+      if (filesResult.error) throw filesResult.error;
+      if (runtimeResult.error) throw runtimeResult.error;
+      return codeWorkspacePayload(profile, filesResult.data || [], runtimeResult.data || null);
+    };
+
+    if (action === "save_code_file") {
+      if (!project?.project_slug) return json(origin, 409, { error: "project_not_defined" });
+      if (project.project_mode === "guided_definition" && project.decision_status !== "confirmed") {
+        return json(origin, 409, { error: "project_not_confirmed" });
+      }
+      const profile = projectCodeProfile(project);
+      if (!profile.enabled) return json(origin, 409, { error: "project_code_not_available" });
+      const unitCount = Array.isArray(project.sprints) ? project.sprints.length : 0;
+      const unitNo = Number(body?.unit_no);
+      if (!Number.isInteger(unitNo) || unitNo < 1 || unitNo > unitCount) {
+        return json(origin, 400, { error: "invalid_project_unit" });
+      }
+      const fileKey = typeof body?.file_key === "string" ? body.file_key.trim() : "";
+      const language = cleanText(body?.language, 32);
+      const content = typeof body?.content === "string" ? body.content : "";
+      if (!validCodeFileKey(fileKey)) return json(origin, 400, { error: "invalid_code_file_key" });
+      if (!profile.allowed_languages.includes(language)) return json(origin, 400, { error: "invalid_code_language" });
+      if (content.length > 120000) return json(origin, 413, { error: "code_file_too_large" });
+
+      const existingFile = await admin
+        .from("seminar_project_code_files")
+        .select("revision")
+        .eq("student_registry_id", identity.student_registry_id)
+        .eq("project_slug", project.project_slug)
+        .eq("file_key", fileKey)
+        .maybeSingle();
+      if (existingFile.error) throw existingFile.error;
+
+      if (!existingFile.data) {
+        const countResult = await admin
+          .from("seminar_project_code_files")
+          .select("file_key", { count: "exact", head: true })
+          .eq("student_registry_id", identity.student_registry_id)
+          .eq("project_slug", project.project_slug);
+        if (countResult.error) throw countResult.error;
+        if (Number(countResult.count || 0) >= 10) return json(origin, 409, { error: "code_file_limit_reached" });
+      }
+
+      const now = new Date().toISOString();
+      const contentHash = await sha256(content);
+      const savedFile = await admin
+        .from("seminar_project_code_files")
+        .upsert({
+          student_registry_id: identity.student_registry_id,
+          project_slug: project.project_slug,
+          file_key: fileKey,
+          language,
+          content,
+          revision: Number(existingFile.data?.revision || 0) + 1,
+          last_unit_no: unitNo,
+          last_run_ok: false,
+          last_run_at: null,
+          last_run_output: null,
+          content_sha256: contentHash,
+          updated_at: now,
+        }, { onConflict: "student_registry_id,project_slug,file_key" })
+        .select("file_key")
+        .single();
+      if (savedFile.error) throw savedFile.error;
+
+      const invalidateRuntime = await admin
+        .from("seminar_project_code_runtime")
+        .update({ last_run_ok: false, updated_at: now })
+        .eq("student_registry_id", identity.student_registry_id)
+        .eq("project_slug", project.project_slug);
+      if (invalidateRuntime.error) throw invalidateRuntime.error;
+
+      return json(origin, 200, {
+        ok: true,
+        saved: true,
+        code_workspace: await loadCodeWorkspace(project),
+      });
+    }
+
+    if (action === "record_code_run") {
+      if (!project?.project_slug) return json(origin, 409, { error: "project_not_defined" });
+      if (project.project_mode === "guided_definition" && project.decision_status !== "confirmed") {
+        return json(origin, 409, { error: "project_not_confirmed" });
+      }
+      const profile = projectCodeProfile(project);
+      if (!profile.enabled || profile.runtime_kind === "source") {
+        return json(origin, 409, { error: "project_runtime_not_available" });
+      }
+      const unitCount = Array.isArray(project.sprints) ? project.sprints.length : 0;
+      const unitNo = Number(body?.unit_no);
+      if (!Number.isInteger(unitNo) || unitNo < 1 || unitNo > unitCount) {
+        return json(origin, 400, { error: "invalid_project_unit" });
+      }
+      const reportedRuntime = cleanText(body?.runtime_kind, 32);
+      if (reportedRuntime !== profile.runtime_kind) return json(origin, 400, { error: "runtime_mismatch" });
+      const runOk = body?.run_ok === true;
+      const runOutput = typeof body?.output === "string" ? body.output.slice(0, 10000) : "";
+      const runError = typeof body?.error === "string" ? body.error.slice(0, 10000) : "";
+
+      const filesResult = await admin
+        .from("seminar_project_code_files")
+        .select("file_key,content,content_sha256")
+        .eq("student_registry_id", identity.student_registry_id)
+        .eq("project_slug", project.project_slug)
+        .order("file_key", { ascending: true });
+      if (filesResult.error) throw filesResult.error;
+      const files = filesResult.data || [];
+      if (!files.length || !files.some((row: any) => String(row.content || "").trim().length >= 10)) {
+        return json(origin, 409, { error: "project_code_required" });
+      }
+      const bundleHash = await sha256(files.map((row: any) => row.file_key + "\n" + row.content).join("\n---FILE---\n"));
+      const currentRuntime = await admin
+        .from("seminar_project_code_runtime")
+        .select("run_count,successful_run_count")
+        .eq("student_registry_id", identity.student_registry_id)
+        .eq("project_slug", project.project_slug)
+        .maybeSingle();
+      if (currentRuntime.error) throw currentRuntime.error;
+
+      const now = new Date().toISOString();
+      const runtimeSave = await admin
+        .from("seminar_project_code_runtime")
+        .upsert({
+          student_registry_id: identity.student_registry_id,
+          project_slug: project.project_slug,
+          runtime_kind: profile.runtime_kind,
+          run_count: Number(currentRuntime.data?.run_count || 0) + 1,
+          successful_run_count: Number(currentRuntime.data?.successful_run_count || 0) + (runOk ? 1 : 0),
+          last_run_ok: runOk,
+          last_run_output: runOutput || null,
+          last_run_error: runError || null,
+          last_run_at: now,
+          bundle_sha256: bundleHash,
+          last_unit_no: unitNo,
+          updated_at: now,
+        }, { onConflict: "student_registry_id,project_slug" })
+        .select("project_slug")
+        .single();
+      if (runtimeSave.error) throw runtimeSave.error;
+
+      const fileRunUpdate = await admin
+        .from("seminar_project_code_files")
+        .update({
+          last_run_ok: runOk,
+          last_run_at: now,
+          last_run_output: (runOk ? runOutput : runError).slice(0, 10000) || null,
+        })
+        .eq("student_registry_id", identity.student_registry_id)
+        .eq("project_slug", project.project_slug);
+      if (fileRunUpdate.error) throw fileRunUpdate.error;
+
+      return json(origin, 200, {
+        ok: true,
+        recorded: true,
+        code_workspace: await loadCodeWorkspace(project),
+      });
+    }
+
     if (action === "save_progress") {
       if (!project?.project_slug) return json(origin, 409, { error: "project_not_defined" });
       if (project.project_mode === "guided_definition" && project.decision_status !== "confirmed") {
@@ -514,6 +846,15 @@ Deno.serve(async (req: Request) => {
         return json(origin, 409, { error: "project_gate_requirements_missing" });
       }
 
+      const codeWorkspace = await loadCodeWorkspace(project);
+      if (gateRequested && codeWorkspace.required_for_gate) {
+        const runtime = codeWorkspace.runtime;
+        const hasSavedCode = codeWorkspace.files.some((file: any) => String(file.content || "").trim().length >= 10);
+        if (!hasSavedCode || !runtime?.last_run_ok) {
+          return json(origin, 409, { error: "project_code_run_required" });
+        }
+      }
+
       const now = new Date().toISOString();
       const activity = theoryViewed || workshopStarted || Object.values(checklist).some(Boolean) || hasEvidence;
       const gatePassed = gateRequested || currentUnit?.gate_passed === true;
@@ -541,6 +882,26 @@ Deno.serve(async (req: Request) => {
         .select("unit_no")
         .single();
       if (savedProgress.error) throw savedProgress.error;
+
+      if (gateRequested && codeWorkspace.enabled && codeWorkspace.files.length) {
+        const snapshotSave = await admin
+          .from("seminar_project_code_snapshots")
+          .upsert({
+            student_registry_id: identity.student_registry_id,
+            project_slug: project.project_slug,
+            unit_no: unitNo,
+            files: codeWorkspace.files.map((file: any) => ({
+              file_key: file.file_key,
+              language: file.language,
+              content: file.content,
+              revision: file.revision,
+              content_sha256: file.content_sha256,
+            })),
+            runtime: codeWorkspace.runtime || {},
+            updated_at: now,
+          }, { onConflict: "student_registry_id,project_slug,unit_no" });
+        if (snapshotSave.error) throw snapshotSave.error;
+      }
 
       const refreshedProgress = await loadProgress(project);
       const profileResult = await admin
@@ -570,6 +931,7 @@ Deno.serve(async (req: Request) => {
         student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
         project: projectPayload(project),
         progress: refreshedProgress,
+        code_workspace: await loadCodeWorkspace(project),
       });
     }
 
@@ -656,6 +1018,7 @@ Deno.serve(async (req: Request) => {
         student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
         project: projectPayload(project),
         progress: await loadProgress(project),
+        code_workspace: await loadCodeWorkspace(project),
         options: buildOptions(project, preferredTrack),
       });
     }
@@ -675,6 +1038,7 @@ Deno.serve(async (req: Request) => {
       student: { name: roster.display_name, group_code: roster.group_code, institutional_email: identity.institutional_email },
       project: projectPayload(project ?? virtualProject(roster, preferredTrack)),
       progress: await loadProgress(project),
+      code_workspace: await loadCodeWorkspace(project),
       options: buildOptions(project, preferredTrack),
     });
   } catch (error) {
