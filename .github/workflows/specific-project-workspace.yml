@@ -50,4 +50,6 @@ jobs:
           sleep 2
           curl -fsS http://127.0.0.1:8765/projects/workspace/ | grep -q "Specific Project Workspace"
           curl -fsS "http://127.0.0.1:8765/projects/workspace/unit.html?unit=1&mode=theory" | grep -q "Specific Project Unit"
-          curl -fsS http://127.0.0.1:8765/projects/workspace/workspace.js | grep -q "save_progress"\n          curl -fsS http://127.0.0.1:8765/projects/workspace/workspace.js | grep -q "record_code_run"\n          curl -fsS "http://127.0.0.1:8765/projects/workspace/unit.html?unit=1&mode=workshop" | grep -q "LIVE PROJECT WORKSPACE"
+          curl -fsS http://127.0.0.1:8765/projects/workspace/workspace.js | grep -q "save_progress"
+          curl -fsS http://127.0.0.1:8765/projects/workspace/workspace.js | grep -q "record_code_run"
+          curl -fsS "http://127.0.0.1:8765/projects/workspace/unit.html?unit=1&mode=workshop" | grep -q "LIVE PROJECT WORKSPACE"
