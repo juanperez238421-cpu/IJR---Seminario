@@ -485,6 +485,9 @@ Deno.serve(async (req: Request) => {
 
     if (action === "save_progress") {
       if (!project?.project_slug) return json(origin, 409, { error: "project_not_defined" });
+      if (project.project_mode === "guided_definition" && project.decision_status !== "confirmed") {
+        return json(origin, 409, { error: "project_not_confirmed" });
+      }
       const unitCount = Array.isArray(project.sprints) ? project.sprints.length : 0;
       const unitNo = Number(body?.unit_no);
       if (!Number.isInteger(unitNo) || unitNo < 1 || unitNo > unitCount) {
