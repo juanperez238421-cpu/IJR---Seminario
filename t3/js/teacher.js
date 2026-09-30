@@ -119,7 +119,7 @@ function filteredStudents(){
     return true;
   });
 }
-function courseCell(s){const c=s.course;if(!c)return'<span class="pill none">No course record</span>';const grade=c.final_grade??c.projected_grade;const pct=Math.min(100,Number(c.completed_count||0)/16*100);return '<span class="cell-main">'+esc((c.language||'').toUpperCase())+' · '+esc(c.completed_count||0)+'/16</span><span class="cell-sub">'+esc(c.team_label||'')+' · grade '+esc(fmt(grade))+'</span><div class="progress-mini"><i style="width:'+pct+'%"></i></div>'}
+function courseCell(s){const c=s.course;if(!c)return'<span class="pill none">No course record</span>';const grade=c.final_grade??c.projected_grade;const pct=Math.min(100,Number(c.completed_count||0)/16*100),canonical=c.selection_mode==='canonical_progress_preserved'?'canonical progress · ':'';return '<span class="cell-main">'+esc((c.language||'').toUpperCase())+' · '+esc(c.completed_count||0)+'/16</span><span class="cell-sub">'+esc(canonical)+esc(c.team_label||'')+' · grade '+esc(fmt(grade))+'</span><div class="progress-mini"><i style="width:'+pct+'%"></i></div>'}
 function oopCell(s){
   const list=s.oop_uml||[];if(!list.length)return'<span class="pill none">0 sessions</span>';
   const latest=list[0]||{},e=latest.evidence||{};
@@ -168,7 +168,7 @@ function renderMetrics(){
   $('metrics').innerHTML=vals.map(([k,v])=>'<div class="metric"><span>'+esc(k)+'</span><strong>'+esc(v)+'</strong></div>').join('');
 }
 function renderQuality(){
-  const q=snapshot?.data_quality||{},items=[
+  const q=snapshot?.data_quality||{},shadow=Number(q.empty_shadow_course_attempts||0),items=[
     ['course members unmatched',q.unmatched_course_members||0],
     ['studio primary unmatched',q.unmatched_studio_primary||0],
     ['studio partners unmatched',q.unmatched_studio_partner||0],
@@ -177,7 +177,7 @@ function renderQuality(){
   ],total=items.reduce((n,x)=>n+Number(x[1]||0),0);
   $('qualityPanel').innerHTML=total
     ?'<div class="quality-warn"><strong>Data-quality review required · '+total+' issue(s)</strong><div class="quality-grid">'+items.map(([k,v])=>'<span>'+esc(k)+': <strong>'+esc(v)+'</strong></span>').join('')+'</div></div>'
-    :'<div class="quality-ok"><strong>Identity QA PASS.</strong> Current Seminar records are linked to the official roster with no unmatched or duplicate-active identity flags.</div>';
+    :'<div class="quality-ok"><strong>Identity QA PASS.</strong> Current Seminar records are linked to the official roster with no unmatched or duplicate-active identity flags.'+(shadow?' <span>'+esc(shadow)+' empty direct-entry shell'+(shadow===1?' is':'s are')+' ignored; canonical recorded progress is preserved.</span>':'')+'</div>';
   renderLegacy();
 }
 function renderLegacy(){
@@ -276,7 +276,7 @@ function openDetail(id){
   if(!c)$('detailCourse').innerHTML=detailEmpty('No T3 Course registration yet.');
   else{
     const modules=c.modules||[];
-    $('detailCourse').innerHTML='<div class="detail-card"><span class="label">Latest team session</span><strong>'+esc((c.language||'').toUpperCase())+' · '+esc(c.completed_count||0)+'/16 · '+esc(c.team_label||'')+'</strong><div class="cell-sub">Projected/final grade: '+esc(fmt(c.final_grade??c.projected_grade))+' · Last activity '+esc(fmtTime(c.last_activity_at))+'</div></div><div class="module-grid">'+
+    $('detailCourse').innerHTML='<div class="detail-card"><span class="label">Canonical registered session</span><strong>'+esc((c.language||'').toUpperCase())+' · '+esc(c.completed_count||0)+'/16 · '+esc(c.team_label||'')+'</strong><div class="cell-sub">Original registration preserved · '+esc(c.oop_session_count||0)+' OOP/UML session(s) linked · Projected/final grade: '+esc(fmt(c.final_grade??c.projected_grade))+' · Last activity '+esc(fmtTime(c.last_activity_at))+'</div></div><div class="module-grid">'+
       Array.from({length:16},(_,i)=>{const key='m'+String(i+1).padStart(2,'0'),m=modules.find(x=>x.module_key===key),mode=m?.completion_mode||'pending';return'<div class="module-item '+(mode==='solved'?'done':mode==='revealed'?'revealed':'')+'"><strong>'+key+' · '+esc(mode)+'</strong><span>help '+esc(m?.help_count||0)+' · wrong '+esc(m?.wrong_count||0)+'</span></div>'}).join('')+'</div>';
   }
   const oop=s.oop_uml||[];$('detailOop').innerHTML=oop.length?'<div class="detail-list">'+oop.map(x=>{

@@ -7,6 +7,9 @@ on:
       - "supabase/migrations/**"
       - "t3/oop-logic-01/**"
       - "t3/index.html"
+      - "t3/teacher.html"
+      - "t3/js/teacher.js"
+      - "t3/config.js"
       - ".github/workflows/deploy-seminar-t3-backend.yml"
   workflow_dispatch:
 
@@ -81,6 +84,20 @@ jobs:
           grep -q "variantBankSize: 36" t3/oop-logic-01/config.js
           grep -q "seminar_oop_submit_v1" t3/oop-logic-01/config.js
           grep -q "teacher_seminar_oop_dashboard_v1" t3/oop-logic-01/config.js
+
+      - name: Verify Seminar master canonical-progress contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s t3/teacher.html
+          test -s t3/js/teacher.js
+          node --check t3/js/teacher.js
+          grep -q "Canonical registered session" t3/js/teacher.js
+          grep -q "empty_shadow_course_attempts" t3/js/teacher.js
+          grep -q "seminar_master_code_v1" t3/config.js
+          test -s supabase/migrations/20260930130215_seminar_oop_direct_entry_preserve_progress_v10.sql
+          grep -q "seminar_master_dashboard_v3" supabase/migrations/20260930130215_seminar_oop_direct_entry_preserve_progress_v10.sql
+          grep -q "canonical_progress_preserved" supabase/migrations/20260930130215_seminar_oop_direct_entry_preserve_progress_v10.sql
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
