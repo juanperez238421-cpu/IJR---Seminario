@@ -742,7 +742,7 @@ Deno.serve(async (req: Request) => {
         return json(origin, 409, { error: "project_not_confirmed" });
       }
       const profile = projectCodeProfile(project);
-      if (!profile.enabled || profile.runtime_kind === "source") {
+      if (!profile.enabled) {
         return json(origin, 409, { error: "project_runtime_not_available" });
       }
       const unitCount = Array.isArray(project.sprints) ? project.sprints.length : 0;
@@ -766,6 +766,10 @@ Deno.serve(async (req: Request) => {
       const files = filesResult.data || [];
       if (!files.length || !files.some((row: any) => String(row.content || "").trim().length >= 10)) {
         return json(origin, 409, { error: "project_code_required" });
+      }
+      const executable = files.filter((row: any) => ["python","html","css","javascript","openscad"].includes(String(row.file_key || "").split(".").pop()?.toLowerCase() === "py" ? "python" : String(row.file_key || "").split(".").pop()?.toLowerCase()));
+      if (executable.some((row: any) => /TODO_BUILD|WRITE_HERE/.test(String(row.content || "")))) {
+        return json(origin, 409, { error: "project_code_incomplete" });
       }
       const bundleHash = await sha256(files.map((row: any) => row.file_key + "\n" + row.content).join("\n---FILE---\n"));
       const currentRuntime = await admin
