@@ -130,25 +130,23 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - name: Smoke-test rendered GitHub Pages mirror
+      - name: Smoke-test consolidated Seminar 11 production hub
         shell: bash
         run: |
           set -euo pipefail
-          BASE="https://juanperez238421-cpu.github.io/IJR---Seminario/t3"
-          curl -fsS --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/" -o /tmp/t3.html
-          curl -fsS --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/css/course.css" -o /tmp/course.css
-          curl -fsSI --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/" -o /tmp/t3.headers
-          grep -qi '^content-type: text/html' /tmp/t3.headers
-          grep -q "Third Period Coding Studio" /tmp/t3.html
-          grep -q "\.course-shell" /tmp/course.css
-          echo "Seminar 11 rendered HTML and consolidated CSS are live on the GitHub Pages mirror."
+          BASE="https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario"
+          curl -fsS --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/" -o /tmp/seminar.html
+          curl -fsS --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/styles.css" -o /tmp/seminar.css
+          curl -fsSI --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/" -o /tmp/seminar.headers
+          grep -qi '^content-type: text/html' /tmp/seminar.headers
+          grep -q "Three connected parts of the same Seminar" /tmp/seminar.html
+          grep -q "choice-grid" /tmp/seminar.css
+          echo "Consolidated Seminar 11 hub is live and rendered."
       - name: Publish canonical student routes
         shell: bash
         run: |
-          echo "### Seminar T3 canonical student routes" >> "$GITHUB_STEP_SUMMARY"
-          echo "- T3 course: https://juanperez238421-cpu.github.io/IJR---Seminario/t3/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Project Decision Center: https://juanperez238421-cpu.github.io/IJR---Seminario/t3/projects/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- OOP + UML Learning Hub: https://juanperez238421-cpu.github.io/IJR---Seminario/t3/oop-uml/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Software Engineering Studio: https://juanperez238421-cpu.github.io/IJR---Seminario/t3/studio/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Common Core schedule: https://juanperez238421-cpu.github.io/IJR---Seminario/t3/common/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Specialized tracks: https://juanperez238421-cpu.github.io/IJR---Seminario/t3/tracks/" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Seminar 11 consolidated production routes" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Main hub: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- OOP + UML: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-uml/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Specialized tracks: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-tracks/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Personal project: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-projects/" >> "$GITHUB_STEP_SUMMARY"
