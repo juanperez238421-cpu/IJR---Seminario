@@ -1,4 +1,4 @@
-name: Validate Seminar T3 + Live GitHub Pages Mirror
+name: Validate Seminar T3 Production Host
 
 on:
   push:
@@ -130,23 +130,57 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - name: Smoke-test consolidated Seminar 11 production hub
+      - name: Smoke-test live Supabase static host
         shell: bash
         run: |
           set -euo pipefail
-          BASE="https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario"
-          curl -fsS --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/" -o /tmp/seminar.html
-          curl -fsS --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/styles.css" -o /tmp/seminar.css
-          curl -fsSI --retry 5 --retry-delay 3 --connect-timeout 10 "$BASE/" -o /tmp/seminar.headers
-          grep -qi '^content-type: text/html' /tmp/seminar.headers
-          grep -q "Three connected parts of the same Seminar" /tmp/seminar.html
-          grep -q "choice-grid" /tmp/seminar.css
-          echo "Consolidated Seminar 11 hub is live and rendered."
-      - name: Publish canonical student routes
+          BASE="https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host"
+          ok=0
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/" -o /tmp/projects.html               && grep -q "Project Decision Center" /tmp/projects.html; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          test "$ok" -eq 1
+          curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/projects.js" -o /tmp/projects.js
+          curl -fsS --retry 2 --connect-timeout 10 "$BASE/projects/projects.css" -o /tmp/projects.css
+          grep -q "save_decision" /tmp/projects.js
+          grep -q "option-card" /tmp/projects.css
+
+          grep -q 'PERSONAL PROJECT BUILD · 4 CONSTRUCTION CLASSES' /tmp/projects.html
+          ! grep -Eqi '8 STAGES / 4 CLASSES|eight-stage build|8-sprint personal roadmap' /tmp/projects.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/projects/student-workshops/rico-paramo/index.html?v=20260929-class-v5" -o /tmp/rico-project.html
+          grep -q 'Build the complete project in four construction classes' /tmp/rico-project.html
+          grep -q '4 construction classes · 4 class gates' /tmp/rico-project.html
+          ! grep -Eqi '8 stages · 4 construction classes|eight engineering stages|8-sprint personal roadmap' /tmp/rico-project.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/studio/app.js?v=20260929-class-v5" -o /tmp/studio-app.js
+          grep -q 'Development route · 4 construction classes' /tmp/studio-app.js
+
+          curl -fsS -D /tmp/oop-uml.headers -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/?v=20260923-email-v14" -o /tmp/oop-uml.html
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/oop-uml/hub.js?v=20260923-email-v14" -o /tmp/oop-uml-hub.js
+          grep -q 'id="institutionalEmail"' /tmp/oop-uml.html
+          grep -q 'type="email"' /tmp/oop-uml.html
+          grep -q 'data-oop-uml-build="20260923-email-v14"' /tmp/oop-uml.html
+          grep -q 'Sign in with your institutional email.' /tmp/oop-uml.html
+          ! grep -q 'Register the student or exact classroom team' /tmp/oop-uml.html
+          ! grep -q 'id="memberName1"' /tmp/oop-uml.html
+          ! grep -q 'id="groupCode"' /tmp/oop-uml.html
+          ! grep -q 'id="registrationMode"' /tmp/oop-uml.html
+          ! grep -q 'Full name' /tmp/oop-uml.html
+          grep -q "ensureEmailOnlyRegistration" /tmp/oop-uml-hub.js
+          grep -q "startWithEmail" /tmp/oop-uml-hub.js
+          curl -fsS -H "Cache-Control: no-cache" --retry 2 --connect-timeout 10 "$BASE/access-gate.js?v=20260923-email-v14" -o /tmp/access-gate.js
+          grep -q "seminar_email_access_v1" /tmp/access-gate.js
+          grep -q "Entrar a Seminario 11" /tmp/access-gate.js
+          ! grep -q "No tengo correo institucional" /tmp/access-gate.js
+          ! grep -q "Acceso al sitio" /tmp/access-gate.js
+          echo "Production Seminar 11 exposes only institutional-email entry; legacy alternate-access UI is absent."
+      - name: Publish production routes
         shell: bash
         run: |
-          echo "### Seminar 11 consolidated production routes" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Main hub: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- OOP + UML: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-oop-uml/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Specialized tracks: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-tracks/" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Personal project: https://juanperez238421-cpu.github.io/ijr-estadistica-11-2026/seminario-projects/" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Seminar T3 production routes" >> "$GITHUB_STEP_SUMMARY"
+          echo "- T3 course: https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project Decision Center: https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/projects/" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Project Studio: https://rlfxnjbqxbozjdzkbwlz.supabase.co/functions/v1/seminar-t3-host/studio/" >> "$GITHUB_STEP_SUMMARY"
