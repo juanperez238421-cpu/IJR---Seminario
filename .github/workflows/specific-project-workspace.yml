@@ -1,0 +1,53 @@
+name: Specific Project Workspace QA
+
+on:
+  pull_request:
+    paths:
+      - "t3/projects/workspace/**"
+      - "t3/projects/index.html"
+      - "t3/index.html"
+      - "t3/teacher.html"
+      - "t3/js/teacher.js"
+      - "supabase/functions/seminar-project-access/**"
+      - "supabase/migrations/20260930134500_seminar_specific_project_workspace_v1.sql"
+      - "tests/specific-project-workspace.test.js"
+      - ".github/workflows/specific-project-workspace.yml"
+  push:
+    branches: [main]
+    paths:
+      - "t3/projects/workspace/**"
+      - "t3/projects/index.html"
+      - "t3/index.html"
+      - "t3/teacher.html"
+      - "t3/js/teacher.js"
+      - "supabase/functions/seminar-project-access/**"
+      - "supabase/migrations/20260930134500_seminar_specific_project_workspace_v1.sql"
+      - "tests/specific-project-workspace.test.js"
+      - ".github/workflows/specific-project-workspace.yml"
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: JavaScript syntax
+        run: |
+          node --check t3/projects/workspace/workspace.js
+          node --check t3/projects/projects.js
+          node --check t3/js/teacher.js
+      - name: Workspace contract tests
+        run: node --test tests/specific-project-workspace.test.js
+      - name: Static route smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m http.server 8765 --directory t3 >/tmp/project-workspace-http.log 2>&1 &
+          pid=$!
+          trap 'kill $pid || true' EXIT
+          sleep 2
+          curl -fsS http://127.0.0.1:8765/projects/workspace/ | grep -q "Specific Project Workspace"
+          curl -fsS "http://127.0.0.1:8765/projects/workspace/unit.html?unit=1&mode=theory" | grep -q "Specific Project Unit"
+          curl -fsS http://127.0.0.1:8765/projects/workspace/workspace.js | grep -q "save_progress"
