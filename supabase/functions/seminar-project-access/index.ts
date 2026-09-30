@@ -758,7 +758,7 @@ Deno.serve(async (req: Request) => {
 
       const filesResult = await admin
         .from("seminar_project_code_files")
-        .select("file_key,content,content_sha256")
+        .select("file_key,language,content,content_sha256")
         .eq("student_registry_id", identity.student_registry_id)
         .eq("project_slug", project.project_slug)
         .order("file_key", { ascending: true });
@@ -767,7 +767,7 @@ Deno.serve(async (req: Request) => {
       if (!files.length || !files.some((row: any) => String(row.content || "").trim().length >= 10)) {
         return json(origin, 409, { error: "project_code_required" });
       }
-      const executable = files.filter((row: any) => ["python","html","css","javascript","openscad"].includes(String(row.file_key || "").split(".").pop()?.toLowerCase() === "py" ? "python" : String(row.file_key || "").split(".").pop()?.toLowerCase()));
+      const executable = files.filter((row: any) => ["python","html","css","javascript","openscad"].includes(String(row.language || "")));
       if (executable.some((row: any) => /TODO_BUILD|WRITE_HERE/.test(String(row.content || "")))) {
         return json(origin, 409, { error: "project_code_incomplete" });
       }
