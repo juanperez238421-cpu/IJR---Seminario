@@ -1,0 +1,124 @@
+name: Render HTML Two Pages Lesson PQH
+
+on:
+  push:
+    branches:
+      - manim/html-two-pages-class
+    paths:
+      - "manim/html-two-pages/**"
+      - ".github/workflows/render-html-two-pages.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "manim/html-two-pages/**"
+      - ".github/workflows/render-html-two-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore Manim source
+        run: |
+          cat manim/html-two-pages/source.part00 \
+              manim/html-two-pages/source.part01 \
+              manim/html-two-pages/source.part02 \
+              manim/html-two-pages/source.part03 \
+              manim/html-two-pages/source.part04 \
+              > manim/html-two-pages/source.b64
+          echo "a952adc92998146edff015c6e7594f6084c811978a97d59e7c525d1d656bb5ac  manim/html-two-pages/source.b64" | sha256sum --check
+          base64 --decode manim/html-two-pages/source.b64 | gunzip > manim/html-two-pages/two_html_pages_manim.py
+          echo "4551acf13fa1202fc9d2bc4535be69d1032b751a443fdb30afe271bfe44c6173  manim/html-two-pages/two_html_pages_manim.py" | sha256sum --check
+          test -s manim/html-two-pages/two_html_pages_manim.py
+
+      - name: Validate source files
+        run: |
+          python -m py_compile manim/html-two-pages/two_html_pages_manim.py
+          node --check manim/html-two-pages/web_demo/resultado.js
+          test -f manim/html-two-pages/web_demo/index.html
+          test -f manim/html-two-pages/web_demo/resultado.html
+          grep -q 'action="resultado.html"' manim/html-two-pages/web_demo/index.html
+          grep -q 'new URLSearchParams' manim/html-two-pages/web_demo/resultado.js
+
+      - name: Install media verification tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg zip
+
+      - name: Prepare headless preview helper
+        run: |
+          mkdir -p .ci-bin
+          printf '#!/bin/sh\nexit 0\n' > .ci-bin/xdg-open
+          chmod +x .ci-bin/xdg-open
+
+      - name: Pull ManimCE Docker image
+        run: docker pull manimcommunity/manim:stable
+
+      - name: Protocol validation render -pql
+        run: |
+          docker run --rm --user 0:0 \
+            -v "$PWD:/manim" \
+            -v "$PWD/.ci-bin/xdg-open:/usr/bin/xdg-open:ro" \
+            manimcommunity/manim:stable \
+            manim -pql manim/html-two-pages/two_html_pages_manim.py HTMLTwoPagesCourse \
+              --format=mp4 --disable_caching --progress_bar none
+
+      - name: Verify low-quality render exists
+        run: |
+          LOW_VIDEO="$(find media -type f -name 'HTMLTwoPagesCourse.mp4' | head -n 1)"
+          test -n "$LOW_VIDEO"
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate \
+            -show_entries format=duration -of default=noprint_wrappers=1 "$LOW_VIDEO"
+
+      - name: Clear media before final render
+        run: sudo rm -rf media
+
+      - name: Final high-quality render -pqh
+        run: |
+          docker run --rm --user 0:0 \
+            -v "$PWD:/manim" \
+            -v "$PWD/.ci-bin/xdg-open:/usr/bin/xdg-open:ro" \
+            manimcommunity/manim:stable \
+            manim -pqh manim/html-two-pages/two_html_pages_manim.py HTMLTwoPagesCourse \
+              --format=mp4 --disable_caching --progress_bar none
+
+      - name: Collect and verify final deliverables
+        run: |
+          set -euo pipefail
+          mkdir -p dist/frames
+          FINAL_VIDEO="$(find media -type f -name 'HTMLTwoPagesCourse.mp4' | head -n 1)"
+          test -n "$FINAL_VIDEO"
+          cp "$FINAL_VIDEO" dist/HTML_Two_Pages_Connected_PQH.mp4
+          ffprobe -v error -show_format -show_streams -of json \
+            dist/HTML_Two_Pages_Connected_PQH.mp4 > dist/ffprobe.json
+          ffmpeg -hide_banner -loglevel error \
+            -i dist/HTML_Two_Pages_Connected_PQH.mp4 \
+            -vf "fps=1/35,scale=640:-2,tile=4x3" -frames:v 1 \
+            dist/frames/contact_sheet.jpg
+          cp manim/html-two-pages/two_html_pages_manim.py dist/
+          cp -R manim/html-two-pages/web_demo dist/
+          cp manim/html-two-pages/README.md dist/
+          (
+            cd dist
+            zip -r HTML_Two_Pages_Source_And_Demo.zip \
+              two_html_pages_manim.py web_demo README.md
+          )
+          sha256sum dist/HTML_Two_Pages_Connected_PQH.mp4 \
+            dist/HTML_Two_Pages_Source_And_Demo.zip > dist/SHA256SUMS.txt
+
+      - name: Upload rendered lesson artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-two-pages-pqh
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30

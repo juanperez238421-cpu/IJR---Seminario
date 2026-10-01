@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado procesado</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="card result-card" aria-labelledby="saludo">
+      <p class="eyebrow success">Página 2 de 2</p>
+      <h1 id="saludo">Procesando información…</h1>
+      <p id="resumen" class="intro">
+        Espera mientras la página interpreta los parámetros de la URL.
+      </p>
+
+      <div class="result-grid" aria-label="Resultados procesados">
+        <article class="result-item">
+          <span>Curso</span>
+          <strong id="curso">—</strong>
+        </article>
+
+        <article class="result-item">
+          <span>Edad actual</span>
+          <strong id="edad">—</strong>
+        </article>
+
+        <article class="result-item">
+          <span>Próxima edad</span>
+          <strong id="proxima-edad">—</strong>
+        </article>
+
+        <article class="result-item">
+          <span>Clasificación</span>
+          <strong id="categoria">—</strong>
+        </article>
+      </div>
+
+      <p id="mensaje" class="message" role="status"></p>
+      <a class="back-link" href="index.html">← Volver al formulario</a>
+    </section>
+  </main>
+
+  <script src="resultado.js"></script>
+</body>
+</html>
