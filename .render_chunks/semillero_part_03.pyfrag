@@ -1,0 +1,170 @@
+            self.panel("MAYOR AUTONOMÍA", ("Investiga opciones", "Diseña soluciones", "Necesita mentoría por hitos"), width=4.35),
+        ).arrange(RIGHT, buff=0.36).move_to(UP * 0.25)
+        message = self.statement_panel(
+            "Tres niveles permiten enseñar mejor sin convertir el semillero en tres grupos cerrados.",
+            13.0,
+            1.04,
+            26,
+        ).to_edge(DOWN, buff=0.28)
+
+        self.play(LaggedStart(*[FadeIn(card) for card in cards], lag_ratio=0.15), run_time=RUN_SLOW)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(message), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+
+    def personalized_route(self) -> None:
+        self.set_header(
+            3,
+            "ENFOQUE PERSONALIZADO: UNA RUTA PARA CADA ESTUDIANTE",
+            "El nivel inicial se define mediante diagnóstico y puede cambiar cuando aparecen nuevas evidencias.",
+        )
+        steps = VGroup(
+            self.step_card("1", "DIAGNÓSTICO", "Experiencia, intereses y necesidades."),
+            self.step_card("2", "NIVEL INICIAL", "Se selecciona el reto adecuado."),
+            self.step_card("3", "MENTORÍA", "La ayuda cambia según el proceso."),
+            self.step_card("4", "EVIDENCIA", "Se observa funcionamiento y comprensión."),
+            self.step_card("5", "AVANCE", "El estudiante asume un reto mayor."),
+        ).arrange(RIGHT, buff=0.30)
+        self.fit(steps, 14.2, 1.25)
+        steps.move_to(UP * 1.20)
+
+        arrows = VGroup(*[
+            Arrow(steps[i].get_right(), steps[i + 1].get_left(), buff=0.05, color=BLACK_LINE, stroke_width=2)
+            for i in range(4)
+        ])
+        detail = self.panel(
+            "EL ACOMPAÑAMIENTO TAMBIÉN CAMBIA",
+            (
+                "Básico: explicación directa y práctica corta.",
+                "Intermedio: preguntas, revisión y decisiones parciales.",
+                "Alto: metas, investigación y seguimiento por entregables.",
+            ),
+            width=10.9,
+            title_size=26,
+            body_size=22,
+            fill_color=PAPER_GRAY,
+        ).move_to(DOWN * 1.15)
+
+        self.play(LaggedStart(*[FadeIn(step) for step in steps], lag_ratio=0.12), run_time=RUN_SLOW)
+        self.play(LaggedStart(*[GrowArrow(a) for a in arrows], lag_ratio=0.18), run_time=RUN_NORMAL)
+        self.play(FadeIn(detail), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+
+    def basic_level(self) -> None:
+        self.set_header(
+            4,
+            "NIVEL 1 · BÁSICO — COMPRENDER Y CONSTRUIR",
+            "Su objetivo es dominar la lógica inicial y producir una primera evidencia funcional.",
+        )
+        competencies = self.panel(
+            "COMPETENCIAS",
+            (
+                "Visual Studio Code, navegador y Colab",
+                "Estructura esencial de HTML",
+                "CSS inicial y organización visual",
+                "Variables, datos y operaciones simples",
+                "Lectura de errores y depuración básica",
+                "Carpetas, archivos y uso inicial de GitHub",
+            ),
+            width=6.45,
+            title_size=26,
+            body_size=20,
+        ).move_to(LEFT * 3.75 + UP * 0.52)
+        code = self.code_window(
+            (
+                "<!DOCTYPE html>",
+                "<html>",
+                "  <h1>Mi proyecto</h1>",
+                "  <input id='dato'>",
+                "  <button>Mostrar</button>",
+                "  <p id='resultado'></p>",
+                "</html>",
+            ),
+            width=6.10,
+            height=3.50,
+        ).move_to(RIGHT * 3.80 + UP * 0.62)
+        evidence = self.statement_panel(
+            "Evidencia: una página sencilla, funcional y explicada por el estudiante.",
+            12.6,
+            1.02,
+            25,
+        ).to_edge(DOWN, buff=0.30)
+
+        self.play(FadeIn(competencies), run_time=RUN_NORMAL)
+        self.play(FadeIn(code), run_time=RUN_SLOW)
+        self.play(FadeIn(evidence), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+
+    def intermediate_level(self) -> None:
+        self.set_header(
+            5,
+            "NIVEL 2 · INTERMEDIO — CONECTAR Y RESOLVER",
+            "Su objetivo es integrar componentes y completar un proceso de principio a fin.",
+        )
+        source = self.panel("PÁGINA 1", ("Formulario", "Datos del usuario", "Validación inicial"), width=3.70)
+        logic = self.panel("JAVASCRIPT", ("Leer datos", "Calcular", "Guardar o transformar"), width=3.70)
+        result = self.panel("PÁGINA 2", ("Recuperar datos", "Mostrar resultados", "Permitir regresar"), width=3.70)
+        flow = VGroup(source, logic, result).arrange(RIGHT, buff=0.72).move_to(UP * 1.25)
+        arrows = VGroup(
+            Arrow(source.get_right(), logic.get_left(), buff=0.08, color=BLACK_LINE),
+            Arrow(logic.get_right(), result.get_left(), buff=0.08, color=BLACK_LINE),
+        )
+        competencies = self.panel(
+            "COMPETENCIAS Y EVIDENCIA",
+            (
+                "Comunicación entre dos páginas HTML",
+                "Eventos, formularios y validación",
+                "JavaScript para procesar resultados",
+                "LocalStorage y navegación",
+                "Código organizado, probado y publicado en GitHub",
+            ),
+            width=10.7,
+            title_size=26,
+            body_size=21,
+            fill_color=PAPER_GRAY,
+        ).move_to(DOWN * 1.20)
+
+        self.play(LaggedStart(FadeIn(source), FadeIn(logic), FadeIn(result), lag_ratio=0.18), run_time=RUN_SLOW)
+        self.play(LaggedStart(*[GrowArrow(a) for a in arrows], lag_ratio=0.22), run_time=RUN_NORMAL)
+        self.play(FadeIn(competencies), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+
+    def high_level(self) -> None:
+        self.set_header(
+            6,
+            "NIVEL 3 · ALTO — DISEÑAR CON AUTONOMÍA",
+            "Su objetivo es desarrollar soluciones con investigación, pruebas y documentación técnica.",
+        )
+        center = self.numbered_badge(3, "PROYECTO", width=3.10).move_to(ORIGIN + UP * 0.55)
+        nodes = VGroup(
+            self.panel("PROBLEMA", ("Necesidad real", "Usuario y alcance"), width=3.25, title_size=22, body_size=19),
+            self.panel("ARQUITECTURA", ("Herramientas", "Componentes y datos"), width=3.25, title_size=22, body_size=19),
+            self.panel("PROTOTIPO", ("Producto funcional", "Integración"), width=3.25, title_size=22, body_size=19),
+            self.panel("PRUEBAS", ("Errores", "Mejora iterativa"), width=3.25, title_size=22, body_size=19),
+        )
+        nodes[0].move_to(LEFT * 4.75 + UP * 1.45)
+        nodes[1].move_to(RIGHT * 4.75 + UP * 1.45)
+        nodes[2].move_to(LEFT * 4.75 + DOWN * 1.25)
+        nodes[3].move_to(RIGHT * 4.75 + DOWN * 1.25)
+        links = VGroup(*[
+            Line(center.get_center(), node.get_center(), color=LIGHT_GRAY, stroke_width=2.2)
+            for node in nodes
+        ])
+        evidence = self.statement_panel(
+            "Evidencia: prototipo funcional, repositorio documentado y presentación técnica.",
+            12.8,
+            1.02,
+            25,
+        ).to_edge(DOWN, buff=0.24)
+
+        self.play(Create(links), run_time=RUN_NORMAL)
+        self.play(FadeIn(center), run_time=RUN_NORMAL)
+        self.play(LaggedStart(*[FadeIn(node) for node in nodes], lag_ratio=0.16), run_time=RUN_SLOW)
+        self.play(FadeIn(evidence), run_time=RUN_NORMAL)
+        self.wait(PAUSE_SUMMARY)
+        self.clear_stage()
+

@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Semillero de Programación — tres niveles.
+
+Versión estable, monocromática y renderizada nativamente con ManimCE 0.20.1.
+El sistema visual conserva el formato de Statistics 10 — IQR Graph Construction:
+encabezados numerados, paneles blancos, bordes negros, escala de grises,
+construcción progresiva, cámara fija 16:9 y pausas controlables.
+
+Preview:
+    manim -pql semillero_programacion_tres_niveles_manimce.py \
+        SemilleroProgramacionTresNiveles --format=mp4 \
+        --renderer=cairo --disable_caching
+
+Final:
+    manim -pqh semillero_programacion_tres_niveles_manimce.py \
+        SemilleroProgramacionTresNiveles --format=mp4 \
+        --renderer=cairo --disable_caching
+"""
+
+from __future__ import annotations
+
+import os
+from typing import Sequence
+
+from manim import *
+
+
+# =============================================================================
+# RENDER CONFIGURATION
+# =============================================================================
+config.pixel_width = 1920
+config.pixel_height = 1080
+config.frame_width = 16
+config.frame_height = 9
+config.frame_rate = 30
+config.background_color = WHITE
+
+
+# =============================================================================
+# MONOCHROME CLASSROOM SYSTEM
+# =============================================================================
+BLACK_TEXT = BLACK
+BLACK_LINE = BLACK
+DARK_GRAY = "#303030"
+MID_GRAY = "#707070"
+LIGHT_GRAY = "#D3D3D3"
+VERY_LIGHT_GRAY = "#EEEEEE"
+PAPER_GRAY = "#F7F7F7"
+WHITE_FILL = WHITE
+
+SAFE_WIDTH = 14.7
+SAFE_HEIGHT = 7.55
+TIME_SCALE = float(os.getenv("LESSON_TIME_SCALE", "1.0"))
+
+RUN_QUICK = 0.55
+RUN_NORMAL = 0.85
+RUN_SLOW = 1.15
+PAUSE_READ = 1.35
+PAUSE_EXPLAIN = 2.05
+PAUSE_SUMMARY = 3.15
+PAUSE_FINAL = 4.20
+
+
+class SemilleroProgramacionTresNiveles(Scene):
+    """Presentación estable de la organización del semillero."""
+
+    def setup(self) -> None:
+        super().setup()
+        self.camera.background_color = WHITE
+        self.header_group: VGroup | None = None
+        self.subtitle_group: Mobject | None = None
+
+    # ------------------------------------------------------------------
+    # Stable timing wrappers
+    # ------------------------------------------------------------------
+    def play(self, *animations, **kwargs):
+        if kwargs.get("run_time") is not None:
+            kwargs["run_time"] *= TIME_SCALE
+        return super().play(*animations, **kwargs)
+
+    def wait(self, duration: float = DEFAULT_WAIT_TIME, *args, **kwargs):
+        return super().wait(duration * TIME_SCALE, *args, **kwargs)
+
+    # ------------------------------------------------------------------
+    # Typography and layout helpers
+    # ------------------------------------------------------------------
+    def text(self, content: str, size: int = 30, weight=NORMAL, **kwargs) -> Text:
+        return Text(
+            content,
+            font_size=size,
+            color=BLACK_TEXT,
+            weight=weight,
+            line_spacing=0.92,
+            **kwargs,
+        )
+
+    def fit(self, mob: Mobject, max_width: float, max_height: float) -> Mobject:
+        if mob.width > max_width:
+            mob.scale_to_fit_width(max_width)
+        if mob.height > max_height:
+            mob.scale_to_fit_height(max_height)
+        return mob
+
+    def panel(
+        self,
+        title: str,
+        lines: Sequence[str],
+        width: float = 6.2,
+        title_size: int = 25,
+        body_size: int = 21,
+        fill_color: str = WHITE_FILL,
+    ) -> VGroup:
+        heading = self.text(title, title_size, BOLD)
+        body = VGroup(*[self.text(line, body_size) for line in lines])
+        body.arrange(DOWN, aligned_edge=LEFT, buff=0.13)
+        content = VGroup(heading, body).arrange(DOWN, aligned_edge=LEFT, buff=0.20)
+        self.fit(content, width - 0.60, 2.85)
+        height = max(1.18, content.height + 0.58)
+        box = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.12,
+            stroke_color=BLACK_LINE,
+            stroke_width=1.8,
+            fill_color=fill_color,
+            fill_opacity=1.0,
+        )
+        content.move_to(box).align_to(box, LEFT).shift(RIGHT * 0.30)
+        return VGroup(box, content)
+
+    def statement_panel(
+        self,
+        content: str,
+        width: float = 12.5,
+        height: float = 1.05,
+        size: int = 28,
+    ) -> VGroup:
+        box = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.12,
+            stroke_color=BLACK_LINE,
+            stroke_width=2.0,
+            fill_color=PAPER_GRAY,
+            fill_opacity=1.0,
+        )
+        label = self.text(content, size, BOLD)
+        self.fit(label, width - 0.52, height - 0.24)
+        label.move_to(box)
+        return VGroup(box, label)
+
+    def numbered_badge(self, number: int, label: str, width: float = 4.15) -> VGroup:
+        box = RoundedRectangle(
+            width=width,
+            height=1.12,
+            corner_radius=0.12,
+            stroke_color=BLACK_LINE,
+            stroke_width=2.0,
+            fill_color=WHITE_FILL,
+            fill_opacity=1.0,
+        )
+        num_box = RoundedRectangle(
+            width=0.70,
+            height=0.70,
+            corner_radius=0.10,
+            stroke_color=BLACK_LINE,
+            stroke_width=1.8,
+            fill_color=VERY_LIGHT_GRAY,
+            fill_opacity=1.0,
