@@ -1,0 +1,18 @@
+3:"""Seminar 11 · Class 03 · Constructors & Valid State.
+6:- t3/common/index.html — Session 3: Constructors / Initialization / 3 valid objects
+7:- t3/oop-uml/course-data.js — Constructors & Valid State
+8:- t3/data/modules/m09.json — Python __init__, Java constructor, self/this, early validation
+20:  manim -pql Seminar11_Class03_Constructors_ValidState.py Seminar11Class03ConstructorsValidState --disable_caching
+22:  manim -pqh Seminar11_Class03_Constructors_ValidState.py Seminar11Class03ConstructorsValidState --fps 30 --disable_caching
+46:class Seminar11Class03ConstructorsValidState(JPClassroomScene):
+407:    # 04 — Python __init__
+410:        self.set_header(4, "PYTHON: __init__ BUILDS THE INSTANCE STATE", "Read the code as data movement: parameters enter, attributes persist.")
+414:            "    def __init__(self, value, unit):",
+415:            "        self.value = value",
+465:        line1 = Text("def __init__(self, value, unit):", font="DejaVu Sans Mono", font_size=23, color=BLACK_TEXT)
+466:        line2 = Text("    self.value = value", font="DejaVu Sans Mono", font_size=23, color=BLACK_TEXT)
+538:            "def __init__(self, value, unit):",
+539:            "    self.value = value",
+544:            "    this.value = value;",
+555:            self.text("__init__", 24, BOLD), self.text("↔", 28), self.text("Measurement(...) constructor", 22, BOLD),
+692:            self.text("□  THREE valid objects", 27, BOLD),
