@@ -1,0 +1,172 @@
+    # ------------------------------------------------------------------
+    def scene_08_valid_state(self) -> None:
+        self.set_header(8, "DO NOT CREATE IMPOSSIBLE OBJECTS", "Early constructor validation can reject an invalid initial state before the object enters the system.")
+        flow = self.flow_strip("MODIFY")
+
+        invalid_call = Text('Measurement(12, "")', font="DejaVu Sans Mono", font_size=30, color=BLACK_TEXT).move_to(LEFT * 3.80 + UP * 1.30)
+        invalid = self.instance_card("candidate", "12", '""', width=3.50, height=2.05).move_to(RIGHT * 3.80 + UP * 0.65)
+        question = self.text("Is this object ready to work?", 28, BOLD).move_to(DOWN * 0.60)
+        no = self.tag("NO — REQUIRED STATE IS MISSING", 4.75, 0.66, 22, filled=True).move_to(DOWN * 1.38)
+
+        conceptual, conceptual_lines = self.code_panel([
+            "if unit is empty:",
+            "    reject creation",
+        ], width=4.80, height=1.55, font_size=22, title="CONCEPTUAL RULE")
+        conceptual.move_to(LEFT * 3.65 + DOWN * 2.15)
+        python_rule, py_lines = self.code_panel([
+            "if not unit:",
+            '    raise ValueError("unit is required")',
+        ], width=5.55, height=1.55, font_size=20, title="OPTIONAL PYTHON")
+        python_rule.move_to(RIGHT * 3.60 + DOWN * 2.15)
+
+        pipeline = VGroup(
+            self.tag("INPUT", 1.55, 0.54, 18), self.text("→", 24),
+            self.tag("VALIDATE", 1.75, 0.54, 18, filled=True), self.text("→", 24),
+            self.tag("CONSTRUCT", 1.90, 0.54, 18), self.text("→", 24),
+            self.tag("VALID OBJECT", 2.25, 0.54, 18),
+        ).arrange(RIGHT, buff=0.14).move_to(DOWN * 3.18)
+        reject_mark = Cross(invalid, stroke_color=BLACK_LINE, stroke_width=2.2).scale(0.85)
+
+        self.assert_content_safe(VGroup(invalid_call, invalid, question, no, conceptual, python_rule), "scene08")
+        self.assert_within_frame(VGroup(flow, pipeline), "scene08 lower")
+        self.play(FadeIn(flow), Write(invalid_call), FadeIn(invalid), run_time=RUN_NORMAL)
+        self.play(FadeIn(question), run_time=RUN_NORMAL)
+        self.wait(2.5)
+        self.play(FadeIn(no), Create(reject_mark), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(conceptual[0]), FadeIn(conceptual[1]), LaggedStart(*[Write(line) for line in conceptual_lines], lag_ratio=0.18), run_time=RUN_NORMAL)
+        self.play(FadeIn(python_rule[0]), FadeIn(python_rule[1]), LaggedStart(*[Write(line) for line in py_lines], lag_ratio=0.18), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(pipeline), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 09 — behavior depends on initialized state
+    # ------------------------------------------------------------------
+    def scene_09_behavior_after_init(self) -> None:
+        self.set_header(9, "FIRST INITIALIZE — THEN BEHAVE", "Methods can rely on the state established by the constructor.")
+
+        card = self.instance_card("temperature", "12", '"C"', width=3.45, height=2.05).move_to(LEFT * 4.65 + UP * 0.25)
+        method_panel, method_lines = self.code_panel([
+            "def scale(self, factor):",
+            "    return self.value * factor",
+        ], width=5.90, height=1.80, font_size=23, title="METHOD")
+        method_panel.move_to(RIGHT * 2.15 + UP * 1.05)
+        call = Text("temperature.scale(2)", font="DejaVu Sans Mono", font_size=27, color=BLACK_TEXT).move_to(RIGHT * 2.15 + DOWN * 0.30)
+        factors = VGroup(self.tag("self.value = 12", 2.35, 0.56, 19), self.tag("factor = 2", 2.05, 0.56, 19)).arrange(RIGHT, buff=0.30).move_to(RIGHT * 2.15 + DOWN * 1.25)
+        arrow = self.simple_arrow(factors.get_bottom(), factors.get_bottom() + DOWN * 0.65, width=1.6)
+        result = self.tag("24", 1.55, 0.65, 26, filled=True).next_to(arrow, DOWN, buff=0.10)
+        ordering = VGroup(
+            self.tag("1. CONSTRUCT", 2.15, 0.58, 19),
+            self.text("→", 25),
+            self.tag("2. INITIALIZE STATE", 2.75, 0.58, 19, filled=True),
+            self.text("→", 25),
+            self.tag("3. CALL METHODS", 2.35, 0.58, 19),
+        ).arrange(RIGHT, buff=0.15).move_to(DOWN * 3.12)
+
+        self.assert_content_safe(VGroup(card, method_panel, call, factors, arrow, result), "scene09")
+        self.assert_within_frame(ordering, "scene09 ordering")
+        self.play(FadeIn(card), run_time=RUN_NORMAL)
+        self.play(FadeIn(method_panel[0]), FadeIn(method_panel[1]), LaggedStart(*[Write(line) for line in method_lines], lag_ratio=0.18), run_time=RUN_NORMAL)
+        self.wait(PAUSE_READ)
+        self.play(Write(call), FadeIn(factors), run_time=RUN_NORMAL)
+        self.play(GrowArrow(arrow), FadeIn(result), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(ordering), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 10 — transfer to project tracks
+    # ------------------------------------------------------------------
+    def scene_10_project_transfer(self) -> None:
+        self.set_header(10, "DEFINE WHAT YOUR OBJECT NEEDS TO EXIST", "Transfer the constructor question to your own project domain without changing the Common Core model.")
+
+        cards = VGroup(
+            self.project_domain_card("WEB", "Product(name, price)"),
+            self.project_domain_card("DATA SCIENCE", "Dataset(path, label)"),
+            self.project_domain_card("DEFENSIVE CYBERSECURITY", "LogEvent(timestamp, source)"),
+            self.project_domain_card("3D PROGRAMMING", "Mesh(name, scale)"),
+            self.project_domain_card("ROBOTICS", "Robot(name, battery)"),
+        ).arrange_in_grid(rows=3, cols=2, buff=(0.40, 0.32)).move_to(UP * 0.05)
+        question = VGroup(
+            self.text("What information must your object have", 29, BOLD),
+            self.text("the moment it is created?", 29, BOLD),
+        ).arrange(DOWN, buff=0.12).move_to(DOWN * 2.35)
+        answer = self.text("Those values become constructor parameters.", 24, BOLD).next_to(question, DOWN, buff=0.30)
+
+        self.assert_content_safe(VGroup(cards, question), "scene10")
+        self.assert_within_frame(answer, "scene10 answer")
+        self.play(LaggedStart(*[FadeIn(card, shift=UP * 0.08) for card in cards], lag_ratio=0.12), run_time=RUN_SLOW * 1.5)
+        self.wait(PAUSE_READ)
+        self.play(FadeIn(question), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(answer), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # 11 — evidence / m09 handoff
+    # ------------------------------------------------------------------
+    def scene_11_evidence(self) -> None:
+        self.set_header(11, "TODAY'S EVIDENCE", "Module m09 turns the constructor mental model into Python or Java practice and a Git commit.")
+        flow = self.flow_strip("EXPLAIN")
+
+        checklist = VGroup(
+            self.text("□  ONE class with a clear responsibility", 27, BOLD),
+            self.text("□  ONE constructor", 27, BOLD),
+            self.text("□  THREE valid objects", 27, BOLD),
+            self.text("□  UML updated with initialization", 27, BOLD),
+            self.text("□  Explain parameter vs attribute / field", 27, BOLD),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.28).move_to(LEFT * 2.90 + UP * 0.25)
+        module = self.tag("MODULE m09 · PYTHON OR JAVA", 4.00, 0.68, 22, filled=True).move_to(RIGHT * 4.40 + UP * 1.60)
+        workflow = VGroup(
+            self.tag("MODEL", 1.55, 0.52, 18), self.text("→", 23),
+            self.tag("IMPLEMENT", 1.90, 0.52, 18), self.text("→", 23),
+            self.tag("RUN", 1.35, 0.52, 18), self.text("→", 23),
+            self.tag("EXPLAIN", 1.80, 0.52, 18, filled=True), self.text("→", 23),
+            self.tag("COMMIT", 1.70, 0.52, 18),
+        ).arrange(RIGHT, buff=0.10).move_to(RIGHT * 2.70 + DOWN * 0.15)
+        mandatory = self.text("THREE VALID OBJECTS is mandatory.", 25, BOLD).move_to(RIGHT * 4.00 + DOWN * 1.35)
+        optional = self.text("Optional extension: reject one invalid initial state.", 20).next_to(mandatory, DOWN, buff=0.25)
+
+        self.assert_content_safe(VGroup(checklist, module, workflow, mandatory, optional), "scene11")
+        self.assert_within_frame(flow, "scene11 flow")
+        self.play(FadeIn(flow), run_time=RUN_QUICK)
+        for item in checklist:
+            self.play(FadeIn(item, shift=RIGHT * 0.08), run_time=RUN_QUICK)
+            self.wait(0.55)
+        self.play(FadeIn(module), run_time=RUN_NORMAL)
+        self.play(FadeIn(workflow), run_time=RUN_NORMAL)
+        self.wait(PAUSE_EXPLAIN)
+        self.play(FadeIn(mandatory), FadeIn(optional), run_time=RUN_NORMAL)
+        self.wait(PAUSE_WORK)
+        self.clear_stage()
+
+    # ------------------------------------------------------------------
+    # Final — exit check
+    # ------------------------------------------------------------------
+    def final_exit_check(self) -> None:
+        # Remove persistent header first.
+        self.play(*[FadeOut(mob) for mob in list(self.mobjects)], run_time=RUN_NORMAL)
+        title = self.text("EXIT CHECK", 31, BOLD).move_to(UP * 3.10)
+        questions = VGroup(
+            self.text("What information does the object need to exist?", 28),
+            self.text("Which values belong to the object?", 28),
+            self.text("Which values are only constructor parameters?", 28),
+            self.text("Can the object ever be created in an invalid state?", 28),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.34).move_to(UP * 0.65)
+        final = self.text("GOOD OBJECTS BEGIN WITH GOOD STATE.", 37, BOLD).move_to(DOWN * 1.60)
+        footer = self.text("CLASS → CONSTRUCTOR → VALID OBJECT → BEHAVIOR", 24, MEDIUM).move_to(DOWN * 2.55)
+        sentence = self.text("An object should be born ready to work.", 26, BOLD).move_to(DOWN * 3.25)
+
+        self.assert_within_frame(VGroup(title, questions, final, footer, sentence), "final")
+        self.play(FadeIn(title), run_time=RUN_NORMAL)
+        for q in questions:
+            self.play(FadeIn(q, shift=UP * 0.06), run_time=RUN_NORMAL)
+            self.wait(PAUSE_READ)
+        self.play(FadeIn(final), run_time=RUN_SLOW)
+        self.play(FadeIn(footer), FadeIn(sentence), run_time=RUN_NORMAL)
+        self.wait(3.2)
+        self.play(*[FadeOut(mob) for mob in list(self.mobjects)], run_time=RUN_NORMAL)

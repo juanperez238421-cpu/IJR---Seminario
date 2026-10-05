@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Seminar 11 · Class 03 · Constructors & Valid State.
+
+Curricular ground truth:
+- t3/common/index.html — Session 3: Constructors / Initialization / 3 valid objects
+- t3/oop-uml/course-data.js — Constructors & Valid State
+- t3/data/modules/m09.json — Python __init__, Java constructor, self/this, early validation
+- t3/README.md — Common Core OOP + UML + project-studio engineering workflow
+
+Visual continuity:
+- white 16:9 classroom canvas
+- black / charcoal typography
+- thin UML and mapping lines
+- numbered sections and generous whitespace
+- restrained causal animation, no decorative color
+
+Target: ManimCE 0.20.1, 1920x1080, 30 fps.
+Preview:
+  manim -pql Seminar11_Class03_Constructors_ValidState.py Seminar11Class03ConstructorsValidState --disable_caching
+Final:
+  manim -pqh Seminar11_Class03_Constructors_ValidState.py Seminar11Class03ConstructorsValidState --fps 30 --disable_caching
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from jp_classroom_style import *
+
+
+@dataclass(frozen=True)
+class MeasurementData:
+    name: str
+    value: str
+    unit: str
+
+
+MEASUREMENTS = (
+    MeasurementData("temperature", "12", '"C"'),
+    MeasurementData("distance", "5.2", '"m"'),
+    MeasurementData("mass", "70", '"kg"'),
+)
+
+
+class Seminar11Class03ConstructorsValidState(JPClassroomScene):
+    """One continuous lesson: constructor parameters -> initialization -> valid object state."""
+
+    # ------------------------------------------------------------------
+    # Validation
+    # ------------------------------------------------------------------
+    def validate_lesson_data(self) -> None:
+        assert len(MEASUREMENTS) == 3
+        assert [item.name for item in MEASUREMENTS] == ["temperature", "distance", "mass"]
+        assert MEASUREMENTS[0].value == "12"
+        assert 12 * 2 == 24
+        assert all(item.unit.strip('"') for item in MEASUREMENTS)
+
+    # ------------------------------------------------------------------
+    # Generic visual builders
+    # ------------------------------------------------------------------
+    def tag(self, label: str, width: float = 2.0, height: float = 0.50, size: int = 20, *, filled: bool = False) -> VGroup:
+        box = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.09,
+            stroke_color=BLACK_LINE,
+            stroke_width=2.0 if filled else 1.5,
+            fill_color=VERY_LIGHT_GRAY if filled else WHITE,
+            fill_opacity=1,
+        )
+        txt = self.text(label, size, BOLD if filled else MEDIUM)
+        self.fit(txt, width - 0.20, height - 0.12)
+        txt.move_to(box)
+        return VGroup(box, txt)
+
+    def simple_arrow(self, start, end, *, width: float = 1.8) -> Arrow:
+        return Arrow(
+            start,
+            end,
+            buff=0.12,
+            color=BLACK_LINE,
+            stroke_width=width,
+            max_tip_length_to_length_ratio=0.13,
+        )
+
+    def flow_strip(self, active: str) -> VGroup:
+        labels = ["PREDICT", "MODEL", "CODE", "EXECUTE", "MODIFY", "EXPLAIN"]
+        cards = VGroup()
+        for label in labels:
+            cards.add(self.tag(label, 1.72, 0.46, 17, filled=(label == active)))
+        cards.arrange(RIGHT, buff=0.16)
+        arrows = VGroup()
+        for left, right in zip(cards[:-1], cards[1:]):
+            arrows.add(self.simple_arrow(left.get_right(), right.get_left(), width=1.2))
+        group = VGroup(cards, arrows)
+        group.move_to(DOWN * 3.50)
+        self.fit(group, 14.25, 0.68)
+        return group
+
+    def instance_card(
+        self,
+        name: str,
+        value: str,
+        unit: str,
+        *,
+        width: float = 3.15,
+        height: float = 2.05,
+        question_value: bool = False,
+        question_unit: bool = False,
+    ) -> VGroup:
+        box = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.12,
+            stroke_color=BLACK_LINE,
+            stroke_width=1.8,
+            fill_color=WHITE,
+            fill_opacity=1,
+        )
+        title = self.text(f"{name} : Measurement", 22, BOLD)
+        v = "?" if question_value else value
+        u = "?" if question_unit else unit
+        state = VGroup(
+            self.text(f"value = {v}", 21),
+            self.text(f"unit = {u}", 21),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.18)
+        divider = Line(LEFT * (width / 2 - 0.22), RIGHT * (width / 2 - 0.22), color=LIGHT_GRAY, stroke_width=1.5)
+        content = VGroup(title, divider, state).arrange(DOWN, aligned_edge=LEFT, buff=0.20)
+        self.fit(content, width - 0.48, height - 0.38)
+        content.move_to(box)
+        return VGroup(box, content)
+
+    def uml_measurement(self, *, compact: bool = False) -> VGroup:
+        width = 4.20 if not compact else 3.35
+        height = 3.75 if not compact else 2.70
+        box = Rectangle(width=width, height=height, stroke_color=BLACK_LINE, stroke_width=1.8, fill_color=WHITE, fill_opacity=1)
+        top_y = box.get_top()[1]
+        bottom_y = box.get_bottom()[1]
+        left_x = box.get_left()[0]
+        right_x = box.get_right()[0]
+
+        y1 = top_y - (0.80 if not compact else 0.62)
+        y2 = top_y - (2.00 if not compact else 1.42)
+        d1 = Line([left_x, y1, 0], [right_x, y1, 0], color=BLACK_LINE, stroke_width=1.4)
+        d2 = Line([left_x, y2, 0], [right_x, y2, 0], color=BLACK_LINE, stroke_width=1.4)
+
+        title = self.text("Measurement", 27 if not compact else 22, BOLD).move_to([0, (top_y + y1) / 2, 0])
+        attrs = VGroup(
+            self.text("- value : float", 23 if not compact else 18),
+            self.text("- unit  : String", 23 if not compact else 18),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.14 if not compact else 0.08)
+        attrs.move_to([left_x + 0.34 + attrs.width / 2, (y1 + y2) / 2, 0])
+
+        ops = VGroup(
+            self.text("+ Measurement(value, unit)", 22 if not compact else 17, BOLD),
+            self.text("+ scale(factor) : float", 22 if not compact else 17),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.15 if not compact else 0.08)
+        ops.move_to([left_x + 0.34 + ops.width / 2, (y2 + bottom_y) / 2, 0])
+        return VGroup(box, d1, d2, title, attrs, ops)
+
+    def code_panel(
+        self,
+        lines: list[str],
+        *,
+        width: float = 7.20,
+        height: float = 3.55,
+        font_size: int = 25,
+        title: str | None = None,
+    ) -> tuple[VGroup, VGroup]:
+        box = RoundedRectangle(
+            width=width,
+            height=height,
+            corner_radius=0.12,
+            stroke_color=BLACK_LINE,
+            stroke_width=1.7,
+            fill_color=PAPER_GRAY,
+            fill_opacity=1,
+        )
+        line_mobs = VGroup(*[
+            Text(
+                line,
+                font="DejaVu Sans Mono",
+                font_size=font_size,
+                color=BLACK_TEXT,
+                weight=NORMAL,
+            )
+            for line in lines
+        ])
+        line_mobs.arrange(DOWN, aligned_edge=LEFT, buff=0.16)
