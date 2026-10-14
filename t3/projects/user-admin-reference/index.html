@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administración de usuarios · Proyecto web</title>
+<link rel="stylesheet" href="styles.css">
+<main><h1>Administración de usuarios</h1><p id="projectName"></p><p>Directorio del proyecto con datos de prueba. Los registros no crean cuentas institucionales ni contraseñas.</p>
+<p id="message" role="status" aria-live="polite"></p>
+<section id="loginPanel"><h2>Acceso del equipo</h2><form id="login"><label>Correo de tu cuenta de prueba<input name="email" type="email" required autocomplete="username"></label><label>Contraseña<input name="password" type="password" required autocomplete="current-password"></label><button>Entrar</button></form></section>
+<section id="directoryPanel" hidden><button id="logout">Cerrar sesión</button><p id="role"></p>
+<form id="editor" hidden><h2 id="editorTitle">Nuevo usuario del directorio</h2><input name="id" type="hidden"><label>Alias<input name="alias" minlength="2" maxlength="80" required></label><label>Contacto de prueba<input name="contact" type="email" maxlength="120" required placeholder="usuario@example.test"></label><label>Categoría<input name="category" maxlength="40" required value="member"></label><button>Guardar</button><button type="button" id="cancel">Cancelar edición</button></form>
+<label>Buscar alias o contacto<input id="search" type="search"></label><label>Estado<select id="status"><option value="all">Todos</option><option value="active">Activos</option><option value="archived">Archivados</option></select></label><button id="reload">Actualizar</button>
+<p id="count"></p><div class="table"><table><caption>Usuarios de este proyecto</caption><thead><tr><th>Alias</th><th>Contacto de prueba</th><th>Categoría</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="rows"></tbody></table></div><button id="more" hidden>Cargar más</button>
+<section id="auditPanel" hidden><h2>Últimos cambios</h2><ul id="audit"></ul></section></section></main>
+<script src="config.js"></script><script type="module" src="app.js"></script></html>

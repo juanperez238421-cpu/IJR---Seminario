@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -23,7 +24,7 @@ def _rgb(value, default=(18, 22, 38)):
         return default
     try:
         return tuple(max(0, min(255, int(x))) for x in value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
 
 
@@ -33,17 +34,33 @@ def load_config(path: Path) -> VisualConfig:
 
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeError, json.JSONDecodeError):
         return VisualConfig()
 
+    if not isinstance(raw, dict):
+        return VisualConfig()
+
+    def number(key, default, minimum, maximum, integer=False):
+        try:
+            value = raw.get(key, default)
+            if isinstance(value, bool):
+                return default
+            value = float(value)
+            if not math.isfinite(value):
+                return default
+            value = max(minimum, min(maximum, value))
+            return int(value) if integer else value
+        except (TypeError, ValueError, OverflowError):
+            return default
+
     return VisualConfig(
-        width=max(320, int(raw.get("width", 960))),
-        height=max(180, int(raw.get("height", 540))),
-        fps=max(15, min(240, int(raw.get("fps", 60)))),
+        width=number("width", 960, 320, 3840, True),
+        height=number("height", 540, 180, 2160, True),
+        fps=number("fps", 60, 15, 240, True),
         background=_rgb(raw.get("background")),
-        orbit_speed=float(raw.get("orbit_speed", 1.4)),
-        orbit_radius=max(20.0, float(raw.get("orbit_radius", 150))),
-        pulse_speed=float(raw.get("pulse_speed", 3.2)),
-        particle_count=max(0, min(2000, int(raw.get("particle_count", 120)))),
-        seed=int(raw.get("seed", 17)),
+        orbit_speed=number("orbit_speed", 1.4, -100, 100),
+        orbit_radius=number("orbit_radius", 150, 20, 2000),
+        pulse_speed=number("pulse_speed", 3.2, -100, 100),
+        particle_count=number("particle_count", 120, 0, 2000, True),
+        seed=number("seed", 17, 0, 2147483647, True),
     )
