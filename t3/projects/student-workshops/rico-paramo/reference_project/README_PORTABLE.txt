@@ -14,3 +14,10 @@ Live defense:
 - Explain the predicted visual change.
 
 The build is designed for manual launch. It does not use USB autorun or hidden startup behavior.
+Verification added 2026-10-14:
+  PortableVisualShow.exe --verify
+Renders ten headless frames, prints PASS plus the effective config, and exits.
+This verifies packaging/configuration; it does not replace a visible USB/offline demo.
+config.json must remain beside the executable. Move both files together.
+Invalid numeric fields fall back individually; sizes and particle counts are bounded.
+Build environment verified: Python 3.12, pygame 2.6.1, PyInstaller 6.16.0.

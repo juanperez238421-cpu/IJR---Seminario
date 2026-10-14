@@ -5,9 +5,9 @@ from pathlib import Path
 
 
 def runtime_root() -> Path:
-    """Return the folder that contains packaged runtime resources."""
-    if hasattr(sys, "_MEIPASS"):
-        return Path(sys._MEIPASS)
+    """External config lives beside the portable executable, not its temp bundle."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parents[1]
 
 
