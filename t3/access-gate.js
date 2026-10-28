@@ -248,17 +248,17 @@
     const marker = '/t3/';
     const at = pathname.lastIndexOf(marker);
     if (at < 0) return false;
-    const page = pathname.slice(at + marker.length).replace(/^\\/+|\\/+$/g, '');
-    if (/(^|\\/)teacher(?:\\/|\\.|$)/.test(page)) return false;
+    const page = pathname.slice(at + marker.length).replace(/^\/+|\/+$/g, '');
+    if (/(^|\/)teacher(?:\/|\.|$)/.test(page)) return false;
     return page === '' || page === 'index.html'
-      || /^common(?:\\/index\\.html)?$/.test(page)
+      || /^common(?:\/index\.html)?$/.test(page)
       || page === 'lab.html'
-      || /^oop-logic-01(?:\\/index\\.html)?$/.test(page)
-      || /^oop-uml(?:\\/index\\.html)?$/.test(page)
-      || /^oop-uml\\/(?:theory|workshop)\\.html$/.test(page)
-      || /^studio(?:\\/index\\.html)?$/.test(page)
-      || /^tracks(?:\\/.*)?$/.test(page)
-      || /^projects\\/(?:cyber-cases|python-message-animation|student-workshops)(?:\\/.*)?$/.test(page);
+      || /^oop-logic-01(?:\/index\.html)?$/.test(page)
+      || /^oop-uml(?:\/index\.html)?$/.test(page)
+      || /^oop-uml\/(?:theory|workshop)\.html$/.test(page)
+      || /^studio(?:\/index\.html)?$/.test(page)
+      || /^tracks(?:\/.*)?$/.test(page)
+      || /^projects\/(?:cyber-cases|python-message-animation|student-workshops)(?:\/.*)?$/.test(page);
   }
 
   async function boot() {
